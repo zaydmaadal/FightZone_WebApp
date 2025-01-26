@@ -1,0 +1,57 @@
+.dashboard {
+    margin-left: 16rem; /* Ruimte voor de Sidebar */
+    padding: 1.5rem;
+    background-color: #f9fafb; /* Lichtgrijze achtergrond */
+    min-height: 100vh; /* Zodat het de hele pagina vult */
+  }
+  
+  .card-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 kolommen */
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card h2 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card p {
+    margin: 0.5rem 0;
+  }
+  
+  .notifications {
+    margin-top: 2rem;
+  }
+  
+  .notification {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .notification strong {
+    color: #111827; /* Donkergrijs */
+  }
+  
+  .notification p {
+    margin-top: 0.5rem;
+  }
+  
