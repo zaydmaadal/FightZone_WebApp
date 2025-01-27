@@ -1,11 +1,10 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import Dashboard from './pages/Dashboard';
-import MembersPage from './pages/MembersPage';
-import SettingsPage from './pages/SettingsPage';
-import './App.css';
-
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Sidebar from "./components/Sidebar";
+import Dashboard from "./pages/Dashboard";
+import MembersPage from "./pages/MembersPage";
+import AddUserPage from "./pages/AddUserPage";
+import SettingsPage from "./pages/SettingsPage";
 
 const App = () => {
   return (
@@ -16,6 +15,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/members" element={<MembersPage />} />
+            <Route path="/add-member" element={<AddUserPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </div>
