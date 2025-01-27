@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import MembersPage from "./pages/MembersPage";
 import AddUserPage from "./pages/AddUserPage";
 import SettingsPage from "./pages/SettingsPage";
+import MemberDetails from "./pages/MemberDetails";
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
             <Route path="/members" element={<MembersPage />} />
             <Route path="/add-member" element={<AddUserPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/member/:id" element={<MemberDetails />} />
           </Routes>
         </div>
       </div>
