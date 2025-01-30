@@ -1,46 +1,77 @@
 .member-details {
-  margin-left: 16rem;
+  margin-left: 250px;
   padding: 2rem;
-  background-color: #f9fafb;
+  background-color: #F2F2F2;
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.header {
+.member-card {
+  width: 80%;
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.member-header {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .profile-image {
-  width: 200px;
-  height: 200px;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
   border-radius: 50%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .details h1 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   margin-bottom: 0.5rem;
 }
 
 .nickname {
-  color: #6b7280;
   font-style: italic;
+  color: #555;
+}
+
+.club {
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
 .stats {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
   margin: 2rem 0;
 }
 
 .stat {
-  background-color: white;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  flex: 1;
   text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.info {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.info table {
+  width: 100%;
+}
+
+.info td {
+  padding: 0.5rem;
 }
 
 .valid {
@@ -52,16 +83,49 @@
 }
 
 .fight-history {
-  background-color: white;
-  border-radius: 0.5rem;
+  background: white;
   padding: 1.5rem;
+  border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
 }
 
-.fight-history .fight {
-  margin-bottom: 1.5rem;
+.fight-history h2 {
+  margin-bottom: 1rem;
 }
 
-.fight-history .fight strong {
-  color: #111827;
+.fight-table {
+  width: 100%;
+  border-collapse: collapse;
 }
+
+.fight-table th, .fight-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.fight-table th {
+  background: #f3f4f6;
+  font-weight: bold;
+}
+
+.opponent-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.win {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.loss {
+  color: #ef4444;
+  font-weight: bold;
+}
+

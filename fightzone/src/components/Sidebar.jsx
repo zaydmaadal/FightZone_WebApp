@@ -1,30 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import styles from '../assets/styles/components/Sidebar.module.css';
+import React from "react";
+import { Link } from "react-router-dom";
+import "../assets/styles/components/Sidebar.css";
+import logo from "../assets/images/fightzoneLogo.png"; // Zorg dat je logo hier correct is geplaatst
 
 const Sidebar = () => {
   return (
-    <div className={styles.sidebar}>
-      <div className={styles.logo}>FightZone</div>
-      <nav className={styles.nav}>
-        <ul>
-          <li>
-            <Link to="/" className={styles['nav-link']}>
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link to="/members" className={styles['nav-link']}>
-              Ledenlijst
-            </Link>
-          </li>
-          <li>
-            <Link to="/settings" className={styles['nav-link']}>
-              Instellingen
-            </Link>
-          </li>
-        </ul>
+    <div className="sidebar">
+      <img src={logo} alt="FightZone Logo" className="logo" />
+      <nav className="menu">
+        <Link to="/" className="menu-item">Dashboard</Link>
+        <Link to="/members" className="menu-item">Ledenlijst</Link>
+        <Link to="/events" className="menu-item">Evenementen</Link>
+        <Link to="/settings" className="menu-item">Instellingen</Link>
       </nav>
+      <p className="footer-text">VKBMO</p>
     </div>
   );
 };
