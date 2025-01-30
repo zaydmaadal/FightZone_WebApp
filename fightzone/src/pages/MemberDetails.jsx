@@ -1,71 +1,74 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { fetchUserById, fetchUsers } from "../services/api";
 import "../assets/styles/pages/MemberDetails.css";
-import AmineImage from "../assets/images/AmineElBoujadaini.png";
 
 const MemberDetails = () => {
-  const member = {
-    naam: "Amine El Boujadaini",
-    nickname: "Gladiator",
-    record: "24-9-5 (W-L-D)",
-    kampioen: "Champion lightweight",
-    ranking: "#3",
-    status: "Actief",
-    club: "Champions Gym Boom",
-    email: "Amine.El@outlook.com",
-    verzekering: true,
-    gewicht: 68,
-    leeftijd: 20,
-    klasse: "A Klasse",
-    fightHistory: [
-      {
-        datum: "12 Februari - Boom",
-        event: "Enfusion title fight - Main event",
-        tegenstander: "Johnny Walker",
-        resultaat: "24-9-5 (W-L-D)",
-      },
-      {
-        datum: "12 Februari - Boom",
-        event: "Enfusion title fight - Main event",
-        tegenstander: "Johnny Walker",
-        resultaat: "24-9-5 (W-L-D)",
-      },
-    ],
+  const { id } = useParams(); // ID van de gebruiker uit de URL
+  const [member, setMember] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]); // Om tegenstanders op te halen
+
+  useEffect(() => {
+    const loadMember = async () => {
+      try {
+        const allUsers = await fetchUsers(); // Haal alle gebruikers op
+        setUsers(allUsers);
+
+        const selectedUser = allUsers.find((user) => user._id === id);
+        if (selectedUser) {
+          setMember(selectedUser);
+        }
+      } catch (error) {
+        console.error("Fout bij het ophalen van lid:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMember();
+  }, [id]);
+
+  if (loading) return <p>Gegevens worden geladen...</p>;
+  if (!member) return <p>Geen gegevens gevonden voor dit lid.</p>;
+
+  // Leeftijd berekenen
+  const calculateAge = (birthdate) => {
+    const birthDate = new Date(birthdate);
+    const today = new Date();
+    return today.getFullYear() - birthDate.getFullYear();
+  };
+
+  // Functie om tegenstander details op te halen
+  const getOpponentDetails = (opponentId) => {
+    return users.find((user) => user._id === opponentId);
   };
 
   return (
     <div className="member-details">
       {/* Header */}
       <div className="header">
-        <img
-          src={AmineImage}
-          alt={member.naam}
-          className="profile-image"
-        />
+        <img src={member.profielfoto} alt={member.voornaam} className="profile-image" />
         <div className="details">
-          <h1>{member.naam}</h1>
-          <p className="nickname">"{member.nickname}"</p>
-          <p>{member.record}</p>
-          <p>
-            <span className="highlight">{member.kampioen}</span>{" "}
-            <span className="highlight">{member.ranking}</span>{" "}
-            <span className="highlight">{member.status}</span>{" "}
-            <span className="highlight">{member.club}</span>
-          </p>
+          <h1>{member.voornaam} {member.achternaam}</h1>
+          <p className="nickname">"{member.vechterInfo.bijnaam}"</p>
+          <p className="record">Leeftijd: {calculateAge(member.geboortedatum)}</p>
+          <p className="highlight">{member.club}</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="stats">
         <div className="stat">
-          <h2>{member.gewicht} kg</h2>
+          <h2>{member.vechterInfo.gewicht} kg</h2>
           <p>Gewicht</p>
         </div>
         <div className="stat">
-          <h2>{member.leeftijd}</h2>
-          <p>Leeftijd</p>
+          <h2>{member.vechterInfo.lengte} cm</h2>
+          <p>Lengte</p>
         </div>
         <div className="stat">
-          <h2>{member.klasse}</h2>
+          <h2>{member.vechterInfo.klasse}</h2>
           <p>Klasse</p>
         </div>
       </div>
@@ -77,8 +80,14 @@ const MemberDetails = () => {
           <tbody>
             <tr>
               <td>Verzekering</td>
-              <td className={member.verzekering ? "valid" : "invalid"}>
-                {member.verzekering ? "Geldig" : "Niet geldig"}
+              <td className={member.vechterInfo.verzekering ? "valid" : "invalid"}>
+                {member.vechterInfo.verzekering ? "Geldig" : "Niet geldig"}
+              </td>
+            </tr>
+            <tr>
+              <td>Fighting Ready</td>
+              <td className={member.vechterInfo.fightingReady ? "valid" : "invalid"}>
+                {member.vechterInfo.fightingReady ? "Ja" : "Nee"}
               </td>
             </tr>
             <tr>
@@ -95,18 +104,30 @@ const MemberDetails = () => {
 
       {/* Fight History */}
       <div className="fight-history">
-        <h2>Fight history</h2>
-        {member.fightHistory.map((fight, index) => (
-          <div key={index} className="fight">
-            <p>
-              <strong>{fight.datum}</strong> - {fight.event}
-            </p>
-            <p>
-              Tegenstander: <strong>{fight.tegenstander}</strong>
-            </p>
-            <p>Resultaat: {fight.resultaat}</p>
-          </div>
-        ))}
+        <h2>Fight History</h2>
+        {member.vechterInfo.fights.length > 0 ? (
+          member.vechterInfo.fights.map((fight, index) => {
+            const opponent = getOpponentDetails(fight.tegenstander.$oid);
+            return (
+              <div key={index} className="fight">
+                <p>
+                  <strong>{new Date(fight.datum.$date).toLocaleDateString()}</strong> - {fight.event}
+                </p>
+                <p>Locatie: {fight.locatie}</p>
+                {opponent ? (
+                  <p>
+                    Tegenstander: <strong>{opponent.voornaam} {opponent.achternaam}</strong>
+                  </p>
+                ) : (
+                  <p>Tegenstander: Onbekend</p>
+                )}
+                <p>Resultaat: <strong>{fight.resultaat}</strong></p>
+              </div>
+            );
+          })
+        ) : (
+          <p>Geen gevechten gevonden</p>
+        )}
       </div>
     </div>
   );

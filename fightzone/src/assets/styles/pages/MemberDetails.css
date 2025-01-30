@@ -1,96 +1,67 @@
 .member-details {
-    margin-left: 16rem;
-    padding: 2rem;
-    background-color: #f9fafb;
-    min-height: 100vh;
-  }
-  
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-  }
-  
-  .profile-image {
-    width: 200px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 50%;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .details h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .nickname {
-    color: #6b7280;
-    font-style: italic;
-  }
-  
-  .highlight {
-    font-weight: bold;
-    color: #2563eb; /* Blauw */
-    margin-right: 0.5rem;
-  }
-  
-  .stats {
-    display: flex;
-    gap: 2rem;
-    margin: 2rem 0;
-  }
-  
-  .stat {
-    background-color: white;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .stat h2 {
-    font-size: 1.5rem;
-    color: #111827;
-  }
-  
-  .info {
-    background-color: white;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .info table {
-    width: 100%;
-  }
-  
-  .info td {
-    padding: 0.75rem;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .valid {
-    color: #10b981; /* Groen */
-  }
-  
-  .invalid {
-    color: #ef4444; /* Rood */
-  }
-  
-  .fight-history {
-    background-color: white;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .fight-history .fight {
-    margin-bottom: 1.5rem;
-  }
-  
-  .fight-history .fight strong {
-    color: #111827;
-  }
-  
+  margin-left: 16rem;
+  padding: 2rem;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.profile-image {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.details h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.nickname {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.stats {
+  display: flex;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.stat {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.valid {
+  color: #10b981;
+}
+
+.invalid {
+  color: #ef4444;
+}
+
+.fight-history {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.fight-history .fight {
+  margin-bottom: 1.5rem;
+}
+
+.fight-history .fight strong {
+  color: #111827;
+}

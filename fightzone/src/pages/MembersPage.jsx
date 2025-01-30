@@ -1,57 +1,94 @@
 import React, { useEffect, useState } from "react";
 import { fetchUsers } from "../services/api";
+import { Link } from "react-router-dom";
 import "../assets/styles/pages/MembersPage.css";
 
 const MembersPage = () => {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const loadUsers = async () => {
       try {
         const data = await fetchUsers();
         setUsers(data);
-      } catch (err) {
-        setError("Kan gebruikers niet ophalen.");
-        console.error(err);
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error("Fout bij het ophalen van leden:", error);
       }
     };
 
     loadUsers();
   }, []);
 
-  if (loading) return <p>Gegevens worden geladen...</p>;
-  if (error) return <p>{error}</p>;
+  const filteredUsers = users.filter(
+    (user) =>
+      user.voornaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.achternaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.club.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="members-page">
+      <h1 className="page-title">Ledenlijst</h1>
+
+      {/* Zoekbalk */}
+      <input
+        type="text"
+        placeholder="Zoek op naam, club of rol..."
+        className="search-bar"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+
+      {/* Ledenlijst Tabel */}
       <div className="table-container">
-        <h1>Ledenlijst</h1>
         <table className="table">
           <thead>
             <tr>
+              <th>Profielfoto</th>
               <th>Naam</th>
-              <th>Email</th>
+              <th>Club</th>
               <th>Rol</th>
+              <th>Acties</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td>{user.naam}</td>
-                <td>{user.email}</td>
-                <td>{user.role}</td>
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user) => (
+                <tr key={user._id}>
+                  <td>
+                    <img
+                      src={user.profielfoto}
+                      alt={user.voornaam}
+                      className="profile-img"
+                    />
+                  </td>
+                  <td>{user.voornaam} {user.achternaam}</td>
+                  <td>{user.club}</td>
+                  <td>{user.role}</td>
+                  <td>
+                    <Link to={`/member/${user._id}`} className="view-button">
+                      Bekijk
+                    </Link>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-results">
+                  Geen leden gevonden
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
-      <a href="/add-member" className="add-member-button">
+
+      {/* Voeg Lid Toe Knop */}
+      <Link to="/add-member" className="add-member-button">
         Voeg Lid Toe
-      </a>
+      </Link>
     </div>
   );
 };

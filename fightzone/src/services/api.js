@@ -1,50 +1,51 @@
 import axios from "axios";
 
-// Basisinstelling voor de API
+// Basis API-instellingen
 const API = axios.create({
-  baseURL: "https://fightzone-api.onrender.com/api/v1", // Je API-basis-URL
+  baseURL: "https://fightzone-api.onrender.com/api/v1",
 });
 
-// Endpoint: Haal alle gebruikers op
+// Haal alle leden op
 export const fetchUsers = async () => {
   try {
     const response = await API.get("/users");
     return response.data;
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("Fout bij het ophalen van gebruikers:", error);
     throw error;
   }
 };
 
-// Endpoint: Voeg een gebruiker toe
+// Voeg een nieuw lid toe
 export const createUser = async (userData) => {
   try {
     const response = await API.post("/users", userData);
     return response.data;
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("Fout bij het toevoegen van een gebruiker:", error);
     throw error;
   }
 };
 
-// Voeg meer functies toe voor PUT, DELETE, etc.
-export const updateUser = async (userId, userData) => {
+export const fetchUserById = async (id) => {
   try {
-    const response = await API.put(`/users/${userId}`, userData);
-    return response.data;
+    const response = await API.get("/users"); // Haal alle gebruikers op
+    const users = response.data;
+    
+    // Zoek het juiste lid op basis van ID
+    const user = users.find(user => user._id === id);
+    
+    if (!user) {
+      throw new Error("Gebruiker niet gevonden");
+    }
+
+    return user;
   } catch (error) {
-    console.error("Error updating user:", error);
+    console.error("Fout bij het ophalen van gebruiker:", error);
     throw error;
   }
 };
 
-export const deleteUser = async (userId) => {
-  try {
-    await API.delete(`/users/${userId}`);
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    throw error;
-  }
-};
+
 
 export default API;
