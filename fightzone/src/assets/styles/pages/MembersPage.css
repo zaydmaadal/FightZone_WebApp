@@ -1,5 +1,5 @@
 .members-page {
-  margin-left: 16rem;
+  flex: 1; /* Zorgt ervoor dat de content de resterende ruimte inneemt */
   padding: 2rem;
   background-color: #f9fafb;
   min-height: 100vh;

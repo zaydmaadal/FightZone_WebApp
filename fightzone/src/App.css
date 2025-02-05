@@ -1,9 +1,39 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background-color: #f9fafb; /* Lichtgrijze achtergrond */
 }
 
-h1, h2 {
+h1,
+h2 {
   color: #333;
 }
+
+/* Algemene layout */
+.app-container {
+  height: 100vh;
+}
+
+.flex {
+  display: flex;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
+/* Content gebied */
+.content {
+  flex: 1; /* Neemt de resterende ruimte in */
+  padding: 20px; /* Ruimte rondom de content */
+  overflow-y: auto; /* Scrollbaar maken als de content te lang is */
+  background-color: #fff; /* Witte achtergrond voor de content */
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Schaduw aan de rechterkant */
+}
+
+/* Sidebar (styling komt in een aparte CSS file) */
