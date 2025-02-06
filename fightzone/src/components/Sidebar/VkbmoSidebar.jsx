@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/components/Sidebar.css";
 import logo from "../../assets/images/fightzoneLogo.png";
 
 const VKBMOSidebar = () => {
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setUser(null); // Update de user state
     navigate("/login");
   };
 
@@ -18,8 +22,8 @@ const VKBMOSidebar = () => {
         <Link to="/" className="menu-item">
           Dashboard
         </Link>
-        <Link to="/prestaties" className="menu-item">
-          Mijn Prestaties
+        <Link to="/clubs" className="menu-item">
+          Clubs
         </Link>
       </nav>
       <button onClick={handleLogout} className="logout-button">

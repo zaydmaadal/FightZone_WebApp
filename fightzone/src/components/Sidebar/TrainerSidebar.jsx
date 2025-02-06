@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/components/Sidebar.css";
 import logo from "../../assets/images/fightzoneLogo.png";
 
 const TrainerSidebar = () => {
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setUser(null); // Update de user state
     navigate("/login");
   };
 
@@ -20,9 +24,6 @@ const TrainerSidebar = () => {
         </Link>
         <Link to="/members" className="menu-item">
           Ledenlijst
-        </Link>
-        <Link to="/settings" className="menu-item">
-          Instellingen
         </Link>
       </nav>
       <button onClick={handleLogout} className="logout-button">

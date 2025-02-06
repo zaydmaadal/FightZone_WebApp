@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+// src/pages/LoginPage.jsx
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/auth";
+import { AuthContext } from "../context/AuthContext";
 import "../assets/styles/pages/LoginPage.css";
 
 const LoginPage = () => {
@@ -8,6 +10,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,15 +20,12 @@ const LoginPage = () => {
         wachtwoord: password,
       });
 
-      console.log("Login response:", response); // Debugging
-
       const { token, role } = response;
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
-      window.location.reload();
+      setUser({ token, role }); // Update de user state
 
-      // Aangepaste redirect-logica
       switch (role) {
         case "Vechter":
           navigate("/");

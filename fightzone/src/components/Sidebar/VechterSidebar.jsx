@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/components/Sidebar.css";
 import logo from "../../assets/images/fightzoneLogo.png";
 
 const VechterSidebar = () => {
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setUser(null); // Update de user state
     navigate("/login");
   };
 
