@@ -1,7 +1,4 @@
 .member-details {
-  margin-left: 250px;
-  padding: 2rem;
-  background-color: #F2F2F2;
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -99,7 +96,8 @@
   border-collapse: collapse;
 }
 
-.fight-table th, .fight-table td {
+.fight-table th,
+.fight-table td {
   padding: 0.75rem;
   border-bottom: 1px solid #e5e7eb;
   text-align: left;
@@ -128,4 +126,3 @@
   color: #ef4444;
   font-weight: bold;
 }
-

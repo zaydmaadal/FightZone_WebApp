@@ -11,6 +11,8 @@ import MembersPage from "./pages/MembersPage";
 import PrestatiePage from "./pages/PrestatiePage";
 import ClubsPage from "./pages/ClubsPage";
 import LoginPage from "./pages/LoginPage";
+import AddUserPage from "./pages/AddUserPage";
+import MemberDetails from "./pages/MemberDetails";
 import { AuthContext } from "./context/AuthContext";
 import "./App.css";
 
@@ -47,10 +49,23 @@ const AppRouter = () => {
                 <Sidebar />
                 <div className="content">
                   <Routes>
-                    <Route path="/" element={<VechterDashboard />} />
+                    <Route
+                      path="/"
+                      element={
+                        user.role === "Vechter" ? (
+                          <VechterDashboard />
+                        ) : user.role === "Trainer" ? (
+                          <TrainerDashboard />
+                        ) : (
+                          <VkbmoDashboard />
+                        )
+                      }
+                    />{" "}
                     <Route path="/members" element={<MembersPage />} />
                     <Route path="/prestaties" element={<PrestatiePage />} />
                     <Route path="/clubs" element={<ClubsPage />} />
+                    <Route path="/add-member" element={<AddUserPage />} />
+                    <Route path="/member/:id" element={<MemberDetails />} />
                   </Routes>
                 </div>
               </div>
@@ -88,6 +103,22 @@ const AppRouter = () => {
               path="/clubs"
               element={
                 user.role === "VKBMO-lid" ? <ClubsPage /> : <Navigate to="/" />
+              }
+            />
+            <Route
+              path="/add-member"
+              element={
+                user.role === "Trainer" ? <AddUserPage /> : <Navigate to="/" />
+              }
+            />
+            <Route
+              path="/member/:id"
+              element={
+                user.role === "Trainer" ? (
+                  <MemberDetails />
+                ) : (
+                  <Navigate to="/" />
+                )
               }
             />
           </Route>

@@ -1,32 +1,55 @@
 import React, { useEffect, useState } from "react";
-import { fetchUsers } from "../services/api";
+import { fetchUsers, fetchClubs, fetchCurrentUser } from "../services/api";
 import { Link } from "react-router-dom";
 import "../assets/styles/pages/MembersPage.css";
 
 const MembersPage = () => {
   const [users, setUsers] = useState([]);
+  const [clubs, setClubs] = useState([]);
+  const [trainer, setTrainer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadData = async () => {
       try {
-        const data = await fetchUsers();
-        setUsers(data);
+        const [usersData, clubsData, currentUser] = await Promise.all([
+          fetchUsers(),
+          fetchClubs(),
+          fetchCurrentUser(),
+        ]);
+        setUsers(usersData);
+        setClubs(clubsData);
+        setTrainer(currentUser.role === "Trainer" ? currentUser : null);
       } catch (error) {
         console.error("Fout bij het ophalen van leden:", error);
       }
     };
 
-    loadUsers();
+    loadData();
   }, []);
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.voornaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.achternaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.club.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getClubName = (clubId) => {
+    if (!clubs.length) return "Laden..."; // 🛠️ Voorkomt lege lijst
+    if (!clubId) return "Geen club";
+    const club = clubs.find((c) => c._id === clubId);
+    return club ? club.naam : "Onbekende club";
+  };
+
+  const filteredUsers = users.filter((user) => {
+    if (!trainer) return false;
+    if (user.role !== "Vechter") return false;
+    if (user.club !== trainer.club) return false;
+
+    const fullName = `${user.voornaam} ${user.achternaam}`.toLowerCase();
+    const roleName = user.role.toLowerCase();
+    const clubName = getClubName(user.club).toLowerCase();
+
+    return (
+      fullName.includes(searchTerm.toLowerCase()) ||
+      roleName.includes(searchTerm.toLowerCase()) ||
+      clubName.includes(searchTerm.toLowerCase())
+    );
+  });
 
   return (
     <div className="members-page">
@@ -64,8 +87,10 @@ const MembersPage = () => {
                       className="profile-img"
                     />
                   </td>
-                  <td>{user.voornaam} {user.achternaam}</td>
-                  <td>{user.club}</td>
+                  <td>
+                    {user.voornaam} {user.achternaam}
+                  </td>
+                  <td>{getClubName(user.club)}</td>
                   <td>{user.role}</td>
                   <td>
                     <Link to={`/member/${user._id}`} className="view-button">
