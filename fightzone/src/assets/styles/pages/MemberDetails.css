@@ -6,7 +6,7 @@
 }
 
 .member-card {
-  width: 80%;
+  width: 100%;
   background: white;
   padding: 2rem;
   border-radius: 10px;
@@ -22,7 +22,7 @@
 .profile-image {
   width: 120px;
   height: 120px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 50%;
 }
 
@@ -112,7 +112,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
   margin-right: 8px;
   vertical-align: middle;
 }

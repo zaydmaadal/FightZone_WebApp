@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchUsers } from "../services/api";
+import { fetchUsers, fetchClubs } from "../services/api";
 import "../assets/styles/pages/MemberDetails.css";
 
 const MemberDetails = () => {
@@ -8,12 +8,17 @@ const MemberDetails = () => {
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
+  const [clubs, setClubs] = useState([]);
 
   useEffect(() => {
     const loadMember = async () => {
       try {
-        const allUsers = await fetchUsers();
+        const [allUsers, clubsData] = await Promise.all([
+          fetchUsers(),
+          fetchClubs(),
+        ]);
         setUsers(allUsers);
+        setClubs(clubsData);
 
         const selectedUser = allUsers.find((user) => user._id === id);
         if (selectedUser) {
@@ -28,6 +33,12 @@ const MemberDetails = () => {
 
     loadMember();
   }, [id]);
+
+  const getClubName = (clubId) => {
+    if (!clubs.length) return "Laden...";
+    const club = clubs.find((c) => c._id === clubId);
+    return club ? club.naam : "Onbekende club";
+  };
 
   if (loading) return <p>Gegevens worden geladen...</p>;
   if (!member) return <p>Geen gegevens gevonden voor dit lid.</p>;
@@ -47,28 +58,67 @@ const MemberDetails = () => {
     <div className="member-details">
       <div className="member-card">
         <div className="member-header">
-          <img src={member.profielfoto} alt={member.voornaam} className="profile-image" />
+          <img
+            src={member.profielfoto}
+            alt={member.voornaam}
+            className="profile-image"
+          />
           <div className="details">
-            <h1>{member.voornaam} {member.achternaam}</h1>
+            <h1>
+              {member.voornaam} {member.achternaam}
+            </h1>
             <p className="nickname">"{member.vechterInfo.bijnaam}"</p>
-            <p className="club">{member.club}</p>
+            <p className="club">{getClubName(member.club)}</p>
           </div>
         </div>
 
         <div className="stats">
-          <div className="stat"><h2>{member.vechterInfo.gewicht} kg</h2><p>Gewicht</p></div>
-          <div className="stat"><h2>{member.vechterInfo.lengte} cm</h2><p>Lengte</p></div>
-          <div className="stat"><h2>{calculateAge(member.geboortedatum)}</h2><p>Leeftijd</p></div>
-          <div className="stat"><h2>{member.vechterInfo.klasse}</h2><p>Klasse</p></div>
+          <div className="stat">
+            <h2>{member.vechterInfo.gewicht} kg</h2>
+            <p>Gewicht</p>
+          </div>
+          <div className="stat">
+            <h2>{member.vechterInfo.lengte} cm</h2>
+            <p>Lengte</p>
+          </div>
+          <div className="stat">
+            <h2>{calculateAge(member.geboortedatum)}</h2>
+            <p>Leeftijd</p>
+          </div>
+          <div className="stat">
+            <h2>{member.vechterInfo.klasse}</h2>
+            <p>Klasse</p>
+          </div>
         </div>
 
         <div className="info">
           <h2>Informatie</h2>
           <table>
             <tbody>
-              <tr><td>Verzekering</td><td className={member.vechterInfo.verzekering ? "valid" : "invalid"}>{member.vechterInfo.verzekering ? "Geldig" : "Niet geldig"}</td></tr>
-              <tr><td>Fighting Ready</td><td className={member.vechterInfo.fightingReady ? "valid" : "invalid"}>{member.vechterInfo.fightingReady ? "Ja" : "Nee"}</td></tr>
-              <tr><td>Email</td><td>{member.email}</td></tr>
+              <tr>
+                <td>Verzekering</td>
+                <td
+                  className={
+                    member.vechterInfo.verzekering ? "valid" : "invalid"
+                  }
+                >
+                  {member.vechterInfo.verzekering ? "Geldig" : "Niet geldig"}
+                </td>
+              </tr>
+              <tr>
+                <td>Fighting Ready</td>
+                <td
+                  className={
+                    member.vechterInfo.fightingReady ? "valid" : "invalid"
+                  }
+                >
+                  {member.vechterInfo.fightingReady ? "Ja" : "Nee"}
+                </td>
+              </tr>
+              <tr>
+                <td>Email</td>
+                <td>{member.email}</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -89,23 +139,31 @@ const MemberDetails = () => {
               </thead>
               <tbody>
                 {member.vechterInfo.fights.map((fight, index) => {
-                  const opponent = getOpponentDetails(fight.tegenstander.$oid);
+                  const opponent = getOpponentDetails(fight.tegenstander);
                   return (
                     <tr key={index}>
-                      <td>{new Date(fight.datum.$date).toLocaleDateString()}</td>
+                      <td>{new Date(fight.datum).toLocaleDateString()}</td>
                       <td>{fight.event}</td>
                       <td>{fight.locatie}</td>
                       <td>
                         {opponent ? (
                           <>
-                            <img src={opponent.profielfoto} alt={opponent.voornaam} className="opponent-img" />
+                            <img
+                              src={opponent.profielfoto}
+                              alt={opponent.voornaam}
+                              className="opponent-img"
+                            />
                             {opponent.voornaam} {opponent.achternaam}
                           </>
                         ) : (
                           "Onbekend"
                         )}
                       </td>
-                      <td className={fight.resultaat === "Winnaar" ? "win" : "loss"}>
+                      <td
+                        className={
+                          fight.resultaat === "Winnaar" ? "win" : "loss"
+                        }
+                      >
                         {fight.resultaat}
                       </td>
                     </tr>
@@ -117,7 +175,6 @@ const MemberDetails = () => {
             <p>Geen gevechten gevonden</p>
           )}
         </div>
-
       </div>
     </div>
   );

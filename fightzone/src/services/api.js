@@ -43,6 +43,17 @@ export const fetchClubs = async () => {
   }
 };
 
+//Haal club op basis van ID
+export const fetchClubById = async (id) => {
+  try {
+    const response = await API.get(`/clubs/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Fout bij het ophalen van club:", error);
+    throw error;
+  }
+};
+
 // Voeg een nieuw lid toe
 export const createUser = async (userData) => {
   try {

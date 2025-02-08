@@ -13,6 +13,7 @@ import ClubsPage from "./pages/ClubsPage";
 import LoginPage from "./pages/LoginPage";
 import AddUserPage from "./pages/AddUserPage";
 import MemberDetails from "./pages/MemberDetails";
+import ClubMembersPage from "./pages/ClubMembersPage";
 import { AuthContext } from "./context/AuthContext";
 import "./App.css";
 
@@ -64,6 +65,7 @@ const AppRouter = () => {
                     <Route path="/members" element={<MembersPage />} />
                     <Route path="/prestaties" element={<PrestatiePage />} />
                     <Route path="/clubs" element={<ClubsPage />} />
+                    <Route path="/club/:clubId" element={<ClubMembersPage />} />
                     <Route path="/add-member" element={<AddUserPage />} />
                     <Route path="/member/:id" element={<MemberDetails />} />
                   </Routes>
@@ -103,6 +105,16 @@ const AppRouter = () => {
               path="/clubs"
               element={
                 user.role === "VKBMO-lid" ? <ClubsPage /> : <Navigate to="/" />
+              }
+            />
+            <Route
+              path="/club/:clubId"
+              element={
+                user.role === "VKBMO-lid" ? (
+                  <ClubMembersPage />
+                ) : (
+                  <Navigate to="/" />
+                )
               }
             />
             <Route
