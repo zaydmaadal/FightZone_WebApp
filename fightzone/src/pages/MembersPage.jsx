@@ -51,6 +51,40 @@ const MembersPage = () => {
     );
   });
 
+  // Functie om gebruikersdata om te zetten naar CSV-formaat
+  const exportToCSV = () => {
+    const headers = [
+      "Naam",
+      "Club",
+      "Geboortedatum",
+      "Gewicht",
+      "Lengte",
+      "Klasse",
+    ];
+    const rows = filteredUsers.map((user) => [
+      `${user.voornaam} ${user.achternaam}`,
+      getClubName(user.club),
+      new Date(user.geboortedatum).toLocaleDateString(),
+      user.vechterInfo?.gewicht || "N/A",
+      user.vechterInfo?.lengte || "N/A",
+      user.vechterInfo?.klasse || "N/A",
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.join(",") +
+      "\n" +
+      rows.map((row) => row.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "leden_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="members-page">
       <h1 className="page-title">Ledenlijst</h1>
@@ -109,11 +143,19 @@ const MembersPage = () => {
           </tbody>
         </table>
       </div>
+      <div className="button-container">
+        {/* Voeg Lid Toe Knop */}
+        <Link to="/add-member" className="add-member-button">
+          Voeg Lid Toe
+        </Link>
 
-      {/* Voeg Lid Toe Knop */}
-      <Link to="/add-member" className="add-member-button">
-        Voeg Lid Toe
-      </Link>
+        {/* CSV Export Knop (alleen voor trainers) */}
+        {trainer && (
+          <button onClick={exportToCSV} className="export-csv-button">
+            Exporteer naar CSV
+          </button>
+        )}
+      </div>
     </div>
   );
 };

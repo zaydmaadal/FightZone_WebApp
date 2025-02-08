@@ -1,21 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { fetchCurrentUser, fetchClubs } from "../services/api";
+import { fetchCurrentUser, fetchClubs, fetchUsers } from "../services/api";
 import "../assets/styles/pages/MemberDetails.css";
 
 const PrestatiePage = () => {
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clubs, setClubs] = useState([]);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     const loadMember = async () => {
       try {
-        const [currentUser, clubsData] = await Promise.all([
+        const [currentUser, clubsData, usersData] = await Promise.all([
           fetchCurrentUser(), // Haal de huidige gebruiker op
           fetchClubs(),
+          fetchUsers(),
         ]);
         setMember(currentUser);
         setClubs(clubsData);
+        setUsers(usersData);
       } catch (error) {
         console.error("Fout bij het ophalen van gegevens:", error);
       } finally {
@@ -41,12 +44,8 @@ const PrestatiePage = () => {
     return today.getFullYear() - birthDate.getFullYear();
   };
 
-  // Functie om tegenstander details op te halen
   const getOpponentDetails = (opponentId) => {
-    // Omdat we geen `users`-lijst hebben, kunnen we dit alleen doen als de tegenstander in de gevechten is opgenomen
-    return member.vechterInfo.fights.find(
-      (fight) => fight.tegenstander.$oid === opponentId
-    );
+    return users.find((user) => user._id === opponentId);
   };
 
   return (
@@ -134,12 +133,10 @@ const PrestatiePage = () => {
               </thead>
               <tbody>
                 {member.vechterInfo.fights.map((fight, index) => {
-                  const opponent = getOpponentDetails(fight.tegenstander.$oid);
+                  const opponent = getOpponentDetails(fight.tegenstander);
                   return (
                     <tr key={index}>
-                      <td>
-                        {new Date(fight.datum.$date).toLocaleDateString()}
-                      </td>
+                      <td>{new Date(fight.datum).toLocaleDateString()}</td>
                       <td>{fight.event}</td>
                       <td>{fight.locatie}</td>
                       <td>

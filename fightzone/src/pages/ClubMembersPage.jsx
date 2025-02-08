@@ -48,6 +48,32 @@ const ClubMembersPage = () => {
     (user) => user.club === clubId && user.role.toLowerCase() === "trainer"
   );
 
+  // Functie om gebruikersdata om te zetten naar CSV-formaat
+  const exportToCSV = () => {
+    const headers = ["Naam", "Geboortedatum", "Gewicht", "Lengte", "Klasse"];
+    const rows = filteredFighters.map((user) => [
+      `${user.voornaam} ${user.achternaam}`,
+      formatDate(user.geboortedatum),
+      user.vechterInfo?.gewicht || "N/A",
+      user.vechterInfo?.lengte || "N/A",
+      user.vechterInfo?.klasse || "N/A",
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.join(",") +
+      "\n" +
+      rows.map((row) => row.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "vechters_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!club) {
     return <div>Laden...</div>;
   }
@@ -100,6 +126,7 @@ const ClubMembersPage = () => {
             <tr>
               <th>Profielfoto</th>
               <th>Naam</th>
+              <th>Klasse</th>
               <th>Acties</th>
             </tr>
           </thead>
@@ -117,6 +144,7 @@ const ClubMembersPage = () => {
                   <td>
                     {user.voornaam} {user.achternaam}
                   </td>
+                  <td>{user.vechterInfo?.klasse || "N/A"}</td>
                   <td>
                     <Link to={`/member/${user._id}`} className="view-button">
                       Bekijk
@@ -135,10 +163,17 @@ const ClubMembersPage = () => {
         </table>
       </div>
 
-      {/* Terugknop */}
-      <Link to="/clubs" className="back-button">
-        Terug naar Cluboverzicht
-      </Link>
+      <div className="button-container">
+        {/* Terugknop */}
+        <Link to="/clubs" className="back-button">
+          Terug naar Cluboverzicht
+        </Link>
+
+        {/* CSV Export Knop */}
+        <button onClick={exportToCSV} className="export-csv-button">
+          Exporteer naar CSV
+        </button>
+      </div>
     </div>
   );
 };
