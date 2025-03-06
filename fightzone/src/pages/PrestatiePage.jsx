@@ -1,38 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { fetchUsers, fetchClubs } from "../services/api";
+import { fetchCurrentUser, fetchClubs, fetchUsers } from "../services/api";
 import "../assets/styles/pages/MemberDetails.css";
 
-const MemberDetails = () => {
-  const { id } = useParams();
+const PrestatiePage = () => {
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState([]);
   const [clubs, setClubs] = useState([]);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     const loadMember = async () => {
       try {
-        const [allUsers, clubsData] = await Promise.all([
-          fetchUsers(),
+        const [currentUser, clubsData, usersData] = await Promise.all([
+          fetchCurrentUser(), // Haal de huidige gebruiker op
           fetchClubs(),
+          fetchUsers(),
         ]);
-        setUsers(allUsers);
+        setMember(currentUser);
         setClubs(clubsData);
-
-        const selectedUser = allUsers.find((user) => user._id === id);
-        if (selectedUser) {
-          setMember(selectedUser);
-        }
+        setUsers(usersData);
       } catch (error) {
-        console.error("Fout bij het ophalen van lid:", error);
+        console.error("Fout bij het ophalen van gegevens:", error);
       } finally {
         setLoading(false);
       }
     };
 
     loadMember();
-  }, [id]);
+  }, []);
 
   const getClubName = (clubId) => {
     if (!clubs.length) return "Laden...";
@@ -49,7 +44,6 @@ const MemberDetails = () => {
     return today.getFullYear() - birthDate.getFullYear();
   };
 
-  // Functie om tegenstander details op te halen
   const getOpponentDetails = (opponentId) => {
     return users.find((user) => user._id === opponentId);
   };
@@ -180,4 +174,4 @@ const MemberDetails = () => {
   );
 };
 
-export default MemberDetails;
+export default PrestatiePage;
