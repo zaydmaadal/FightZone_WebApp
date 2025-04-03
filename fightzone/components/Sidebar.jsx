@@ -2,9 +2,10 @@
 import { useAuth } from "../pages/services/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 export default function Sidebar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
 
   if (!user) return null;
@@ -14,101 +15,160 @@ export default function Sidebar() {
       case "Vechter":
         return [
           { path: "/dashboard", label: "Dashboard" },
-          { path: "/profile", label: "Mijn Profiel" },
-          { path: "/training", label: "Training" },
-          { path: "/matches", label: "Wedstrijden" },
-          { path: "/schedule", label: "Schema" },
+          { path: "/agenda", label: "Agenda" },
+          { path: "/prestatie", label: "Prestaties" },
         ];
       case "Trainer":
         return [
-          { path: "/members", label: "Leden" },
-          { path: "/training", label: "Training" },
-          { path: "/schedule", label: "Schema" },
-          { path: "/matches", label: "Wedstrijden" },
-          { path: "/reports", label: "Rapporten" },
+          { path: "/dashboard", label: "Dashboard" },
+          { path: "/leden", label: "Ledenlijst" },
+          { path: "/agenda", label: "Agenda" },
+          { path: "/resultaat", label: "Resultaat" },
         ];
       case "VKBMO-lid":
         return [
-          { path: "/clubs", label: "Clubs" },
-          { path: "/members", label: "Leden" },
-          { path: "/tournaments", label: "Toernooien" },
-          { path: "/reports", label: "Rapporten" },
-          { path: "/settings", label: "Instellingen" },
+          { path: "/dashboard", label: "Dashboard" },
+          { path: "/jury", label: "Jury" },
+          { path: "/clubs", label: "Cluboverzicht" },
+          { path: "/agenda", label: "Agenda" },
         ];
       default:
         return [];
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h2>FightZone</h2>
+        <div className="logo-container">
+          <Image
+            src="/Logo.png"
+            alt="FightZone Logo"
+            width={160}
+            height={80}
+            className="logo"
+            priority
+          />
+        </div>
         <p className="user-role">{user.role}</p>
       </div>
       <nav className="sidebar-nav">
-        {getMenuItems().map((item) => (
-          <Link
-            key={item.path}
-            href={item.path}
-            className={`nav-item ${pathname === item.path ? "active" : ""}`}
-          >
-            {item.label}
-          </Link>
-        ))}
+        {getMenuItems().map((item) => {
+          const isActive = pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`nav-item ${isActive ? "active" : ""}`}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
-      <style jsx>{`
+      <div className="sidebar-footer">
+        <button onClick={handleLogout} className="logout-button">
+          Uitloggen
+        </button>
+      </div>
+      <style jsx global>{`
         .sidebar {
           width: 250px;
           height: 100vh;
-          background-color: #1a1a1a;
-          color: white;
-          padding: 20px;
+          background-color: #ffffff;
+          color: #333333;
+          padding: 20px 14px;
           position: fixed;
           left: 0;
           top: 0;
           z-index: 1000;
-          box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+          border-right: 1px solid #e8e8e8;
+          display: flex;
+          flex-direction: column;
         }
 
         .sidebar-header {
           padding-bottom: 20px;
-          border-bottom: 1px solid #333;
+          border-bottom: 1px solid #e8e8e8;
           margin-bottom: 20px;
+          text-align: center;
         }
 
-        .sidebar-header h2 {
-          margin: 0;
-          font-size: 24px;
-          color: #fff;
+        .logo-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+
+        .logo {
+          object-fit: contain;
         }
 
         .user-role {
           margin: 5px 0 0;
-          font-size: 14px;
-          color: #888;
+          font-size: 16px;
+          color: #666666;
+          font-weight: 500;
         }
 
         .sidebar-nav {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 8px;
+          flex-grow: 1;
         }
 
         .nav-item {
-          padding: 12px 15px;
-          color: #fff;
+          display: block;
+          padding: 14px 15px;
+          color: #333333;
           text-decoration: none;
           border-radius: 5px;
-          transition: background-color 0.2s;
+          transition: all 0.2s ease;
+          font-size: 16px;
+          font-weight: 500;
         }
 
         .nav-item:hover {
-          background-color: #333;
+          background-color: #f5f5f5;
         }
 
         .nav-item.active {
-          background-color: #4a90e2;
+          background-color: #3483fe;
+          color: #ffffff;
+          font-weight: 600;
+        }
+
+        .sidebar-footer {
+          margin-top: auto;
+          padding-top: 20px;
+          border-top: 1px solid #e8e8e8;
+        }
+
+        .logout-button {
+          width: 100%;
+          padding: 12px;
+          background-color: #ff4444;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          font-size: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+
+        .logout-button:hover {
+          background-color: #cc0000;
         }
       `}</style>
     </div>

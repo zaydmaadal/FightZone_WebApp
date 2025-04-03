@@ -44,7 +44,6 @@ const ClubsPage = () => {
               <th>Club Naam</th>
               <th>Locatie</th>
               <th>Aantal Leden</th>
-              <th>Acties</th>
             </tr>
           </thead>
           <tbody>
@@ -61,11 +60,6 @@ const ClubsPage = () => {
                   <td>{club.naam}</td>
                   <td>{club.locatie}</td>
                   <td>{club.leden.length}</td>
-                  <td>
-                    {/* < to={`/club/${club._id}`} className="view-button">
-                      Bekijk Leden
-                    </Link> */}
-                  </td>
                 </tr>
               ))
             ) : (
@@ -78,6 +72,83 @@ const ClubsPage = () => {
           </tbody>
         </table>
       </div>
+      <style jsx>{`
+        .clubs-page {
+          padding: 20px;
+          color: #333;
+        }
+
+        .page-title {
+          font-size: 2rem;
+          margin-bottom: 20px;
+        }
+
+        .search-bar {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 20px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          background-color: #f9fafb;
+          color: #333;
+        }
+
+        .table-container {
+          overflow-x: auto;
+        }
+
+        .table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+          padding: 12px;
+          text-align: center;
+          border-bottom: 1px solid #ddd;
+        }
+
+        .table th {
+          background-color: #f4f4f4;
+        }
+
+        .club-logo {
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          object-fit: contain;
+        }
+
+        .view-button {
+          padding: 8px 12px;
+          background-color: #007bff;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .view-button:hover {
+          background-color: #0056b3;
+        }
+
+        .no-results {
+          text-align: center;
+          padding: 20px;
+          color: #666;
+        }
+
+        .loading {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          font-size: 18px;
+          color: #666;
+        }
+      `}</style>
     </div>
   );
 };

@@ -17,19 +17,6 @@ export default function Home() {
     return null;
   }
 
-  // Redirect based on user role
-  switch (user.role) {
-    case "Vechter":
-      router.push("/dashboard");
-      break;
-    case "Trainer":
-      router.push("/members");
-      break;
-    case "VKBMO-lid":
-      router.push("/clubs");
-      break;
-    default:
-      router.push("/dashboard");
-  }
+  router.push("/dashboard");
   return null;
 }
