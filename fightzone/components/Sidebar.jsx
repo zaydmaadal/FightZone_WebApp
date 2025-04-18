@@ -11,6 +11,8 @@ export default function Sidebar() {
   if (!user) return null;
 
   const getMenuItems = () => {
+    if (!user || !user.role) return [];
+
     switch (user.role) {
       case "Vechter":
         return [
@@ -45,6 +47,8 @@ export default function Sidebar() {
     }
   };
 
+  const menuItems = getMenuItems();
+
   return (
     <div className="sidebar">
       <div className="sidebar-header">
@@ -61,8 +65,14 @@ export default function Sidebar() {
         <p className="user-role">{user.role}</p>
       </div>
       <nav className="sidebar-nav">
-        {getMenuItems().map((item) => {
-          const isActive = pathname === item.path;
+        {menuItems.map((item) => {
+          const isActive = pathname
+            ? pathname === item.path ||
+              (item.path === "/clubs" &&
+                (pathname.startsWith("/clubs/") ||
+                  pathname.startsWith("/member/")))
+            : false;
+
           return (
             <Link
               key={item.path}

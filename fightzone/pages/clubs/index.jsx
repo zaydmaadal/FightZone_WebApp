@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { fetchClubs, fetchUsers } from "../services/api";
+import { useRouter } from "next/router";
 
 const ClubsPage = () => {
+  const router = useRouter();
   const [clubs, setClubs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -17,6 +19,10 @@ const ClubsPage = () => {
 
     loadClubs();
   }, []);
+
+  const handleRowClick = (clubId) => {
+    router.push(`/clubs/${clubId}/leden`);
+  };
 
   const filteredClubs = clubs.filter((club) =>
     club.naam.toLowerCase().includes(searchTerm.toLowerCase())
@@ -49,7 +55,11 @@ const ClubsPage = () => {
           <tbody>
             {filteredClubs.length > 0 ? (
               filteredClubs.map((club) => (
-                <tr key={club._id}>
+                <tr
+                  key={club._id}
+                  className="clickable-row"
+                  onClick={() => handleRowClick(club._id)}
+                >
                   <td>
                     <img
                       src={club.clublogo}
@@ -64,7 +74,7 @@ const ClubsPage = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="no-results">
+                <td colSpan="4" className="no-results">
                   Geen clubs gevonden
                 </td>
               </tr>
@@ -120,18 +130,13 @@ const ClubsPage = () => {
           object-fit: contain;
         }
 
-        .view-button {
-          padding: 8px 12px;
-          background-color: #007bff;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          text-decoration: none;
+        .clickable-row {
           cursor: pointer;
+          transition: background-color 0.2s ease;
         }
 
-        .view-button:hover {
-          background-color: #0056b3;
+        .clickable-row:hover {
+          background-color: #f8f9fa;
         }
 
         .no-results {
