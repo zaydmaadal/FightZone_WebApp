@@ -10,6 +10,7 @@ export default function Layout({ children }) {
     <div className="layout">
       {!isLoginPage && <Sidebar />}
       <main className={`main-content ${isLoginPage ? "full-width" : ""}`}>
+        <div classname={"top-info"}></div>
         {children}
       </main>
       <style jsx>{`
@@ -30,6 +31,14 @@ export default function Layout({ children }) {
 
         .main-content:not(.full-width) {
           margin-left: 250px;
+        }
+        @media (max-width: 768px) {
+          .main-content:not(.full-width) {
+            margin-left: 0px;
+          }
+          .main-content {
+            padding: 0;
+          }
         }
       `}</style>
     </div>

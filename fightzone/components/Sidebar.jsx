@@ -3,6 +3,12 @@ import { useAuth } from "../pages/services/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import {
+  HomeIcon,
+  ClipboardDocumentCheckIcon,
+  UserGroupIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/solid";
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
@@ -16,23 +22,31 @@ export default function Sidebar() {
     switch (user.role) {
       case "Vechter":
         return [
-          { path: "/dashboard", label: "Dashboard" },
-          { path: "/agenda", label: "Agenda" },
-          { path: "/prestatie", label: "Prestaties" },
+          { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
+          { path: "/agenda", label: "Agenda", icon: CalendarIcon },
+          {
+            path: "/prestatie",
+            label: "Prestaties",
+            icon: ClipboardDocumentCheckIcon,
+          },
         ];
       case "Trainer":
         return [
-          { path: "/dashboard", label: "Dashboard" },
-          { path: "/leden", label: "Ledenlijst" },
-          { path: "/agenda", label: "Agenda" },
-          { path: "/resultaat", label: "Resultaat" },
+          { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
+          { path: "/leden", label: "Ledenlijst", icon: UserGroupIcon },
+          { path: "/agenda", label: "Agenda", icon: CalendarIcon },
+          {
+            path: "/resultaat",
+            label: "Resultaat",
+            icon: ClipboardDocumentCheckIcon,
+          },
         ];
       case "VKBMO-lid":
         return [
-          { path: "/dashboard", label: "Dashboard" },
-          { path: "/jury", label: "Jury" },
-          { path: "/clubs", label: "Cluboverzicht" },
-          { path: "/agenda", label: "Agenda" },
+          { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
+          { path: "/jury", label: "Jury", icon: ClipboardDocumentCheckIcon },
+          { path: "/clubs", label: "Cluboverzicht", icon: UserGroupIcon },
+          { path: "/agenda", label: "Agenda", icon: CalendarIcon },
         ];
       default:
         return [];
@@ -50,46 +64,77 @@ export default function Sidebar() {
   const menuItems = getMenuItems();
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <div className="logo-container">
-          <Image
-            src="/Logo.png"
-            alt="FightZone Logo"
-            width={160}
-            height={80}
-            className="logo"
-            priority
-          />
+    <>
+      {/* Desktop Sidebar */}
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <div className="logo-container">
+            <Image
+              src="/Logo.png"
+              alt="FightZone Logo"
+              width={160}
+              height={80}
+              className="logo"
+              priority
+            />
+          </div>
+          <p className="user-role">{user.role}</p>
         </div>
-        <p className="user-role">{user.role}</p>
-      </div>
-      <nav className="sidebar-nav">
-        {menuItems.map((item) => {
-          const isActive = pathname
-            ? pathname === item.path ||
-              (item.path === "/clubs" &&
-                (pathname.startsWith("/clubs/") ||
-                  pathname.startsWith("/member/")))
-            : false;
+        <nav className="sidebar-nav">
+          {menuItems.map((item) => {
+            const isActive = pathname
+              ? pathname === item.path ||
+                (item.path === "/clubs" &&
+                  (pathname.startsWith("/clubs/") ||
+                    pathname.startsWith("/member/")))
+              : false;
 
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`nav-item ${isActive ? "active" : ""}`}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-      <div className="sidebar-footer">
-        <button onClick={handleLogout} className="logout-button">
-          Uitloggen
-        </button>
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`nav-item ${isActive ? "active" : ""}`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="sidebar-footer">
+          <button onClick={handleLogout} className="logout-button">
+            Uitloggen
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="mobile-nav">
+        <nav className="mobile-nav-items">
+          {menuItems.map((item) => {
+            const isActive = pathname
+              ? pathname === item.path ||
+                (item.path === "/clubs" &&
+                  (pathname.startsWith("/clubs/") ||
+                    pathname.startsWith("/member/")))
+              : false;
+
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`mobile-nav-item ${isActive ? "active" : ""}`}
+              >
+                <Icon className="mobile-nav-icon" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
       <style jsx global>{`
+        /* Desktop Sidebar Styles */
         .sidebar {
           width: 250px;
           height: 100vh;
@@ -140,7 +185,7 @@ export default function Sidebar() {
         .nav-item {
           display: block;
           padding: 14px 15px;
-          color: #333333;
+          color: #9db2ce;
           text-decoration: none;
           border-radius: 5px;
           transition: all 0.2s ease;
@@ -153,7 +198,7 @@ export default function Sidebar() {
         }
 
         .nav-item.active {
-          background-color: #3483fe;
+          background-color: #0b48ab;
           color: #ffffff;
           font-weight: 600;
         }
@@ -180,7 +225,77 @@ export default function Sidebar() {
         .logout-button:hover {
           background-color: #cc0000;
         }
+
+        /* Mobile Navigation Styles */
+        .mobile-nav {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background-color: #ffffff;
+          border-top: 1px solid #e8e8e8;
+          padding: 8px 5px;
+          z-index: 1000;
+        }
+
+        .mobile-nav-items {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+        }
+
+        .mobile-nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-decoration: none;
+          color: #9db2ce;
+          padding: 10px 5px;
+          gap: 5px;
+          border-radius: 9999px;
+          transition: all 0.2s ease;
+        }
+
+        .mobile-nav-item.active {
+          background-color: #0b48ab;
+          color: #ffffff;
+          flex-direction: row;
+          gap: 8px;
+          padding: 12px 14px;
+        }
+
+        .mobile-nav-icon {
+          width: 24px;
+          height: 24px;
+          margin-bottom: 4px;
+        }
+
+        .mobile-nav-item.active .mobile-nav-icon {
+          margin-bottom: 0;
+        }
+
+        .mobile-nav-item span {
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+          .sidebar {
+            display: none;
+          }
+
+          .mobile-nav {
+            display: block;
+          }
+
+          /* Add padding to main content to account for bottom nav */
+          main {
+            padding-bottom: 80px;
+          }
+        }
       `}</style>
-    </div>
+    </>
   );
 }

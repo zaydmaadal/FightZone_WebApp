@@ -153,6 +153,11 @@ const ClubsPage = () => {
           font-size: 18px;
           color: #666;
         }
+        @media (max-width: 768px) {
+          .clubs-page {
+            padding: 10px;
+          }
+        }
       `}</style>
     </div>
   );

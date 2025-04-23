@@ -40,22 +40,6 @@ export default function VKBMODashboard() {
             </div>
           </div>
         </div>
-
-        <div className="dashboard-card">
-          <h3>Aankomende Evenementen</h3>
-          <div className="events-list">
-            <div className="event-item">
-              <span className="date">20 April 2024</span>
-              <span className="title">Landelijk Kampioenschap</span>
-              <span className="location">Amsterdam</span>
-            </div>
-            <div className="event-item">
-              <span className="date">5 Mei 2024</span>
-              <span className="title">Trainers Workshop</span>
-              <span className="location">Rotterdam</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <style jsx>{`

@@ -33,7 +33,6 @@ export default function Dashboard() {
   return (
     <Layout>
       <div className="dashboard-container">
-        <h1>Welkom, {user.name}</h1>
         {user.role === "Vechter" && <VechterDashboard />}
         {user.role === "Trainer" && <TrainerDashboard />}
         {user.role === "VKBMO-lid" && <VKBMODashboard />}
@@ -57,6 +56,12 @@ export default function Dashboard() {
           height: 100vh;
           font-size: 18px;
           color: #666;
+        }
+
+        @media (max-width: 768px) {
+          .dashboard-container {
+            padding: 0px;
+          }
         }
       `}</style>
     </Layout>
