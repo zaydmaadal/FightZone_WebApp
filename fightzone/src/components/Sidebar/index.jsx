@@ -1,5 +1,5 @@
 import React from "react";
-import { getCurrentUser } from "../../ReactFightZone/src/services/auth";
+import { getCurrentUser } from "../../services/auth";
 import TrainerSidebar from "./TrainerSidebar";
 import VechterSidebar from "./VechterSidebar";
 import VkbmoSidebar from "./VkbmoSidebar";
