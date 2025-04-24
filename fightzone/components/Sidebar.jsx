@@ -8,6 +8,7 @@ import {
   ClipboardDocumentCheckIcon,
   UserGroupIcon,
   CalendarIcon,
+  Bars3Icon,
 } from "@heroicons/react/24/solid";
 
 export default function Sidebar() {

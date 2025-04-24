@@ -1,5 +1,5 @@
-"use client";
 // pages/_app.js
+"use client";
 import "@/styles/globals.css";
 import { AuthProvider } from "./services/auth";
 import Layout from "../components/Layout";

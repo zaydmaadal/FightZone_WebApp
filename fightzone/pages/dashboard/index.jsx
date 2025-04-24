@@ -31,12 +31,10 @@ export default function Dashboard() {
   }
 
   return (
-    <Layout>
-      <div className="dashboard-container">
-        {user.role === "Vechter" && <VechterDashboard />}
-        {user.role === "Trainer" && <TrainerDashboard />}
-        {user.role === "VKBMO-lid" && <VKBMODashboard />}
-      </div>
+    <div className="dashboard-container">
+      {user.role === "Vechter" && <VechterDashboard />}
+      {user.role === "Trainer" && <TrainerDashboard />}
+      {user.role === "VKBMO-lid" && <VKBMODashboard />}
 
       <style jsx>{`
         .dashboard-container {
@@ -64,6 +62,6 @@ export default function Dashboard() {
           }
         }
       `}</style>
-    </Layout>
+    </div>
   );
 }

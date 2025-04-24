@@ -44,7 +44,7 @@ export default function VKBMODashboard() {
 
       <style jsx>{`
         .vkbm-dashboard {
-          padding: 20px;
+          padding: 16px;
         }
 
         .dashboard-grid {

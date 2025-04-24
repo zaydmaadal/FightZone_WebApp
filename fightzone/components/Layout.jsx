@@ -1,5 +1,6 @@
 "use client";
 import Sidebar from "./Sidebar";
+import Header from "./Header";
 import { usePathname } from "next/navigation";
 
 export default function Layout({ children }) {
@@ -9,8 +10,9 @@ export default function Layout({ children }) {
   return (
     <div className="layout">
       {!isLoginPage && <Sidebar />}
+
       <main className={`main-content ${isLoginPage ? "full-width" : ""}`}>
-        <div classname={"top-info"}></div>
+        {!isLoginPage && <Header />}
         {children}
       </main>
       <style jsx>{`
