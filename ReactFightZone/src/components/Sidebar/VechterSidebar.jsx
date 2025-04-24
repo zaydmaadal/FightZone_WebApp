@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../ReactFightZone/src/context/AuthContext";
 import "../../assets/styles/components/Sidebar.css";
 import logo from "../../assets/images/fightzoneLogo.png";
 
