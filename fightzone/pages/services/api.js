@@ -70,7 +70,6 @@ export const fetchUserById = async (id) => {
     const response = await API.get("/users"); // Haal alle gebruikers op
     const users = response.data;
 
-    // Zoek het juiste lid op basis van ID
     const user = users.find((user) => user._id === id);
 
     if (!user) {

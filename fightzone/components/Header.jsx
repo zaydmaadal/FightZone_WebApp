@@ -1,12 +1,14 @@
 // components/Header.jsx
 "use client";
 import { useAuth } from "../pages/services/auth";
+import { fetchCurrentUser } from "../pages/services/api";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function Header() {
   const { user, logout } = useAuth();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (!user) return null;
@@ -17,12 +19,12 @@ export default function Header() {
       <div className="desktop-header">
         <div className="profile-info">
           <img
-            src={user.profilePicture || "/default-avatar.png"}
+            src={user.profilePicture}
             alt="Profile"
             className="profile-picture"
           />
           <div>
-            <p className="user-name">{user.name}</p>
+            <p className="user-name">{user.voornaam}</p>
             <p className="user-role">{user.role}</p>
           </div>
         </div>
@@ -39,18 +41,6 @@ export default function Header() {
 
       {/* Mobile Header */}
       <div className="mobile-header">
-        <button
-          className="hamburger"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {!isMobileMenuOpen ? (
-            <XMarkIcon className="h-6 w-6" />
-          ) : (
-            <Bars3Icon className="h-6 w-6" />
-          )}
-          <Bars3Icon className="h-6 w-6" />
-        </button>
-
         <div className="mobile-menu">
           <div className="mobile-profile">
             <img
@@ -59,7 +49,9 @@ export default function Header() {
               className="profile-picture"
             />
             <div>
-              <p className="user-name">{user.name}</p>
+              <p className="user-name">
+                {user.voornaam} {user.achternaam}
+              </p>
               <p className="user-role">{user.role}</p>
             </div>
           </div>
@@ -77,6 +69,14 @@ export default function Header() {
             </nav>
           )}
         </div>
+        {!isMobileMenuOpen && (
+          <button
+            className="hamburger profile-icon"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {!isMobileMenuOpen && <Bars3Icon />}{" "}
+          </button>
+        )}
       </div>
 
       <style jsx>{`
@@ -137,6 +137,12 @@ export default function Header() {
         .mobile-menu {
         }
 
+        .profile-icon {
+          width: 24px;
+          height: 24px;
+          color: #3483fe;
+          font-weight: bold;
+        }
         .mobile-profile {
           display: flex;
           align-items: center;
@@ -155,7 +161,8 @@ export default function Header() {
             display: none;
           }
           .mobile-header {
-            display: block;
+            display: flex;
+            justify-content: space-between;
           }
         }
       `}</style>

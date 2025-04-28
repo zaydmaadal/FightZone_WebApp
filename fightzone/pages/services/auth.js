@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { fetchUserById } from "./api";
 import axios from "axios";
 
 const API = axios.create({
@@ -20,13 +21,23 @@ export function AuthProvider({ children }) {
     if (token) {
       try {
         const decodedToken = JSON.parse(atob(token.split(".")[1]));
-        setUser({ token, role: decodedToken.role });
+        fetchUserById(decodedToken.id)
+          .then((userData) => {
+            setUser({ ...userData, token, role: decodedToken.role });
+            setLoading(false);
+          })
+          .catch(() => {
+            console.error("Token parsing error:", error);
+            logout();
+          });
       } catch (error) {
         console.error("Token parsing error:", error);
         logout();
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = async (credentials) => {
