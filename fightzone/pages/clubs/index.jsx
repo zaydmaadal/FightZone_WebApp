@@ -155,7 +155,7 @@ const ClubsPage = () => {
         }
         @media (max-width: 768px) {
           .clubs-page {
-            padding: 10px;
+            padding: 1rem;
           }
         }
       `}</style>
