@@ -3,6 +3,7 @@ import { useAuth } from "../pages/services/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { QrCodeIcon } from "@heroicons/react/24/solid";
 import {
   HomeIcon,
   ClipboardDocumentCheckIcon,
@@ -36,6 +37,7 @@ export default function Sidebar() {
           { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
           { path: "/leden", label: "Ledenlijst", icon: UserGroupIcon },
           { path: "/agenda", label: "Agenda", icon: CalendarIcon },
+          { path: "/qr-scan", label: "QR Scanner", icon: QrCodeIcon },
           {
             path: "/resultaat",
             label: "Resultaat",
@@ -48,6 +50,7 @@ export default function Sidebar() {
           { path: "/jury", label: "Jury", icon: ClipboardDocumentCheckIcon },
           { path: "/clubs", label: "Cluboverzicht", icon: UserGroupIcon },
           { path: "/agenda", label: "Agenda", icon: CalendarIcon },
+
         ];
       default:
         return [];
