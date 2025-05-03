@@ -1,4 +1,3 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../services/auth";
@@ -43,42 +42,43 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-form">
-        <h1>Inloggen</h1>
-        <p className="subtext">Beheer je club, vechters en wedstrijden op één plek</p>
 
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label>Emailadres</label>
-            <input
-              type="email"
-              value={email}
-              placeholder="voorbeeld@mail.com"
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+  <div className="login-container">
+  <div className="login-form">
+    <h1>Inloggen</h1>
+    <p className="subtext">Beheer je club, vechters en wedstrijden op één plek</p>
 
-          <div className="form-group">
-            <label>Wachtwoord</label>
-            <input
-              type="password"
-              value={password}
-              placeholder="••••••••"
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && <p className="error-message">{error}</p>}
-
-          <button type="submit" className="login-btn">
-            Inloggen
-          </button>
-        </form>
+    <form onSubmit={handleLogin}>
+      <div className="form-group">
+        <label>Emailadres</label>
+        <input
+          type="email"
+          value={email}
+          placeholder="voorbeeld@mail.com"
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
       </div>
-    </div>
+
+      <div className="form-group">
+        <label>Wachtwoord</label>
+        <input
+          type="password"
+          value={password}
+          placeholder="••••••••"
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      {error && <p className="error-message">{error}</p>}
+
+      <button type="submit" className="login-btn">
+        Inloggen
+      </button>
+    </form>
+  </div>
+</div>
   );
 };
 
