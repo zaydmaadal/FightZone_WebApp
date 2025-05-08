@@ -35,7 +35,7 @@ export default function Sidebar() {
       case "Trainer":
         return [
           { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
-          { path: "/leden", label: "Ledenlijst", icon: UserGroupIcon },
+          { path: "/ledenlijst", label: "Ledenlijst", icon: UserGroupIcon },
           { path: "/agenda", label: "Agenda", icon: CalendarIcon },
           { path: "/qr-scan", label: "QR Scanner", icon: QrCodeIcon },
           {

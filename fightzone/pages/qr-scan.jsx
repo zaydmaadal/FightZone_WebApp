@@ -16,7 +16,7 @@ export default function QRScanPage() {
       (decodedText) => {
         if (decodedText.startsWith("vechter_")) {
           const id = decodedText.replace("vechter_", "");
-          router.push(`/member/${id}`);
+          router.push(`/ledenlijst/${id}`);
         } else {
           alert(`Ongeldige QR-code: ${decodedText}`);
         }
