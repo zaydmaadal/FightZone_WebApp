@@ -169,10 +169,20 @@ const ClubMembersPage = () => {
           Terug naar Cluboverzicht
         </Link>
 
-        {/* CSV Export Knop */}
-        <button onClick={exportToCSV} className="export-csv-button">
-          Exporteer naar CSV
-        </button>
+        <div className="right-buttons">
+          {/* CSV Export Knop */}
+          <button onClick={exportToCSV} className="export-csv-button">
+            Exporteer naar CSV
+          </button>
+
+          {/* Add Member Knop */}
+          <Link
+            href={`/clubs/${id}/leden/add-member`}
+            className="add-member-button"
+          >
+            Nieuw Lid Toevoegen
+          </Link>
+        </div>
       </div>
 
       <style jsx>{`
@@ -330,6 +340,30 @@ const ClubMembersPage = () => {
           justify-content: space-between;
           align-items: center;
           margin-top: 20px;
+        }
+
+        .right-buttons {
+          display: flex;
+          gap: 10px;
+        }
+
+        .add-member-button {
+          display: inline-block;
+          padding: 0.75rem 1.5rem;
+          background-color: #007bff;
+          color: white;
+          font-size: 1rem;
+          font-weight: bold;
+          text-align: center;
+          text-decoration: none;
+          border-radius: 0.375rem;
+          transition: background-color 0.3s;
+          border: none;
+          cursor: pointer;
+        }
+
+        .add-member-button:hover {
+          background-color: #0056b3;
         }
 
         .no-results {
