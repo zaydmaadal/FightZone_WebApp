@@ -1,31 +1,34 @@
-"use client";
 import React, { useState } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
+import { Scanner } from "@yudiel/react-qr-scanner";
+import { isMobile } from "react-device-detect";
+import { createUser, validateLicense } from "../../../../services/api";
+import "../../../../../styles/AddUserPage.css";
 
-const AddMemberPage = () => {
-  const router = useRouter();
-  const { id } = router.query;
+const AddUserPage = () => {
   const [formData, setFormData] = useState({
     voornaam: "",
     achternaam: "",
     email: "",
     wachtwoord: "",
     geboortedatum: "",
-    role: "Vechter",
     licentieNummer: "",
     vervalDatum: "",
-    clubNaam: "",
     vechterInfo: {
       gewicht: "",
       lengte: "",
       klasse: "",
+      bijnaam: "",
     },
   });
 
+  const [scanning, setScanning] = useState(false);
+  const [vkbmoUrl, setVkbmoUrl] = useState("");
+  const [scanResult, setScanResult] = useState(null);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith("vechterInfo.")) {
+
+    if (name.includes("vechterInfo.")) {
       const field = name.split(".")[1];
       setFormData((prev) => ({
         ...prev,
@@ -35,59 +38,192 @@ const AddMemberPage = () => {
         },
       }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setFormData({ ...formData, [name]: value });
     }
+  };
+
+  const handleFetchLicense = async (url) => {
+    try {
+      if (!url.includes("vkbmolink.be/qr_lid.php")) {
+        throw new Error("Ongeldige VKBMO URL");
+      }
+
+      const response = await validateLicense({ qrCodeUrl: url });
+
+      if (response.valid) {
+        setFormData((prev) => ({
+          ...prev,
+          licentieNummer: response.data.licentieNummer,
+          vervalDatum: response.data.vervalDatum,
+        }));
+
+        setScanResult({
+          type: "success",
+          message: `Licentie gevonden!\nNummer: ${
+            response.data.licentieNummer
+          }\nVervaldatum: ${new Date(
+            response.data.vervalDatum
+          ).toLocaleDateString()}`,
+        });
+      }
+    } catch (error) {
+      console.error("Fout bij ophalen licentie:", error);
+      setScanResult({
+        type: "error",
+        message: error.message || "Licentie validatie mislukt",
+      });
+    }
+  };
+
+  const handleScan = async (result) => {
+    if (result) {
+      await handleFetchLicense(result);
+      setScanning(false);
+    }
+  };
+
+  const handleScanError = (error) => {
+    console.error("QR scan error:", error);
+    setScanResult({
+      type: "error",
+      message: "Fout bij scannen QR-code",
+    });
+    setScanning(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement the API call to add the member
-    console.log("Form submitted:", formData);
+    try {
+      if (!formData.licentieNummer) {
+        alert("Scan eerst de licentie van de vechter");
+        return;
+      }
+
+      await createUser({ ...formData, role: "Vechter" });
+      alert("Vechter succesvol geregistreerd!");
+      resetForm();
+    } catch (err) {
+      console.error(err);
+      alert("Fout bij registreren vechter: " + err.message);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      voornaam: "",
+      achternaam: "",
+      email: "",
+      wachtwoord: "",
+      geboortedatum: "",
+      licentieNummer: "",
+      vervalDatum: "",
+      vechterInfo: {
+        gewicht: "",
+        lengte: "",
+        klasse: "",
+        bijnaam: "",
+      },
+    });
+    setScanResult(null);
+    setVkbmoUrl("");
   };
 
   return (
-    <div className="add-member-page">
-      <h1>Nieuw Lid Toevoegen</h1>
+    <div className="add-user-page">
+      <h1 className="page-title">Registreer nieuwe vechter</h1>
 
-      <div className="qr-section">
-        <h2>Stap 1: Scan QR Code</h2>
-        <div className="qr-placeholder">
-          <p>QR Scanner komt hier</p>
+      {!isMobile && (
+        <div className="url-input-section">
+          <input
+            type="text"
+            placeholder="Plak VKBMO licentie URL hier..."
+            value={vkbmoUrl}
+            onChange={(e) => setVkbmoUrl(e.target.value)}
+            className="url-input"
+          />
+          <button
+            onClick={() => handleFetchLicense(vkbmoUrl)}
+            className="fetch-button"
+          >
+            Valideer licentie
+          </button>
         </div>
-      </div>
+      )}
 
-      <form onSubmit={handleSubmit} className="member-form">
-        <h2>Stap 2: Vul de gegevens in</h2>
+      {isMobile && (
+        <div className="mobile-scan-section">
+          {!scanning ? (
+            <button className="scan-button" onClick={() => setScanning(true)}>
+              Scan Licentie QR Code
+            </button>
+          ) : (
+            <div className="qr-scanner-container">
+              <Scanner
+                onDecode={handleScan}
+                onError={handleScanError}
+                constraints={{ facingMode: "environment" }}
+              />
+              <button
+                className="cancel-scan-button"
+                onClick={() => setScanning(false)}
+              >
+                Annuleren
+              </button>
+            </div>
+          )}
+          <p className="scan-instruction">
+            Richt de camera op de VKBMO licentie QR code
+          </p>
+        </div>
+      )}
 
+      {scanResult && (
+        <div className={`scan-result ${scanResult.type}`}>
+          <div className="result-header">
+            {scanResult.type === "success" ? "✅" : "❌"}
+            <h4>
+              {scanResult.type === "success" ? "Geldige licentie" : "Fout"}
+            </h4>
+          </div>
+          <pre className="result-message">{scanResult.message}</pre>
+          {scanResult.type === "success" && (
+            <p className="next-step">
+              Vul nu de resterende gegevens handmatig in
+            </p>
+          )}
+        </div>
+      )}
+
+      <form className="add-user-form" onSubmit={handleSubmit}>
         <div className="form-section">
-          <h3>Basis Informatie</h3>
-          <div className="form-group">
-            <label>Voornaam</label>
-            <input
-              type="text"
-              name="voornaam"
-              value={formData.voornaam}
-              onChange={handleChange}
-              required
-            />
+          <h3>Persoonlijke gegevens</h3>
+
+          <div className="name-fields">
+            <div className="form-group">
+              <label htmlFor="voornaam">Voornaam*</label>
+              <input
+                type="text"
+                name="voornaam"
+                value={formData.voornaam}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="achternaam">Achternaam*</label>
+              <input
+                type="text"
+                name="achternaam"
+                value={formData.achternaam}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
-            <label>Achternaam</label>
-            <input
-              type="text"
-              name="achternaam"
-              value={formData.achternaam}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Email</label>
+            <label htmlFor="email">Email*</label>
             <input
               type="email"
               name="email"
@@ -98,7 +234,7 @@ const AddMemberPage = () => {
           </div>
 
           <div className="form-group">
-            <label>Wachtwoord</label>
+            <label htmlFor="wachtwoord">Wachtwoord*</label>
             <input
               type="password"
               name="wachtwoord"
@@ -109,213 +245,114 @@ const AddMemberPage = () => {
           </div>
 
           <div className="form-group">
-            <label>Geboortedatum</label>
+            <label htmlFor="geboortedatum">Geboortedatum*</label>
             <input
               type="date"
               name="geboortedatum"
               value={formData.geboortedatum}
               onChange={handleChange}
               required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Rol</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="Vechter">Vechter</option>
-              <option value="Trainer">Trainer</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h3>Licentie Informatie</h3>
-          <div className="form-group">
-            <label>Licentie Nummer</label>
-            <input
-              type="text"
-              name="licentieNummer"
-              value={formData.licentieNummer}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Verval Datum</label>
-            <input
-              type="date"
-              name="vervalDatum"
-              value={formData.vervalDatum}
-              onChange={handleChange}
-              required
+              max={new Date().toISOString().split("T")[0]}
             />
           </div>
         </div>
 
         <div className="form-section">
-          <h3>Vechter Informatie</h3>
-          <div className="form-group">
-            <label>Gewicht (kg)</label>
-            <input
-              type="number"
-              name="vechterInfo.gewicht"
-              value={formData.vechterInfo.gewicht}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <h3>Licentiegegevens</h3>
 
-          <div className="form-group">
-            <label>Lengte (cm)</label>
-            <input
-              type="number"
-              name="vechterInfo.lengte"
-              value={formData.vechterInfo.lengte}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <div className="license-fields">
+            <div className="form-group">
+              <label htmlFor="licentieNummer">Licentienummer*</label>
+              <input
+                type="text"
+                name="licentieNummer"
+                value={formData.licentieNummer}
+                readOnly
+                className="readonly-field"
+              />
+            </div>
 
-          <div className="form-group">
-            <label>Klasse</label>
-            <input
-              type="text"
-              name="vechterInfo.klasse"
-              value={formData.vechterInfo.klasse}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-group">
+              <label htmlFor="vervalDatum">Vervaldatum*</label>
+              <input
+                type="date"
+                name="vervalDatum"
+                value={formData.vervalDatum}
+                readOnly
+                className="readonly-field"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="button-container">
-          <Link href={`/clubs/${id}/leden`} className="back-button">
-            Terug
-          </Link>
+        <div className="form-section">
+          <h3>Vechter informatie</h3>
+
+          <div className="vechter-grid">
+            <div className="form-group">
+              <label htmlFor="vechterInfo.gewicht">Gewicht (kg)*</label>
+              <input
+                type="number"
+                name="vechterInfo.gewicht"
+                value={formData.vechterInfo.gewicht}
+                onChange={handleChange}
+                min="40"
+                max="150"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="vechterInfo.lengte">Lengte (cm)*</label>
+              <input
+                type="number"
+                name="vechterInfo.lengte"
+                value={formData.vechterInfo.lengte}
+                onChange={handleChange}
+                min="140"
+                max="220"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="vechterInfo.klasse">Klasse*</label>
+              <select
+                name="vechterInfo.klasse"
+                value={formData.vechterInfo.klasse}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Selecteer klasse</option>
+                <option value="A">A Klasse</option>
+                <option value="B">B Klasse</option>
+                <option value="C">C Klasse</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="vechterInfo.bijnaam">Bijnaam</label>
+              <input
+                type="text"
+                name="vechterInfo.bijnaam"
+                value={formData.vechterInfo.bijnaam}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-actions">
           <button type="submit" className="submit-button">
-            Lid Toevoegen
+            Vechter registreren
+          </button>
+          <button type="button" className="reset-button" onClick={resetForm}>
+            Formulier leegmaken
           </button>
         </div>
       </form>
-
-      <style jsx>{`
-        .add-member-page {
-          padding: 20px;
-          max-width: 800px;
-          margin: 0 auto;
-        }
-
-        h1 {
-          font-size: 2rem;
-          margin-bottom: 30px;
-          color: #333;
-        }
-
-        h2 {
-          font-size: 1.5rem;
-          margin: 20px 0;
-          color: #444;
-        }
-
-        h3 {
-          font-size: 1.2rem;
-          margin: 15px 0;
-          color: #555;
-        }
-
-        .qr-section {
-          margin-bottom: 30px;
-          padding: 20px;
-          background-color: #f8f9fa;
-          border-radius: 8px;
-        }
-
-        .qr-placeholder {
-          height: 200px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background-color: #e9ecef;
-          border-radius: 4px;
-          margin-top: 10px;
-        }
-
-        .form-section {
-          background-color: #fff;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          margin-bottom: 20px;
-        }
-
-        .form-group {
-          margin-bottom: 15px;
-        }
-
-        label {
-          display: block;
-          margin-bottom: 5px;
-          color: #555;
-          font-weight: 500;
-        }
-
-        input,
-        select {
-          width: 100%;
-          padding: 8px 12px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          font-size: 1rem;
-        }
-
-        input:focus,
-        select:focus {
-          outline: none;
-          border-color: #007bff;
-          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-
-        .button-container {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 30px;
-        }
-
-        .back-button {
-          padding: 10px 20px;
-          background-color: #6c757d;
-          color: white;
-          text-decoration: none;
-          border-radius: 4px;
-          font-size: 1rem;
-        }
-
-        .back-button:hover {
-          background-color: #5a6268;
-        }
-
-        .submit-button {
-          padding: 10px 20px;
-          background-color: #28a745;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          font-size: 1rem;
-          cursor: pointer;
-        }
-
-        .submit-button:hover {
-          background-color: #218838;
-        }
-      `}</style>
     </div>
   );
 };
 
-export default AddMemberPage;
+export default AddUserPage;

@@ -83,4 +83,14 @@ export const fetchUserById = async (id) => {
   }
 };
 
+export const validateLicense = async (qrData) => {
+  try {
+    const response = await API.post("/licenses/validate", qrData);
+    return response.data;
+  } catch (error) {
+    console.error("Fout bij licentie validatie:", error);
+    throw error;
+  }
+};
+
 export default API;
