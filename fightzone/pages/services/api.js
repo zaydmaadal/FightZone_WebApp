@@ -85,10 +85,17 @@ export const fetchUserById = async (id) => {
 
 export const validateLicense = async (qrData) => {
   try {
-    const response = await API.post("/licenses/validate", qrData);
+    const response = await API.post("/licenses/validate", qrData, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("Huidige token:", localStorage.getItem("token"));
+
     return response.data;
   } catch (error) {
-    console.error("Fout bij licentie validatie:", error);
+    console.error("Validatiefout details:", error.response?.data);
     throw error;
   }
 };

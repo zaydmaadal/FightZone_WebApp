@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { isMobile } from "react-device-detect";
 import { createUser, validateLicense } from "../../../../services/api";
-import Link from "next/link";
 import "../../../../../styles/AddUserPage.css";
 
 const AddUserPage = () => {
@@ -45,44 +44,33 @@ const AddUserPage = () => {
 
   const handleFetchLicense = async (url) => {
     try {
+      if (!url.includes("vkbmolink.be/qr_lid.php")) {
+        throw new Error("Ongeldige VKBMO URL");
+      }
+
       const response = await validateLicense({ qrCodeUrl: url });
-      console.log("API Response:", response.data); // Debug log
 
-      if (response.valid && response.data) {
-        // Let op: gebruik 'vervaldatum' (kleine d) zoals in API response
-        const rawDate = response.data.vervaldatum; // <-- Hier aanpassing
-        let formattedDate = "";
-
-        if (rawDate) {
-          if (rawDate.includes("/")) {
-            const [day, month, year] = rawDate.split("/");
-            formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
-              2,
-              "0"
-            )}`;
-          } else {
-            formattedDate = rawDate; // Als het al in juist formaat is
-          }
-        }
-
+      if (response.valid) {
         setFormData((prev) => ({
           ...prev,
-          licentieNummer: response.data.licentieNummer || "",
-          vervalDatum: formattedDate, // Vul het formulierveld in
+          licentieNummer: response.data.licentieNummer,
+          vervalDatum: response.data.vervalDatum,
         }));
 
         setScanResult({
           type: "success",
-          message: `Licentie gevonden!
-Nummer: ${response.data.licentieNummer}
-Vervaldatum: ${rawDate || "niet beschikbaar"}`,
+          message: `Licentie gevonden!\nNummer: ${
+            response.data.licentieNummer
+          }\nVervaldatum: ${new Date(
+            response.data.vervalDatum
+          ).toLocaleDateString()}`,
         });
       }
     } catch (error) {
-      console.error("Fout:", error);
+      console.error("Fout bij ophalen licentie:", error);
       setScanResult({
         type: "error",
-        message: "Kon licentiegegevens niet ophalen",
+        message: error.message || "Licentie validatie mislukt",
       });
     }
   };
@@ -153,12 +141,7 @@ Vervaldatum: ${rawDate || "niet beschikbaar"}`,
 
   return (
     <div className="add-user-page">
-      <div className="page-header">
-        <Link href="/ledenlijst" className="back-button">
-          ← Terug naar ledenlijst
-        </Link>
-        <h1 className="page-title">Registreer nieuwe vechter</h1>
-      </div>
+      <h1 className="page-title">Registreer nieuwe vechter</h1>
 
       {!isMobile && (
         <div className="url-input-section">
@@ -305,7 +288,7 @@ Vervaldatum: ${rawDate || "niet beschikbaar"}`,
               <input
                 type="date"
                 name="vervalDatum"
-                value={formData.vervalDatum || ""} // Fallback voor lege waarde
+                value={formData.vervalDatum}
                 readOnly
                 className="readonly-field"
               />
@@ -356,6 +339,16 @@ Vervaldatum: ${rawDate || "niet beschikbaar"}`,
                 <option value="B">B Klasse</option>
                 <option value="C">C Klasse</option>
               </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="vechterInfo.bijnaam">Bijnaam</label>
+              <input
+                type="text"
+                name="vechterInfo.bijnaam"
+                value={formData.vechterInfo.bijnaam}
+                onChange={handleChange}
+              />
             </div>
           </div>
         </div>

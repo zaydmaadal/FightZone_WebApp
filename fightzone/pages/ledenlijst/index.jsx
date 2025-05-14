@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const LedenlijstPage = () => {
   const router = useRouter();
@@ -24,9 +25,18 @@ const LedenlijstPage = () => {
 
   return (
     <div className="leden-container">
-      <h1 className="leden-title">👥 Ledenlijst</h1>
-      <p className="leden-subtitle">Alle gescande of toegevoegde leden verschijnen hieronder.</p>
-      
+      <div className="header-section">
+        <div>
+          <h1 className="leden-title">👥 Ledenlijst</h1>
+          <p className="leden-subtitle">
+            Alle gescande of toegevoegde leden verschijnen hieronder.
+          </p>
+        </div>
+        <Link href="/clubs/1/leden/add-member" className="add-member-button">
+          + Nieuw lid toevoegen
+        </Link>
+      </div>
+
       <table className="leden-tabel">
         <thead>
           <tr>
@@ -56,7 +66,30 @@ const LedenlijstPage = () => {
           background: #ffffff;
           border-radius: 12px;
           box-shadow: 0 0 25px rgba(0, 0, 0, 0.05);
-          font-family: 'Inter', sans-serif;
+          font-family: "Inter", sans-serif;
+        }
+
+        .header-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 30px;
+        }
+
+        .add-member-button {
+          display: inline-flex;
+          align-items: center;
+          padding: 12px 24px;
+          background-color: #3498db;
+          color: white;
+          border-radius: 8px;
+          font-weight: 500;
+          text-decoration: none;
+          transition: background-color 0.2s;
+        }
+
+        .add-member-button:hover {
+          background-color: #2980b9;
         }
 
         .leden-title {
