@@ -37,7 +37,6 @@ export default function Sidebar() {
           { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
           { path: "/ledenlijst", label: "Ledenlijst", icon: UserGroupIcon },
           { path: "/agenda", label: "Agenda", icon: CalendarIcon },
-          { path: "/qr-scan", label: "QR Scanner", icon: QrCodeIcon },
           {
             path: "/resultaat",
             label: "Resultaat",

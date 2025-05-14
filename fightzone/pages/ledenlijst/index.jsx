@@ -6,6 +6,7 @@ const LedenlijstPage = () => {
   const router = useRouter();
   const { lid_id } = router.query;
   const [leden, setLeden] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (lid_id) {
@@ -23,6 +24,14 @@ const LedenlijstPage = () => {
     }
   }, [lid_id]);
 
+  //filter leden
+   const filteredLeden = leden.filter((lid) =>
+    [lid.naam, lid.club, lid.licentie]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="leden-container">
       <div className="header-section">
@@ -37,17 +46,26 @@ const LedenlijstPage = () => {
         </Link>
       </div>
 
+      {/* Zoekveld */}
+      <input
+        type="text"
+        className="search-input"
+        placeholder="Zoek op naam"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <table className="leden-tabel">
         <thead>
           <tr>
             <th>Naam</th>
-            <th>Club</th>
-            <th>Licentie</th>
-            <th>Geboortedatum</th>
+            <th>Gewichtscategorieen</th>
+            <th>Leeftijd</th>
+            <th>Klasse</th>
+            <th>Verzekering</th>
           </tr>
         </thead>
         <tbody>
-          {leden.map((lid, i) => (
+          {filteredLeden.map((lid, i) => (
             <tr key={i}>
               <td>{lid.naam}</td>
               <td>{lid.club}</td>
@@ -104,6 +122,14 @@ const LedenlijstPage = () => {
           margin-bottom: 30px;
         }
 
+          .search-input {
+          width: 100%;
+          padding: 10px 15px;
+          margin-bottom: 20px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 15px;
+        }
         .leden-tabel {
           width: 100%;
           border-collapse: collapse;
