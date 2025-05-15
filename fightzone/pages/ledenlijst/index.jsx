@@ -58,7 +58,7 @@ const LedenlijstPage = () => {
             Alle gescande of toegevoegde leden verschijnen hieronder.
           </p>
         </div>
-        <Link href="/clubs/1/leden/add-member" className="add-member-button">
+        <Link href="ledenlijst/add-member" className="add-member-button">
           + Nieuw lid toevoegen
         </Link>
       </div>
@@ -95,17 +95,71 @@ const LedenlijstPage = () => {
       </table>
 
       <style jsx>{`
-        .leden-container { max-width: 900px; margin: 50px auto; padding: 30px; background: #fff; border-radius: 12px; box-shadow: 0 0 25px rgba(0, 0, 0, 0.05); font-family: "Inter", sans-serif; }
-        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .add-member-button { display: inline-flex; align-items: center; padding: 12px 24px; background-color: #3498db; color: white; border-radius: 8px; font-weight: 500; text-decoration: none; }
-        .add-member-button:hover { background-color: #2980b9; }
-        .leden-title { font-size: 2rem; color: #3683fe; margin-bottom: 10px; }
-        .leden-subtitle { color: #555; font-size: 15px; margin-bottom: 30px; }
-        .search-input { width: 100%; padding: 10px 15px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
-        .leden-tabel { width: 100%; border-collapse: collapse; font-size: 15px; }
-        .leden-tabel th, .leden-tabel td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-        .leden-tabel th { background-color: #f4f7fb; color: #333; font-weight: 600; }
-        .leden-tabel tr:hover { background-color: #f9fbff; }
+        .leden-container {
+          max-width: 900px;
+          margin: 50px auto;
+          padding: 30px;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 0 25px rgba(0, 0, 0, 0.05);
+          font-family: "Inter", sans-serif;
+        }
+        .header-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 30px;
+        }
+        .add-member-button {
+          display: inline-flex;
+          align-items: center;
+          padding: 12px 24px;
+          background-color: #3498db;
+          color: white;
+          border-radius: 8px;
+          font-weight: 500;
+          text-decoration: none;
+        }
+        .add-member-button:hover {
+          background-color: #2980b9;
+        }
+        .leden-title {
+          font-size: 2rem;
+          color: #3683fe;
+          margin-bottom: 10px;
+        }
+        .leden-subtitle {
+          color: #555;
+          font-size: 15px;
+          margin-bottom: 30px;
+        }
+        .search-input {
+          width: 100%;
+          padding: 10px 15px;
+          margin-bottom: 20px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 15px;
+        }
+        .leden-tabel {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 15px;
+        }
+        .leden-tabel th,
+        .leden-tabel td {
+          padding: 14px 16px;
+          text-align: left;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .leden-tabel th {
+          background-color: #f4f7fb;
+          color: #333;
+          font-weight: 600;
+        }
+        .leden-tabel tr:hover {
+          background-color: #f9fbff;
+        }
       `}</style>
     </div>
   );
