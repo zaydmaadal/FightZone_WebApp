@@ -10,10 +10,9 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "@yudiel/react-qr-scanner": "^2.3.1",
     "axios": "^1.8.4",
-    "html5-qrcode": "^2.3.8",
     "next": "15.2.4",
+    "qr-scanner": "^1.4.2",
     "react": "^19.0.0",
     "react-device-detect": "^2.2.3",
     "react-dom": "^19.0.0"
