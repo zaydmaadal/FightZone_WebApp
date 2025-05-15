@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { fetchUsers } from "../services/api";
 
 const LedenlijstPage = () => {
   const router = useRouter();
@@ -9,24 +10,35 @@ const LedenlijstPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    if (lid_id) {
-      const nieuwLid = {
-        naam: `Lid ${lid_id}`,
-        club: "FightZone Club",
-        licentie: `LIC-${lid_id}`,
-        geboortedatum: "2000-01-01",
-      };
+  const getLeden = async () => {
+      try {
+        const data = await fetchUsers();
+        console.log("Ontvangen data:", data);
 
-      setLeden((prev) => {
-        const bestaatAl = prev.find((l) => l.licentie === nieuwLid.licentie);
-        return bestaatAl ? prev : [...prev, nieuwLid];
-      });
-    }
-  }, [lid_id]);
+        const mappedLeden = data.map((user) => ({
+          naam: `${user.voornaam} ${user.achternaam}`,
+          gewichtscategorie: `${user.vechterInfo?.gewicht || "Onbekend"} kg`,
+          leeftijd: user.geboortedatum || "Onbekend",
+          klasse: user.vechterInfo?.klasse || "Onbekend",
+          verzekering: user.vechterInfo?.verzekering ? "Ja" : "Nee",
+        }));
+
+        setLeden(mappedLeden);
+      } catch (error) {
+        console.error("Fout bij laden van leden:", error);
+      }
+    };
+
+    getLeden();
+  }, []);
+
+    
+
+  
 
   //filter leden
    const filteredLeden = leden.filter((lid) =>
-    [lid.naam, lid.club, lid.licentie]
+    [lid.naam, lid.gewichtscategorie, lid.leeftijd, lid.klasse, lid.verzekering]
       .join(" ")
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
@@ -36,7 +48,7 @@ const LedenlijstPage = () => {
     <div className="leden-container">
       <div className="header-section">
         <div>
-          <h1 className="leden-title">👥 Ledenlijst</h1>
+          <h1 className="leden-title">Ledenlijst</h1>
           <p className="leden-subtitle">
             Alle gescande of toegevoegde leden verschijnen hieronder.
           </p>
@@ -58,7 +70,7 @@ const LedenlijstPage = () => {
         <thead>
           <tr>
             <th>Naam</th>
-            <th>Gewichtscategorieen</th>
+            <th>Gewichtscategorie</th>
             <th>Leeftijd</th>
             <th>Klasse</th>
             <th>Verzekering</th>
@@ -66,12 +78,13 @@ const LedenlijstPage = () => {
         </thead>
         <tbody>
           {filteredLeden.map((lid, i) => (
-            <tr key={i}>
-              <td>{lid.naam}</td>
-              <td>{lid.club}</td>
-              <td>{lid.licentie}</td>
-              <td>{lid.geboortedatum}</td>
-            </tr>
+             <tr key={i}>
+        <td>{lid.naam}</td>
+        <td>{lid.gewichtscategorie}</td>
+        <td>{lid.leeftijd}</td>
+        <td>{lid.klasse}</td>
+        <td>{lid.verzekering}</td>
+      </tr>
           ))}
         </tbody>
       </table>
