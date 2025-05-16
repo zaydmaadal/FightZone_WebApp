@@ -3,20 +3,39 @@ import axios from "axios";
 // Basis API-instellingen
 const API = axios.create({
   baseURL: "https://fightzone-api.onrender.com/api/v1",
+  withCredentials: true,
 });
 
 // Haal huidige gebruiker op
+
 export const fetchCurrentUser = async () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    console.error("Geen token in localStorage");
+    return null;
+  }
+
   try {
     const response = await API.get("/auth/me", {
-      withCredentials: true,
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
     return response.data;
   } catch (error) {
-    console.error("Fout bij ophalen van de ingelogde gebruiker:", error);
+    console.error("Fout bij ophalen gebruiker:", {
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
+    // Auto-logout bij 401
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+
     return null;
   }
 };
@@ -91,7 +110,6 @@ export const validateLicense = async (qrData) => {
         "Content-Type": "application/json",
       },
     });
-    console.log("Huidige token:", localStorage.getItem("token"));
 
     return response.data;
   } catch (error) {

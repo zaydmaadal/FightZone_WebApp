@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import QrScanner from "qr-scanner";
-import { createUser, validateLicense } from "../../../../services/api";
+import {
+  createUser,
+  validateLicense,
+  fetchCurrentUser,
+  fetchClubById,
+} from "../../../../services/api";
 import Link from "next/link";
 import "../../../../../styles/AddUserPage.css";
 
@@ -28,10 +33,41 @@ const AddUserPage = () => {
   const [scanning, setScanning] = useState(false);
   const [vkbmoUrl, setVkbmoUrl] = useState("");
   const [scanResult, setScanResult] = useState(null);
+  const [trainerInfo, setTrainerInfo] = useState(null);
+  const [clubInfo, setClubInfo] = useState(null);
 
   useEffect(() => {
     setHasMounted(true);
     setIsMobile(window.innerWidth <= 768);
+
+    const fetchTrainerData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.log("Geen token gevonden");
+          return;
+        }
+
+        const userData = await fetchCurrentUser();
+        console.log("Trainer data:", userData);
+        setTrainerInfo(userData);
+
+        // Fetch club data if trainer has a club ID
+        if (userData?.club) {
+          try {
+            const clubData = await fetchClubById(userData.club);
+            console.log("Club data:", clubData);
+            setClubInfo(clubData);
+          } catch (error) {
+            console.error("Error fetching club data:", error);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching trainer data:", error);
+      }
+    };
+
+    fetchTrainerData();
 
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -239,6 +275,19 @@ const AddUserPage = () => {
       console.log("API Response:", response);
 
       if (response.valid && response.data) {
+        // Check if the license club matches trainer's club
+        if (
+          clubInfo &&
+          response.data.club &&
+          clubInfo.naam.toLowerCase() !== response.data.club.toLowerCase()
+        ) {
+          setScanResult({
+            type: "error",
+            message: `Club mismatch!\n\nDe licentie is van club: ${response.data.club}\nU bent trainer van club: ${clubInfo.naam}\n\nU kunt alleen vechters van uw eigen club registreren.`,
+          });
+          return;
+        }
+
         // Format dates
         const formatDate = (rawDate) => {
           if (!rawDate) return "";
@@ -341,19 +390,31 @@ const AddUserPage = () => {
         return;
       }
 
-      await createUser({
+      if (!trainerInfo?.club) {
+        alert("Geen club gevonden voor de trainer");
+        return;
+      }
+
+      // Create user data with trainer's club ID
+      const userData = {
         ...formData,
         role: "Vechter",
+        club: trainerInfo.club, // Add trainer's club ID
         vechterInfo: {
           ...formData.vechterInfo,
           licentieNummer: formData.licentieNummer,
           vervalDatum: formData.vervalDatum,
+          club: trainerInfo.club, // Also add club ID to vechterInfo
         },
-      });
+      };
+
+      console.log("Submitting user data:", userData);
+      await createUser(userData);
 
       alert("Vechter succesvol geregistreerd!");
       resetForm();
     } catch (err) {
+      console.error("Error creating user:", err);
       alert(
         "Fout bij registreren: " + (err.response?.data?.message || err.message)
       );
@@ -569,9 +630,11 @@ const AddUserPage = () => {
                 required
               >
                 <option value="">Selecteer klasse</option>
-                <option value="A">A Klasse</option>
-                <option value="B">B Klasse</option>
-                <option value="C">C Klasse</option>
+                <option value="A Klasse">A Klasse</option>
+                <option value="B Klasse">B Klasse</option>
+                <option value="C Klasse">C Klasse</option>
+                <option value="Nieuweling">Nieuweling</option>
+                <option value="Jeugd">Jeugd</option>
               </select>
             </div>
           </div>
