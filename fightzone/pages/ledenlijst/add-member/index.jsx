@@ -35,6 +35,7 @@ const AddUserPage = () => {
   const [scanResult, setScanResult] = useState(null);
   const [trainerInfo, setTrainerInfo] = useState(null);
   const [clubInfo, setClubInfo] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     setHasMounted(true);
@@ -441,66 +442,137 @@ const AddUserPage = () => {
     setVkbmoUrl("");
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="add-user-page">
       <div className="page-header">
-        <Link href="/ledenlijst" className="back-button">
-          ← Terug naar ledenlijst
-        </Link>
         <h1 className="page-title">Registreer nieuwe vechter</h1>
+        <Link href="/ledenlijst" className="back-button">
+          <svg
+            className="arrow-left-circle"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            width="24"
+            height="24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
+            />
+          </svg>
+          Terug
+        </Link>
       </div>
 
-      {hasMounted && !isMobile && (
-        <div className="url-input-section">
-          <input
-            type="text"
-            placeholder="Plak VKBMO licentie URL hier..."
-            value={vkbmoUrl}
-            onChange={(e) => setVkbmoUrl(e.target.value)}
-            className="url-input"
-          />
-          <button
-            onClick={() => handleFetchLicense(vkbmoUrl)}
-            className="fetch-button"
-          >
-            Valideer licentie
-          </button>
-        </div>
-      )}
-
-      {hasMounted && isMobile && (
-        <div className="mobile-scan-section">
-          {!scanning ? (
-            <button className="scan-button" onClick={() => setScanning(true)}>
-              Scan Licentie QR Code
-            </button>
-          ) : (
-            renderScanner()
-          )}
-          <p className="scan-instruction">
-            Richt de camera op de VKBMO licentie QR code
-          </p>
-        </div>
-      )}
-
-      {scanResult && (
-        <div className={`scan-result ${scanResult.type}`}>
-          <div className="result-header">
-            {scanResult.type === "success" ? "✅" : "❌"}
-            <h4>
-              {scanResult.type === "success" ? "Geldige licentie" : "Fout"}
-            </h4>
-          </div>
-          <pre className="result-message">{scanResult.message}</pre>
-          {scanResult.type === "success" && (
-            <p className="next-step">
-              Vul nu de resterende gegevens handmatig in
-            </p>
-          )}
-        </div>
-      )}
-
       <form className="add-user-form" onSubmit={handleSubmit}>
+        {/* Profile upload section */}
+        <div className="profile-upload-section">
+          <div
+            className="profile-upload-circle"
+            onClick={() => document.getElementById("profile-upload").click()}
+          >
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profielfoto"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <svg
+                className="profile-upload-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            )}
+            <input
+              id="profile-upload"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageUpload}
+            />
+          </div>
+          <span className="profile-upload-text">Upload Profielfoto</span>
+        </div>
+
+        {hasMounted && !isMobile && (
+          <div className="url-input-section">
+            <input
+              type="text"
+              placeholder="Plak VKBMO licentie URL hier..."
+              value={vkbmoUrl}
+              onChange={(e) => setVkbmoUrl(e.target.value)}
+              className="url-input"
+            />
+            <button
+              type="button"
+              onClick={() => handleFetchLicense(vkbmoUrl)}
+              className="fetch-button"
+            >
+              Valideer licentie
+            </button>
+          </div>
+        )}
+
+        {hasMounted && isMobile && (
+          <div className="mobile-scan-section">
+            {!scanning ? (
+              <button className="scan-button" onClick={() => setScanning(true)}>
+                Scan Licentie QR Code
+              </button>
+            ) : (
+              renderScanner()
+            )}
+            <p className="scan-instruction">
+              Richt de camera op de VKBMO licentie QR code
+            </p>
+          </div>
+        )}
+
+        {scanResult && (
+          <div className={`scan-result ${scanResult.type}`}>
+            <div className="result-header">
+              {scanResult.type === "success" ? "✅" : "❌"}
+              <h4>
+                {scanResult.type === "success" ? "Geldige licentie" : "Fout"}
+              </h4>
+            </div>
+            <pre className="result-message">{scanResult.message}</pre>
+            {scanResult.type === "success" && (
+              <p className="next-step">
+                Vul nu de resterende gegevens handmatig in
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="form-section">
           <h3>Persoonlijke gegevens</h3>
 
@@ -510,6 +582,7 @@ const AddUserPage = () => {
               <input
                 type="text"
                 name="voornaam"
+                placeholder="Vul voornaam in"
                 value={formData.voornaam}
                 onChange={handleChange}
                 required
@@ -521,6 +594,7 @@ const AddUserPage = () => {
               <input
                 type="text"
                 name="achternaam"
+                placeholder="Vul achternaam in"
                 value={formData.achternaam}
                 onChange={handleChange}
                 required
@@ -528,26 +602,30 @@ const AddUserPage = () => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email">Email*</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <div className="email-password-fields">
+            <div className="form-group">
+              <label htmlFor="email">Email*</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Vul email adres in"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="wachtwoord">Wachtwoord*</label>
-            <input
-              type="password"
-              name="wachtwoord"
-              value={formData.wachtwoord}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-group">
+              <label htmlFor="wachtwoord">Wachtwoord*</label>
+              <input
+                type="password"
+                name="wachtwoord"
+                placeholder="Kies een wachtwoord"
+                value={formData.wachtwoord}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
@@ -575,6 +653,7 @@ const AddUserPage = () => {
                 value={formData.licentieNummer}
                 readOnly
                 className="readonly-field"
+                placeholder="Scan de licentie QR-code"
               />
             </div>
 
@@ -583,9 +662,10 @@ const AddUserPage = () => {
               <input
                 type="date"
                 name="vervalDatum"
-                value={formData.vervalDatum || ""} // Fallback voor lege waarde
+                value={formData.vervalDatum || ""}
                 readOnly
                 className="readonly-field"
+                placeholder="Wordt ingevuld na scannen"
               />
             </div>
           </div>
@@ -600,6 +680,7 @@ const AddUserPage = () => {
               <input
                 type="number"
                 name="vechterInfo.gewicht"
+                placeholder="Vul gewicht in"
                 value={formData.vechterInfo.gewicht}
                 onChange={handleChange}
                 min="40"
@@ -613,6 +694,7 @@ const AddUserPage = () => {
               <input
                 type="number"
                 name="vechterInfo.lengte"
+                placeholder="Vul lengte in"
                 value={formData.vechterInfo.lengte}
                 onChange={handleChange}
                 min="140"
@@ -642,10 +724,7 @@ const AddUserPage = () => {
 
         <div className="form-actions">
           <button type="submit" className="submit-button">
-            Vechter registreren
-          </button>
-          <button type="button" className="reset-button" onClick={resetForm}>
-            Formulier leegmaken
+            Voeg toe
           </button>
         </div>
       </form>
