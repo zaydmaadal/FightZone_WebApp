@@ -23,8 +23,11 @@
 }*/
 
 @font-face {
-  font-family: "NeueHaas";
-  src: url("../public/NeueHaasDisplayBold.ttf");
+  font-family: "NeueHaasDisplayBold";
+  src: url("../public/fonts/NeueHaasDisplayBold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
 }
 
 html,
@@ -47,7 +50,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "NeueHaas";
+  font-family: "NeueHaasDisplayBold";
 }
 
 * {
