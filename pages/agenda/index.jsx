@@ -2,7 +2,7 @@
 import { useAuth } from "../services/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Layout from "../../components/Layout";
+import "../../styles/AgendaPage.css";
 
 export default function Agenda() {
   const { user, loading } = useAuth();
@@ -15,7 +15,11 @@ export default function Agenda() {
   }, [user, loading, router]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="agenda-page">
+        <div className="loading">Laden...</div>
+      </div>
+    );
   }
 
   if (!user) {
@@ -23,35 +27,19 @@ export default function Agenda() {
   }
 
   return (
-    <div className="agenda">
-      <h1>Agenda</h1>
+    <div className="agenda-page">
+      <div className="page-header">
+        <h1>Agenda</h1>
+      </div>
+
       <div className="agenda-content">
         <div className="agenda-section">
           <h2>Aankomende Evenementen</h2>
-          <p>Hier komt je agenda</p>
+          <div className="events-list">
+            <p className="placeholder-text">Hier komt je agenda</p>
+          </div>
         </div>
       </div>
-      <style jsx>{`
-        .agenda {
-          padding: 20px;
-        }
-
-        .agenda-content {
-          margin-top: 20px;
-        }
-
-        .agenda-section {
-          background: white;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .agenda-section h2 {
-          margin-top: 0;
-          color: #333;
-        }
-      `}</style>
     </div>
   );
 }
