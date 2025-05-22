@@ -7,7 +7,6 @@ import {
   fetchClubById,
 } from "../../services/api";
 import Link from "next/link";
-import "../../../styles/AddUserPage.css";
 
 const AddUserPage = () => {
   const [hasMounted, setHasMounted] = useState(false);
@@ -50,14 +49,12 @@ const AddUserPage = () => {
         }
 
         const userData = await fetchCurrentUser();
-        console.log("Trainer data:", userData);
         setTrainerInfo(userData);
 
         // Fetch club data if trainer has a club ID
         if (userData?.club) {
           try {
             const clubData = await fetchClubById(userData.club);
-            console.log("Club data:", clubData);
             setClubInfo(clubData);
           } catch (error) {
             console.error("Error fetching club data:", error);
@@ -731,5 +728,11 @@ const AddUserPage = () => {
     </div>
   );
 };
+
+export const getInitialProps = async () => {
+  return { props: {} };
+};
+
+AddUserPage.getInitialProps = getInitialProps;
 
 export default AddUserPage;

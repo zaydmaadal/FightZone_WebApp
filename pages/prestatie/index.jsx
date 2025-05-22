@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { fetchCurrentUser } from "../services/api";
-import "../../styles/PrestatiePage.css";
 
 const PrestatiePage = () => {
   const [userData, setUserData] = useState(null);

@@ -49,7 +49,6 @@ export default function Sidebar() {
           { path: "/jury", label: "Jury", icon: ClipboardDocumentCheckIcon },
           { path: "/clubs", label: "Cluboverzicht", icon: UserGroupIcon },
           { path: "/agenda", label: "Agenda", icon: CalendarIcon },
-
         ];
       default:
         return [];
@@ -73,7 +72,7 @@ export default function Sidebar() {
         <div className="sidebar-header">
           <div className="logo-container">
             <Image
-              src="/Logo.png"
+              src="/FightZoneLogo.png"
               alt="FightZone Logo"
               width={160}
               height={80}
@@ -87,6 +86,8 @@ export default function Sidebar() {
           {menuItems.map((item) => {
             const isActive = pathname
               ? pathname === item.path ||
+                (item.path === "/ledenlijst" &&
+                  pathname.startsWith("/ledenlijst/")) ||
                 (item.path === "/clubs" &&
                   (pathname.startsWith("/clubs/") ||
                     pathname.startsWith("/member/")))
@@ -116,6 +117,8 @@ export default function Sidebar() {
           {menuItems.map((item) => {
             const isActive = pathname
               ? pathname === item.path ||
+                (item.path === "/ledenlijst" &&
+                  pathname.startsWith("/ledenlijst/")) ||
                 (item.path === "/clubs" &&
                   (pathname.startsWith("/clubs/") ||
                     pathname.startsWith("/member/")))

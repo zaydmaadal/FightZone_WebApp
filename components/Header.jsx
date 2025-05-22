@@ -85,8 +85,8 @@ export default function Header() {
         {/* Logo */}
         <div className="sidebar-logo-row">
           <img
-            src="../FightZoneLogo.png"
-            alt="FightZone Logo "
+            src="/FightZoneLogo.png"
+            alt="FightZone Logo"
             className="logo-img"
           />
           <ArrowRightCircleIcon className="logo-arrow" width={28} height={28} />

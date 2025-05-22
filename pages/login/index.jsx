@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../services/auth";
-import "../../styles/LoginPage.css";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");

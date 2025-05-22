@@ -3,7 +3,7 @@ import { useAuth } from "../services/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function Agenda() {
+export default function ResultaatPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -15,7 +15,7 @@ export default function Agenda() {
 
   if (loading) {
     return (
-      <div className="agenda-page">
+      <div className="resultaat-page">
         <div className="loading">Laden...</div>
       </div>
     );
@@ -26,25 +26,24 @@ export default function Agenda() {
   }
 
   return (
-    <div className="agenda-page">
+    <div className="resultaat-page">
       <div className="page-header">
-        <h1>Agenda</h1>
+        <h1>Wedstrijd Resultaten</h1>
       </div>
 
-      <div className="agenda-content">
+      <div className="results-content">
         <div className="placeholder-content">
-          <div className="placeholder-icon">📅</div>
-          <h2>Agenda Overzicht</h2>
+          <div className="placeholder-icon">📊</div>
+          <h2>Resultaten Overzicht</h2>
           <p>Deze pagina is momenteel in ontwikkeling.</p>
           <p className="placeholder-subtext">
-            Hier komt binnenkort een overzicht van alle aankomende evenementen
-            en wedstrijden.
+            Hier komt binnenkort een overzicht van alle wedstrijdresultaten.
           </p>
         </div>
       </div>
 
       <style jsx>{`
-        .agenda-page {
+        .resultaat-page {
           padding: 2rem;
           max-width: 1200px;
           margin: 0 auto;
@@ -60,7 +59,7 @@ export default function Agenda() {
           margin: 0;
         }
 
-        .agenda-content {
+        .results-content {
           background: white;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -103,11 +102,11 @@ export default function Agenda() {
         }
 
         @media (max-width: 768px) {
-          .agenda-page {
+          .resultaat-page {
             padding: 1rem;
           }
 
-          .agenda-content {
+          .results-content {
             padding: 2rem 1rem;
           }
         }

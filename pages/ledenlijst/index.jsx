@@ -165,4 +165,10 @@ const LedenlijstPage = () => {
   );
 };
 
+export const getInitialProps = async () => {
+  return { props: {} };
+};
+
+LedenlijstPage.getInitialProps = getInitialProps;
+
 export default LedenlijstPage;
