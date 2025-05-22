@@ -24,7 +24,7 @@
 
 @font-face {
   font-family: "NeueHaasDisplayBold";
-  src: url("../public/fonts/NeueHaasDisplayBold.ttf") format("truetype");
+  src: url("/fonts/NeueHaasDisplayBold.ttf") format("truetype");
   font-weight: bold;
   font-style: normal;
   font-display: swap;
