@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { fetchUsers } from "../services/api";
-import { useAuth } from "../services/auth";
+import { fetchUsers } from "../../src/services/api";
+import { useAuth } from "../../src/services/auth";
 
 const LedenlijstPage = () => {
   const router = useRouter();

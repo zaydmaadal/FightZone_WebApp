@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { fetchUsers, fetchClubById } from "../../../services/api";
+import { fetchUsers, fetchClubById } from "../../../../src/services/api";
 import { useRouter } from "next/router";
 import Link from "next/link";
 

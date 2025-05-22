@@ -5,7 +5,7 @@ import "@/styles/AddUserPage.css";
 import "@/styles/AgendaPage.css";
 import "@/styles/LoginPage.css";
 import "@/styles/PrestatiePage.css";
-import { AuthProvider } from "./services/auth";
+import { AuthProvider } from "../src/services/auth";
 import Layout from "../components/Layout";
 
 function MyApp({ Component, pageProps }) {

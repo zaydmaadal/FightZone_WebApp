@@ -5,7 +5,7 @@ import {
   validateLicense,
   fetchCurrentUser,
   fetchClubById,
-} from "../../services/api";
+} from "../../../src/services/api";
 import Link from "next/link";
 
 const AddUserPage = () => {

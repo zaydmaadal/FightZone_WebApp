@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchClubs, fetchUsers } from "../services/api";
+import { fetchClubs, fetchUsers } from "../../src/services/api";
 import { useRouter } from "next/router";
 
 const ClubsPage = () => {

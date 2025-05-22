@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../services/auth";
+import { useAuth } from "../../src/services/auth";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");

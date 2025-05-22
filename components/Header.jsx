@@ -1,6 +1,5 @@
 "use client";
-import { useAuth } from "../pages/services/auth";
-import { fetchCurrentUser } from "../pages/services/api";
+import { useAuth } from "../src/services/auth";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {

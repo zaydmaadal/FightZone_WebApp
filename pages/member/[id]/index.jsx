@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { fetchUsers, fetchClubs } from "../../services/api";
+import { fetchUsers, fetchClubs } from "../../../src/services/api";
 import Link from "next/link";
 
 const MemberDetails = () => {

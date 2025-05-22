@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { fetchCurrentUser } from "../services/api";
+import { fetchCurrentUser } from "../../src/services/api";
 
 const PrestatiePage = () => {
   const [userData, setUserData] = useState(null);
