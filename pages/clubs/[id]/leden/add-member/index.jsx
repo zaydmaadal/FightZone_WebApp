@@ -38,7 +38,7 @@ const AddUserPage = () => {
 
   useEffect(() => {
     setHasMounted(true);
-    setIsMobile(window.innerWidth <= 768);
+    setIsMobile(window.innerWidth <= 1024);
 
     const fetchTrainerData = async () => {
       try {
@@ -68,7 +68,7 @@ const AddUserPage = () => {
     fetchTrainerData();
 
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 1024);
     };
 
     window.addEventListener("resize", handleResize);
@@ -507,6 +507,7 @@ const AddUserPage = () => {
           <span className="profile-upload-text">Upload Profielfoto</span>
         </div>
 
+        {/* URL input section temporarily disabled
         {hasMounted && !isMobile && (
           <div className="url-input-section">
             <input
@@ -525,9 +526,10 @@ const AddUserPage = () => {
             </button>
           </div>
         )}
+        */}
 
-        {hasMounted && isMobile && (
-          <div className="mobile-scan-section">
+        {hasMounted && (
+          <div className="scan-section">
             {!scanning ? (
               <button className="scan-button" onClick={() => setScanning(true)}>
                 Scan Licentie QR Code

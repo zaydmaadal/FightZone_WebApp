@@ -39,7 +39,7 @@ const AddUserPage = () => {
 
   useEffect(() => {
     setHasMounted(true);
-    setIsMobile(window.innerWidth <= 768);
+    setIsMobile(window.innerWidth <= 1024);
 
     const fetchTrainerData = async () => {
       try {
@@ -69,7 +69,7 @@ const AddUserPage = () => {
     fetchTrainerData();
 
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 1024);
     };
 
     window.addEventListener("resize", handleResize);
@@ -510,54 +510,42 @@ const AddUserPage = () => {
           <span className="profile-upload-text">Upload Profielfoto</span>
         </div>
 
-        {hasMounted && !isMobile && (
-          <div className="url-input-section">
-            <input
-              type="text"
-              placeholder="Plak VKBMO licentie URL hier..."
-              value={vkbmoUrl}
-              onChange={(e) => setVkbmoUrl(e.target.value)}
-              className="url-input"
-            />
-            <button
-              type="button"
-              onClick={() => handleFetchLicense(vkbmoUrl)}
-              className="fetch-button"
-            >
-              Valideer licentie
-            </button>
-          </div>
-        )}
-
-        {hasMounted && isMobile && (
-          <div className="mobile-scan-section">
-            {!scanning ? (
-              <button className="scan-button" onClick={() => setScanning(true)}>
-                Scan Licentie QR Code
-              </button>
-            ) : (
-              renderScanner()
-            )}
-            <p className="scan-instruction">
-              Richt de camera op de VKBMO licentie QR code
-            </p>
+        {hasMounted && (
+          <div className="scan-section-container">
+            <div className="scan-section">
+              {!scanning ? (
+                <button
+                  className="scan-button"
+                  onClick={() => setScanning(true)}
+                >
+                  Scan Licentie QR Code
+                </button>
+              ) : (
+                renderScanner()
+              )}
+              <p className="scan-instruction">
+                Richt de camera op de VKBMO licentie QR code
+              </p>
+            </div>
           </div>
         )}
 
         {scanResult && (
-          <div className={`scan-result ${scanResult.type}`}>
-            <div className="result-header">
-              {scanResult.type === "success" ? "✅" : "❌"}
-              <h4>
-                {scanResult.type === "success" ? "Geldige licentie" : "Fout"}
-              </h4>
+          <div className="scan-result-container">
+            <div className={`scan-result ${scanResult.type}`}>
+              <div className="result-header">
+                {scanResult.type === "success" ? "✅" : "❌"}
+                <h4>
+                  {scanResult.type === "success" ? "Geldige licentie" : "Fout"}
+                </h4>
+              </div>
+              <pre className="result-message">{scanResult.message}</pre>
+              {scanResult.type === "success" && (
+                <p className="next-step">
+                  Vul nu de resterende gegevens handmatig in
+                </p>
+              )}
             </div>
-            <pre className="result-message">{scanResult.message}</pre>
-            {scanResult.type === "success" && (
-              <p className="next-step">
-                Vul nu de resterende gegevens handmatig in
-              </p>
-            )}
           </div>
         )}
 
@@ -716,6 +704,209 @@ const AddUserPage = () => {
           </button>
         </div>
       </form>
+
+      <style jsx>{`
+        .add-user-form {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+
+        .profile-upload-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 2rem;
+        }
+
+        .scan-section-container {
+          display: flex;
+          justify-content: center;
+          margin: 2rem 0;
+        }
+
+        .scan-section {
+          width: 100%;
+          max-width: 500px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .scan-button {
+          background-color: #2563eb;
+          color: white;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.5rem;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          width: 100%;
+          max-width: 300px;
+        }
+
+        .scan-button:hover {
+          background-color: #1d4ed8;
+        }
+
+        .scan-instruction {
+          text-align: center;
+          color: #6b7280;
+          font-size: 0.875rem;
+          margin-top: 0.5rem;
+        }
+
+        .scan-result-container {
+          display: flex;
+          justify-content: center;
+          margin: 2rem 0;
+        }
+
+        .scan-result {
+          width: 100%;
+          max-width: 500px;
+          padding: 1.5rem;
+          border-radius: 0.5rem;
+          background-color: #f3f4f6;
+          border: 1px solid #e5e7eb;
+        }
+
+        .scan-result.success {
+          background-color: #ecfdf5;
+          border-color: #a7f3d0;
+        }
+
+        .scan-result.error {
+          background-color: #fef2f2;
+          border-color: #fecaca;
+        }
+
+        .result-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+        }
+
+        .result-message {
+          white-space: pre-wrap;
+          font-family: monospace;
+          font-size: 0.875rem;
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        .next-step {
+          margin-top: 1rem;
+          color: #059669;
+          font-weight: 500;
+        }
+
+        .qr-scanner-container {
+          width: 100%;
+          max-width: 500px;
+          position: relative;
+          margin: 0 auto;
+        }
+
+        .scanner-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .scanner-guide {
+          text-align: center;
+          color: white;
+          padding: 1rem;
+        }
+
+        .scanner-tip {
+          font-size: 0.875rem;
+          margin-top: 0.5rem;
+          opacity: 0.8;
+        }
+
+        .cancel-scan-button {
+          width: 100%;
+          padding: 0.75rem;
+          margin-top: 1rem;
+          background-color: #ef4444;
+          color: white;
+          border: none;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          font-weight: 500;
+          transition: background-color 0.2s;
+        }
+
+        .cancel-scan-button:hover {
+          background-color: #dc2626;
+        }
+
+        .form-section {
+          margin-top: 2rem;
+          padding: 1.5rem;
+          background-color: white;
+          border-radius: 0.5rem;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section h3 {
+          margin-bottom: 1.5rem;
+          color: #111827;
+          font-size: 1.25rem;
+          font-weight: 600;
+        }
+
+        .form-actions {
+          display: flex;
+          justify-content: center;
+          margin-top: 2rem;
+        }
+
+        .submit-button {
+          background-color: #2563eb;
+          color: white;
+          padding: 0.75rem 2rem;
+          border-radius: 0.5rem;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          min-width: 200px;
+        }
+
+        .submit-button:hover {
+          background-color: #1d4ed8;
+        }
+
+        @media (max-width: 640px) {
+          .add-user-form {
+            padding: 1rem;
+          }
+
+          .scan-section {
+            max-width: 100%;
+          }
+
+          .qr-scanner-container {
+            max-width: 100%;
+          }
+
+          .scan-result {
+            max-width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 };
