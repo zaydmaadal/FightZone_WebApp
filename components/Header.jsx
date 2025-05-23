@@ -30,7 +30,7 @@ export default function Header() {
       <div className="desktop-header">
         <div className="profile-info">
           <img
-            src={user.profilePicture}
+            src={user.profilePicture || "/default-avatar.png"}
             alt="Profile"
             className="profile-picture"
           />

@@ -4,13 +4,13 @@ export default function VKBMODashboard() {
       <div className="dashboard-content">
         <div className="placeholder-content">
           <div className="placeholder-icon">🏢</div>
-          <h2>VKBM Dashboard</h2>
+          <h2>VKBM0 Dashboard</h2>
           <p>Deze pagina is momenteel in ontwikkeling.</p>
           <p className="placeholder-subtext">
             Hier komt binnenkort een overzicht van alle clubs, leden en
             landelijke statistieken.
           </p>
-          <div className="user-type-badge">VKBM Beheerder</div>
+          <div className="user-type-badge">VKBM0 Beheerder</div>
         </div>
       </div>
 

@@ -273,19 +273,6 @@ const AddUserPage = () => {
       console.log("API Response:", response);
 
       if (response.valid && response.data) {
-        // Check if the license club matches trainer's club
-        if (
-          clubInfo &&
-          response.data.club &&
-          clubInfo.naam.toLowerCase() !== response.data.club.toLowerCase()
-        ) {
-          setScanResult({
-            type: "error",
-            message: `Club mismatch!\n\nDe licentie is van club: ${response.data.club}\nU bent trainer van club: ${clubInfo.naam}\n\nU kunt alleen vechters van uw eigen club registreren.`,
-          });
-          return;
-        }
-
         // Format dates
         const formatDate = (rawDate) => {
           if (!rawDate) return "";
@@ -388,21 +375,19 @@ const AddUserPage = () => {
         return;
       }
 
-      if (!trainerInfo?.club) {
-        alert("Geen club gevonden voor de trainer");
-        return;
-      }
+      // Get club ID from URL
+      const clubId = window.location.pathname.split("/")[2];
 
-      // Create user data with trainer's club ID
+      // Create user data with club ID from URL
       const userData = {
         ...formData,
         role: "Vechter",
-        club: trainerInfo.club, // Add trainer's club ID
+        club: clubId, // Use club ID from URL
         vechterInfo: {
           ...formData.vechterInfo,
           licentieNummer: formData.licentieNummer,
           vervalDatum: formData.vervalDatum,
-          club: trainerInfo.club, // Also add club ID to vechterInfo
+          club: clubId, // Also add club ID to vechterInfo
         },
       };
 
@@ -454,7 +439,10 @@ const AddUserPage = () => {
     <div className="add-user-page">
       <div className="page-header">
         <h1 className="page-title">Registreer nieuwe vechter</h1>
-        <Link href="/ledenlijst" className="back-button">
+        <Link
+          href={`/clubs/${window.location.pathname.split("/")[2]}/leden`}
+          className="back-button"
+        >
           <svg
             className="arrow-left-circle"
             viewBox="0 0 24 24"
