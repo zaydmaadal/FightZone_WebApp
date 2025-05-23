@@ -43,9 +43,9 @@ const MemberDetails = () => {
     const club = clubs.find((c) => c._id === clubId);
     return club ? club.naam : "Onbekende club";
   };
-   if (loading) return <p>Gegevens worden geladen...</p>;
+  if (loading) return <p>Gegevens worden geladen...</p>;
   if (!member) return <p>Geen gegevens gevonden voor dit lid.</p>;
-  
+
   const calculateAge = (birthdate) => {
     const birthDate = new Date(birthdate);
     const today = new Date();
@@ -62,18 +62,24 @@ const MemberDetails = () => {
   return (
     <div className="profile-page">
       <div className="back-button-container">
-        <Link href={`/clubs/${member.club}/leden`} className="back-button">
+        <Link href={`/ledenlijst`} className="back-button">
           ← Terug naar ledenoverzicht
         </Link>
       </div>
 
       <div className="profile-container">
         <div className="left">
-          <img className="fighter-photo" src={member.profielfoto} alt={member.voornaam} />
+          <img
+            className="fighter-photo"
+            src={member.profielfoto}
+            alt={member.voornaam}
+          />
         </div>
 
         <div className="right">
-          <h1>{member.voornaam} {member.achternaam}</h1>
+          <h1>
+            {member.voornaam} {member.achternaam}
+          </h1>
           <h2>"{member.vechterInfo.bijnaam}"</h2>
           <p className="record">24-9-5 (W-L-D)</p>
           <div className="tags">
@@ -83,10 +89,22 @@ const MemberDetails = () => {
             <span>{getClubName(member.club)}</span>
           </div>
           <div className="stats-grid">
-            <div><strong>{member.vechterInfo.koWins || 0}</strong><p>KO Wins</p></div>
-            <div><strong>{calculateAge(member.geboortedatum)}</strong><p>Leeftijd</p></div>
-            <div><strong>{member.vechterInfo.klasse}</strong><p>Klasse</p></div>
-            <div><strong>{member.vechterInfo.gewicht} kg</strong><p>Gewicht</p></div>
+            <div>
+              <strong>{member.vechterInfo.koWins || 0}</strong>
+              <p>KO Wins</p>
+            </div>
+            <div>
+              <strong>{calculateAge(member.geboortedatum)}</strong>
+              <p>Leeftijd</p>
+            </div>
+            <div>
+              <strong>{member.vechterInfo.klasse}</strong>
+              <p>Klasse</p>
+            </div>
+            <div>
+              <strong>{member.vechterInfo.gewicht} kg</strong>
+              <p>Gewicht</p>
+            </div>
           </div>
         </div>
       </div>
@@ -98,13 +116,21 @@ const MemberDetails = () => {
             <tbody>
               <tr>
                 <td>Verzekering</td>
-                <td className={member.vechterInfo.verzekering ? "valid" : "invalid"}>
+                <td
+                  className={
+                    member.vechterInfo.verzekering ? "valid" : "invalid"
+                  }
+                >
                   {member.vechterInfo.verzekering ? "Geldig" : "Niet geldig"}
                 </td>
               </tr>
               <tr>
                 <td>Fighting Ready</td>
-                <td className={member.vechterInfo.fightingReady ? "valid" : "invalid"}>
+                <td
+                  className={
+                    member.vechterInfo.fightingReady ? "valid" : "invalid"
+                  }
+                >
                   {member.vechterInfo.fightingReady ? "Ja" : "Nee"}
                 </td>
               </tr>
@@ -131,14 +157,22 @@ const MemberDetails = () => {
                       <td>
                         {opponent ? (
                           <>
-                            <img className="opponent-img" src={opponent.profielfoto} alt={opponent.voornaam} />
+                            <img
+                              className="opponent-img"
+                              src={opponent.profielfoto}
+                              alt={opponent.voornaam}
+                            />
                             {opponent.voornaam} {opponent.achternaam}
                           </>
                         ) : (
                           "Onbekend"
                         )}
                       </td>
-                      <td className={fight.resultaat === "Winnaar" ? "win" : "loss"}>
+                      <td
+                        className={
+                          fight.resultaat === "Winnaar" ? "win" : "loss"
+                        }
+                      >
                         {fight.resultaat}
                       </td>
                     </tr>
@@ -212,41 +246,41 @@ const MemberDetails = () => {
           margin-top: 24px;
         }
 
-          .stats-grid div {
-    text-align: center;
-    background: #f0f4ff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
+        .stats-grid div {
+          text-align: center;
+          background: #f0f4ff;
+          border-radius: 8px;
+          padding: 20px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
 
-  .stats-grid strong {
-    font-size: 2.4rem;
-    display: block;
-    color: #222;
-  }
+        .stats-grid strong {
+          font-size: 2.4rem;
+          display: block;
+          color: #222;
+        }
 
-  .stats-grid p {
-    font-weight: 600;
-    margin-top: 8px;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-            .info-block table {
-            width: 100%;
-    border-spacing: 0 10px;
-  }
+        .stats-grid p {
+          font-weight: 600;
+          margin-top: 8px;
+          font-size: 1rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .info-block table {
+          width: 100%;
+          border-spacing: 0 10px;
+        }
 
-  .info-block td {
-    padding: 8px 10px;
-    font-weight: 500;
-  }
+        .info-block td {
+          padding: 8px 10px;
+          font-weight: 500;
+        }
 
-   .info-block td:first-child {
-    color: #666;
-    width: 150px;
-  }
+        .info-block td:first-child {
+          color: #666;
+          width: 150px;
+        }
 
         .info-section {
           display: flex;
@@ -254,7 +288,8 @@ const MemberDetails = () => {
           gap: 40px;
         }
 
-        .info-block, .fight-history {
+        .info-block,
+        .fight-history {
           flex: 1;
         }
 
@@ -288,30 +323,30 @@ const MemberDetails = () => {
           color: #ef4444;
         }
 
-         @media (max-width: 768px) {
-    .stats-grid {
-      grid-template-columns: 1fr 1fr;
-    }
+        @media (max-width: 768px) {
+          .stats-grid {
+            grid-template-columns: 1fr 1fr;
+          }
 
-    .info-block td {
-      font-size: 0.9rem;
-    }
+          .info-block td {
+            font-size: 0.9rem;
+          }
 
-    .stats-grid strong {
-      font-size: 1.6rem;
-    }
-  }
+          .stats-grid strong {
+            font-size: 1.6rem;
+          }
+        }
 
-  @media (max-width: 768px) {
-  .profile-container,
-  .info-section {
-    flex-direction: column;
-  }
+        @media (max-width: 768px) {
+          .profile-container,
+          .info-section {
+            flex-direction: column;
+          }
 
-  .right {
-    padding: 20px 0 0 0;
-  }
-}
+          .right {
+            padding: 20px 0 0 0;
+          }
+        }
       `}</style>
     </div>
   );

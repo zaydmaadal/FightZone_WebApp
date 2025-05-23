@@ -118,4 +118,19 @@ export const validateLicense = async (qrData) => {
   }
 };
 
+export const deleteUserById = async (id) => {
+  try {
+    const response = await API.delete(`/users/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Fout bij het verwijderen van gebruiker:", error);
+    throw error;
+  }
+};
+
 export default API;

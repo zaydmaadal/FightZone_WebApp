@@ -7,6 +7,7 @@ import {
   fetchClubById,
 } from "../../../src/services/api";
 import Link from "next/link";
+import { ArrowLeftCircleIcon } from "@heroicons/react/24/solid";
 
 const AddUserPage = () => {
   const [hasMounted, setHasMounted] = useState(false);
@@ -455,21 +456,11 @@ const AddUserPage = () => {
       <div className="page-header">
         <h1 className="page-title">Registreer nieuwe vechter</h1>
         <Link href="/ledenlijst" className="back-button">
-          <svg
+          <ArrowLeftCircleIcon
             className="arrow-left-circle"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            width="24"
-            height="24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
-            />
-          </svg>
+            width={24}
+            height={24}
+          />
           Terug
         </Link>
       </div>

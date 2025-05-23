@@ -8,7 +8,9 @@
   --border-gray: #d5d5d5;
   --input-bg: #f5f6fa;
   --text-color: #000000;
+  --light-text-color: #37393a;
   --placeholder-color: #888888;
+  --filter-yellow: #ffd56a;
 }
 
 /*@media (prefers-color-scheme: dark) {

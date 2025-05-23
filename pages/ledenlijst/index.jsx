@@ -1,8 +1,60 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { fetchUsers } from "../../src/services/api";
+import { fetchUsers, deleteUserById } from "../../src/services/api";
 import { useAuth } from "../../src/services/auth";
+import { FunnelIcon, UserPlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+
+// Helper function to calculate age
+const calculateAge = (birthDate) => {
+  if (!birthDate) return "Onbekend";
+
+  const birth = new Date(birthDate);
+  const today = new Date();
+
+  // Check if date is valid
+  if (isNaN(birth.getTime())) return "Onbekend";
+
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+
+  // Adjust age if birthday hasn't occurred this year
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+
+  return `${age}J`;
+};
+
+// Helper function to check insurance status
+const checkInsuranceStatus = (vechterInfo) => {
+  // If using old system (no vervalDatum), always return "Niet in orde"
+  if (!vechterInfo?.vervalDatum) {
+    return { text: "Niet in orde", type: "error" };
+  }
+
+  const today = new Date();
+  const expiryDate = new Date(vechterInfo.vervalDatum);
+
+  // Check if date is valid
+  if (isNaN(expiryDate.getTime())) {
+    return { text: "Niet in orde", type: "error" };
+  }
+
+  // Calculate days until expiry
+  const daysUntilExpiry = Math.ceil(
+    (expiryDate - today) / (1000 * 60 * 60 * 24)
+  );
+
+  if (daysUntilExpiry < 0) {
+    return { text: "Niet in orde", type: "error" };
+  } else if (daysUntilExpiry <= 60) {
+    // Within 2 months
+    return { text: `Verloopt over ${daysUntilExpiry} dagen`, type: "warning" };
+  } else {
+    return { text: "In Orde", type: "ok" };
+  }
+};
 
 const LedenlijstPage = () => {
   const router = useRouter();
@@ -23,9 +75,9 @@ const LedenlijstPage = () => {
           id: user._id,
           naam: `${user.voornaam} ${user.achternaam}`,
           gewichtscategorie: `${user.vechterInfo?.gewicht || "Onbekend"} kg`,
-          leeftijd: user.geboortedatum || "Onbekend",
+          leeftijd: calculateAge(user.geboortedatum),
           klasse: user.vechterInfo?.klasse || "Onbekend",
-          verzekering: user.vechterInfo?.verzekering ? "Ja" : "Nee",
+          verzekering: checkInsuranceStatus(user.vechterInfo),
         }));
 
         setLeden(mappedLeden);
@@ -39,17 +91,37 @@ const LedenlijstPage = () => {
     }
   }, [loading, user]);
 
-   const handleRowClick = (id) => {
+  const handleRowClick = (id) => {
     router.push(`/member/${id}`); // ✅ Detailpagina route
   };
 
+  const handleDelete = async (e, id) => {
+    e.stopPropagation(); // Prevent row click event
+    if (window.confirm("Weet je zeker dat je dit lid wilt verwijderen?")) {
+      try {
+        await deleteUserById(id);
+        // Refresh the list after deletion
+        const updatedLeden = leden.filter((lid) => lid.id !== id);
+        setLeden(updatedLeden);
+      } catch (error) {
+        console.error("Fout bij verwijderen lid:", error);
+        alert("Er is een fout opgetreden bij het verwijderen van het lid");
+      }
+    }
+  };
 
   if (loading || !user) {
     return <div style={{ textAlign: "center" }}>Laden...</div>;
   }
 
   const filteredLeden = leden.filter((lid) =>
-    [lid.naam, lid.gewichtscategorie, lid.leeftijd, lid.klasse, lid.verzekering]
+    [
+      lid.naam,
+      lid.gewichtscategorie,
+      lid.leeftijd,
+      lid.klasse,
+      lid.verzekering.text,
+    ]
       .join(" ")
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
@@ -60,23 +132,25 @@ const LedenlijstPage = () => {
       <div className="header-section">
         <div>
           <h1 className="leden-title">Ledenlijst</h1>
-          <p className="leden-subtitle">
-            Alle gescande of toegevoegde leden verschijnen hieronder.
-          </p>
         </div>
-        <Link href="ledenlijst/add-member" className="add-member-button">
-          + Nieuw lid toevoegen
-        </Link>
+        <div className="button-group">
+          <button className="filter-button">
+            <FunnelIcon className="button-icon" width={20} height={20} />
+            Filter
+          </button>
+          <Link href="ledenlijst/add-member" className="add-member-button">
+            <UserPlusIcon className="button-icon" width={20} height={20} />+
+            Voeg lid toe
+          </Link>
+        </div>
       </div>
-
       <input
         type="text"
         className="search-input"
-        placeholder="Zoek op naam"
+        placeholder="Zoek op naam, gewicht, leeftijd of klasse..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-
       <table className="leden-tabel">
         <thead>
           <tr>
@@ -85,88 +159,40 @@ const LedenlijstPage = () => {
             <th>Leeftijd</th>
             <th>Klasse</th>
             <th>Verzekering</th>
+            <th className="action-column"></th>
           </tr>
         </thead>
         <tbody>
           {filteredLeden.map((lid, i) => (
-            <tr key={i} onClick={() => handleRowClick(lid.id)} style={{ cursor: "pointer" }}>
+            <tr
+              key={i}
+              onClick={() => handleRowClick(lid.id)}
+              style={{ cursor: "pointer" }}
+            >
               <td>{lid.naam}</td>
-              <td>{lid.gewichtscategorie}</td>
+              <td>-{lid.gewichtscategorie}</td>
               <td>{lid.leeftijd}</td>
               <td>{lid.klasse}</td>
-              <td>{lid.verzekering}</td>
+              <td>
+                <span
+                  className={`insurance-badge insurance-${lid.verzekering.type}`}
+                >
+                  {lid.verzekering.text}
+                </span>
+              </td>
+              <td className="action-column">
+                <button
+                  onClick={(e) => handleDelete(e, lid.id)}
+                  className="delete-button"
+                  title="Verwijder lid"
+                >
+                  <TrashIcon className="delete-icon" width={20} height={20} />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      <style jsx>{`
-        .leden-container {
-          max-width: 900px;
-          margin: 50px auto;
-          padding: 30px;
-          background: #fff;
-          border-radius: 12px;
-          box-shadow: 0 0 25px rgba(0, 0, 0, 0.05);
-          font-family: "Inter", sans-serif;
-        }
-        .header-section {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 30px;
-        }
-        .add-member-button {
-          display: inline-flex;
-          align-items: center;
-          padding: 12px 24px;
-          background-color: #3498db;
-          color: white;
-          border-radius: 8px;
-          font-weight: 500;
-          text-decoration: none;
-        }
-        .add-member-button:hover {
-          background-color: #2980b9;
-        }
-        .leden-title {
-          font-size: 2rem;
-          color: #3683fe;
-          margin-bottom: 10px;
-        }
-        .leden-subtitle {
-          color: #555;
-          font-size: 15px;
-          margin-bottom: 30px;
-        }
-        .search-input {
-          width: 100%;
-          padding: 10px 15px;
-          margin-bottom: 20px;
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          font-size: 15px;
-        }
-        .leden-tabel {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 15px;
-        }
-        .leden-tabel th,
-        .leden-tabel td {
-          padding: 14px 16px;
-          text-align: left;
-          border-bottom: 1px solid #e0e0e0;
-        }
-        .leden-tabel th {
-          background-color: #f4f7fb;
-          color: #333;
-          font-weight: 600;
-        }
-        .leden-tabel tr:hover {
-          background-color: #f9fbff;
-        }
-      `}</style>
     </div>
   );
 };

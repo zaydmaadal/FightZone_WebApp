@@ -1,0 +1,160 @@
+.leden-container {
+  padding: 2rem;
+  border-radius: 12px;
+  font-family: "Inter", sans-serif;
+}
+.header-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 30px;
+}
+.button-group {
+  display: flex;
+  width: 100%;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 12px 24px;
+  background-color: var(--filter-yellow);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 16px;
+}
+.filter-button:hover {
+  background-color: #e6c05f;
+}
+.add-member-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 12px 24px;
+  background-color: var(--primary-blue);
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+.add-member-button:hover {
+  background-color: var(--hover-blue);
+}
+.button-icon {
+  width: 20px;
+  height: 20px;
+}
+.leden-title {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+.leden-subtitle {
+  color: #555;
+  font-size: 15px;
+  margin-bottom: 30px;
+}
+.search-input {
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+}
+.leden-tabel {
+  width: 100%;
+  font-size: 15px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: #fff;
+  border: 1px solid #d5d5d5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.leden-tabel th {
+  padding: 14px 20px;
+}
+
+.leden-tabel td {
+  padding: 18px 20px;
+  text-align: center;
+  font-weight: 500;
+  color: var(--light-text-color);
+  border-bottom: 1px solid #d5d5d5;
+}
+
+.leden-tabel th {
+  background-color: #f4f7fb;
+  color: #333;
+  font-weight: 750;
+  text-transform: uppercase;
+  border-bottom: 1px solid #d5d5d5;
+}
+
+.leden-tabel tr:last-child td {
+  border-bottom: none;
+}
+
+.leden-tabel tr:hover {
+  background-color: #f9fbff;
+}
+
+.insurance-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.insurance-ok {
+  background-color: rgba(0, 182, 155, 0.2);
+  color: #00b69b;
+}
+
+.insurance-warning {
+  background-color: rgba(255, 196, 47, 0.2);
+  color: #ffc42f;
+}
+
+.insurance-error {
+  background-color: rgba(239, 56, 38, 0.2);
+  color: #ef3826;
+}
+
+.action-column {
+  width: 50px;
+  text-align: center;
+  padding: 0 !important;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.delete-button:hover {
+  background-color: rgba(239, 56, 38, 0.1);
+}
+
+.delete-icon {
+  color: #ef3826;
+}

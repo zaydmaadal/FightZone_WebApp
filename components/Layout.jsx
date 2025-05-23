@@ -2,10 +2,42 @@
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { usePathname } from "next/navigation";
+import { useAuth } from "../src/services/auth";
+import { useEffect } from "react";
+import axios from "axios";
 
 export default function Layout({ children }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
+  const { user, logout } = useAuth();
+
+  useEffect(() => {
+    if (!isLoginPage && user) {
+      // Check token validity every minute
+      const interval = setInterval(async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            logout();
+            return;
+          }
+
+          // Validate token by making a request to get current user
+          await axios.get("https://fightzone-api.onrender.com/api/v1/auth/me", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        } catch (error) {
+          if (error.response?.status === 401) {
+            logout();
+          }
+        }
+      }, 60000); // Check every minute
+
+      return () => clearInterval(interval);
+    }
+  }, [isLoginPage, user, logout]);
 
   return (
     <div className="layout">
