@@ -43,10 +43,9 @@ const MemberDetails = () => {
     const club = clubs.find((c) => c._id === clubId);
     return club ? club.naam : "Onbekende club";
   };
-
-  if (loading) return <p>Gegevens worden geladen...</p>;
+   if (loading) return <p>Gegevens worden geladen...</p>;
   if (!member) return <p>Geen gegevens gevonden voor dit lid.</p>;
-
+  
   const calculateAge = (birthdate) => {
     const birthDate = new Date(birthdate);
     const today = new Date();
@@ -57,69 +56,55 @@ const MemberDetails = () => {
     return users.find((user) => user._id === opponentId);
   };
 
+  if (loading) return <p>Gegevens worden geladen...</p>;
+  if (!member) return <p>Geen gegevens gevonden voor dit lid.</p>;
+
   return (
-    <div className="member-details">
+    <div className="profile-page">
       <div className="back-button-container">
         <Link href={`/clubs/${member.club}/leden`} className="back-button">
           ← Terug naar ledenoverzicht
         </Link>
       </div>
-      <div className="member-card">
-        <div className="member-header">
-          <img
-            src={member.profielfoto}
-            alt={member.voornaam}
-            className="profile-image"
-          />
-          <div className="details">
-            <h1>
-              {member.voornaam} {member.achternaam}
-            </h1>
-            <p className="nickname">"{member.vechterInfo.bijnaam}"</p>
-            <p className="club">{getClubName(member.club)}</p>
-          </div>
+
+      <div className="profile-container">
+        <div className="left">
+          <img className="fighter-photo" src={member.profielfoto} alt={member.voornaam} />
         </div>
 
-        <div className="stats">
-          <div className="stat">
-            <h2>{member.vechterInfo.gewicht} kg</h2>
-            <p>Gewicht</p>
+        <div className="right">
+          <h1>{member.voornaam} {member.achternaam}</h1>
+          <h2>"{member.vechterInfo.bijnaam}"</h2>
+          <p className="record">24-9-5 (W-L-D)</p>
+          <div className="tags">
+            <span>Champion lightweight</span>
+            <span>#3</span>
+            <span>Actief</span>
+            <span>{getClubName(member.club)}</span>
           </div>
-          <div className="stat">
-            <h2>{member.vechterInfo.lengte} cm</h2>
-            <p>Lengte</p>
-          </div>
-          <div className="stat">
-            <h2>{calculateAge(member.geboortedatum)}</h2>
-            <p>Leeftijd</p>
-          </div>
-          <div className="stat">
-            <h2>{member.vechterInfo.klasse}</h2>
-            <p>Klasse</p>
+          <div className="stats-grid">
+            <div><strong>{member.vechterInfo.koWins || 0}</strong><p>KO Wins</p></div>
+            <div><strong>{calculateAge(member.geboortedatum)}</strong><p>Leeftijd</p></div>
+            <div><strong>{member.vechterInfo.klasse}</strong><p>Klasse</p></div>
+            <div><strong>{member.vechterInfo.gewicht} kg</strong><p>Gewicht</p></div>
           </div>
         </div>
+      </div>
 
-        <div className="info">
-          <h2>Informatie</h2>
+      <div className="info-section">
+        <div className="info-block">
+          <h3>Info</h3>
           <table>
             <tbody>
               <tr>
                 <td>Verzekering</td>
-                <td
-                  className={
-                    member.vechterInfo.verzekering ? "valid" : "invalid"
-                  }
-                >
+                <td className={member.vechterInfo.verzekering ? "valid" : "invalid"}>
                   {member.vechterInfo.verzekering ? "Geldig" : "Niet geldig"}
                 </td>
               </tr>
               <tr>
                 <td>Fighting Ready</td>
-                <td
-                  className={
-                    member.vechterInfo.fightingReady ? "valid" : "invalid"
-                  }
-                >
+                <td className={member.vechterInfo.fightingReady ? "valid" : "invalid"}>
                   {member.vechterInfo.fightingReady ? "Ja" : "Nee"}
                 </td>
               </tr>
@@ -132,18 +117,9 @@ const MemberDetails = () => {
         </div>
 
         <div className="fight-history">
-          <h2>Vechtgeschiedenis</h2>
+          <h3>Fight history</h3>
           {member.vechterInfo.fights.length > 0 ? (
             <table className="fight-table">
-              <thead>
-                <tr>
-                  <th>Datum</th>
-                  <th>Event</th>
-                  <th>Locatie</th>
-                  <th>Tegenstander</th>
-                  <th>Resultaat</th>
-                </tr>
-              </thead>
               <tbody>
                 {member.vechterInfo.fights.map((fight, index) => {
                   const opponent = getOpponentDetails(fight.tegenstander);
@@ -155,22 +131,14 @@ const MemberDetails = () => {
                       <td>
                         {opponent ? (
                           <>
-                            <img
-                              src={opponent.profielfoto}
-                              alt={opponent.voornaam}
-                              className="opponent-img"
-                            />
+                            <img className="opponent-img" src={opponent.profielfoto} alt={opponent.voornaam} />
                             {opponent.voornaam} {opponent.achternaam}
                           </>
                         ) : (
                           "Onbekend"
                         )}
                       </td>
-                      <td
-                        className={
-                          fight.resultaat === "Winnaar" ? "win" : "loss"
-                        }
-                      >
+                      <td className={fight.resultaat === "Winnaar" ? "win" : "loss"}>
                         {fight.resultaat}
                       </td>
                     </tr>
@@ -185,161 +153,165 @@ const MemberDetails = () => {
       </div>
 
       <style jsx>{`
-        body {
-          color: #00000;
-          background-color: #f9fafb;
-        }
-        .member-details {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          padding: 20px;
+        .profile-page {
+          padding: 40px;
+          background-color: #f9f9f9;
         }
 
         .back-button-container {
-          width: 100%;
-          max-width: 800px;
           margin-bottom: 20px;
         }
 
         .back-button {
-          display: inline-block;
           padding: 10px 20px;
           background-color: #3483fe;
           color: white;
           text-decoration: none;
           border-radius: 5px;
           font-weight: 500;
-          transition: background-color 0.2s ease;
         }
 
-        .back-button:hover {
-          background-color: #2962cc;
-        }
-
-        .member-card {
-          width: 100%;
-          background: white;
-          padding: 2rem;
-          border-radius: 10px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .member-header {
+        .profile-container {
           display: flex;
-          align-items: center;
-          gap: 1.5rem;
+          background: transparent;
         }
 
-        .profile-image {
-          width: 120px;
-          height: 120px;
-          object-fit: contain;
-          border-radius: 50%;
-        }
-
-        .details h1 {
-          font-size: 1.8rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .nickname {
-          font-style: italic;
-          color: #555;
-        }
-
-        .club {
-          font-size: 1.2rem;
-          font-weight: bold;
-        }
-
-        .stats {
-          display: flex;
-          gap: 1rem;
-          margin: 2rem 0;
-        }
-
-        .stat {
+        .left {
           flex: 1;
-          text-align: center;
-          background: #f9fafb;
-          padding: 1rem;
-          border-radius: 8px;
-          font-size: 1rem;
-          font-weight: bold;
         }
 
-        .info {
-          background: #fff;
-          padding: 1rem;
-          border-radius: 8px;
-        }
-
-        .info table {
+        .fighter-photo {
           width: 100%;
+          height: auto;
+          object-fit: cover;
         }
 
-        .info td {
-          padding: 0.5rem;
+        .right {
+          flex: 1;
+          padding: 0 30px;
         }
 
-        .valid {
-          color: #10b981;
+        .tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
         }
 
-        .invalid {
-          color: #ef4444;
+        .tags span {
+          background-color: #e7f0ff;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
         }
 
-        .fight-history {
-          background: white;
-          padding: 1.5rem;
-          border-radius: 10px;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-          margin-top: 2rem;
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          margin-top: 20px;
+          gap: 24px;
+          margin-top: 24px;
         }
 
-        .fight-history h2 {
-          margin-bottom: 1rem;
+          .stats-grid div {
+    text-align: center;
+    background: #f0f4ff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .stats-grid strong {
+    font-size: 2.4rem;
+    display: block;
+    color: #222;
+  }
+
+  .stats-grid p {
+    font-weight: 600;
+    margin-top: 8px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+            .info-block table {
+            width: 100%;
+    border-spacing: 0 10px;
+  }
+
+  .info-block td {
+    padding: 8px 10px;
+    font-weight: 500;
+  }
+
+   .info-block td:first-child {
+    color: #666;
+    width: 150px;
+  }
+
+        .info-section {
+          display: flex;
+          margin-top: 40px;
+          gap: 40px;
+        }
+
+        .info-block, .fight-history {
+          flex: 1;
         }
 
         .fight-table {
           width: 100%;
-          border-collapse: collapse;
-        }
-
-        .fight-table th,
-        .fight-table td {
-          padding: 0.75rem;
-          border-bottom: 1px solid #e5e7eb;
-          text-align: left;
-        }
-
-        .fight-table th {
-          background: #f3f4f6;
-          font-weight: bold;
         }
 
         .opponent-img {
-          width: 40px;
-          height: 40px;
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
-          object-fit: contain;
-          margin-right: 8px;
+          margin-right: 6px;
           vertical-align: middle;
         }
 
-        .win {
+        .valid {
           color: #10b981;
           font-weight: bold;
         }
 
-        .loss {
+        .invalid {
           color: #ef4444;
           font-weight: bold;
         }
+
+        .win {
+          color: #10b981;
+        }
+
+        .loss {
+          color: #ef4444;
+        }
+
+         @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .info-block td {
+      font-size: 0.9rem;
+    }
+
+    .stats-grid strong {
+      font-size: 1.6rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+  .profile-container,
+  .info-section {
+    flex-direction: column;
+  }
+
+  .right {
+    padding: 20px 0 0 0;
+  }
+}
       `}</style>
     </div>
   );

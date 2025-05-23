@@ -20,6 +20,7 @@ const LedenlijstPage = () => {
         );
 
         const mappedLeden = clubMembers.map((user) => ({
+          id: user._id,
           naam: `${user.voornaam} ${user.achternaam}`,
           gewichtscategorie: `${user.vechterInfo?.gewicht || "Onbekend"} kg`,
           leeftijd: user.geboortedatum || "Onbekend",
@@ -37,6 +38,11 @@ const LedenlijstPage = () => {
       loadData();
     }
   }, [loading, user]);
+
+   const handleRowClick = (id) => {
+    router.push(`/member/${id}`); // ✅ Detailpagina route
+  };
+
 
   if (loading || !user) {
     return <div style={{ textAlign: "center" }}>Laden...</div>;
@@ -83,7 +89,7 @@ const LedenlijstPage = () => {
         </thead>
         <tbody>
           {filteredLeden.map((lid, i) => (
-            <tr key={i}>
+            <tr key={i} onClick={() => handleRowClick(lid.id)} style={{ cursor: "pointer" }}>
               <td>{lid.naam}</td>
               <td>{lid.gewichtscategorie}</td>
               <td>{lid.leeftijd}</td>
