@@ -204,7 +204,7 @@ export default function Sidebar() {
         }
 
         .nav-item.active {
-          background-color: #0b48ab;
+          background-color: #3483fe;
           color: #ffffff;
           font-weight: 600;
         }

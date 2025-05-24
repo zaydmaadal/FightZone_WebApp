@@ -735,7 +735,7 @@ const AddUserPage = () => {
         }
 
         .scan-button {
-          background-color: #2563eb;
+          background-color: #3483fe;
           color: white;
           padding: 0.75rem 1.5rem;
           border-radius: 0.5rem;
@@ -748,7 +748,7 @@ const AddUserPage = () => {
         }
 
         .scan-button:hover {
-          background-color: #1d4ed8;
+          background-color: #1a5dc2;
         }
 
         .scan-instruction {
@@ -874,7 +874,7 @@ const AddUserPage = () => {
         }
 
         .submit-button {
-          background-color: #2563eb;
+          background-color: #3483fe;
           color: white;
           padding: 0.75rem 2rem;
           border-radius: 0.5rem;
@@ -886,7 +886,7 @@ const AddUserPage = () => {
         }
 
         .submit-button:hover {
-          background-color: #1d4ed8;
+          background-color: ##1a5dc2;
         }
 
         @media (max-width: 640px) {
