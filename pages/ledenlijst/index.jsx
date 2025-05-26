@@ -61,6 +61,17 @@ const LedenlijstPage = () => {
   const { user, loading } = useAuth();
   const [leden, setLeden] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -139,7 +150,7 @@ const LedenlijstPage = () => {
             Filter
           </button>
           <Link href="ledenlijst/add-member" className="add-member-button">
-            <UserPlusIcon className="button-icon" width={20} height={20} />+
+            <UserPlusIcon className="button-icon" width={20} height={20} />
             Voeg lid toe
           </Link>
         </div>
@@ -147,52 +158,65 @@ const LedenlijstPage = () => {
       <input
         type="text"
         className="search-input"
-        placeholder="Zoek op naam, gewicht, leeftijd of klasse..."
+        placeholder={
+          isMobile
+            ? "Zoek lid..."
+            : "Zoek op naam, gewicht, leeftijd of klasse..."
+        }
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <table className="leden-tabel">
-        <thead>
-          <tr>
-            <th>Naam</th>
-            <th>Gewichtscategorie</th>
-            <th>Leeftijd</th>
-            <th>Klasse</th>
-            <th>Verzekering</th>
-            <th className="action-column"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredLeden.map((lid, i) => (
-            <tr
-              key={i}
-              onClick={() => handleRowClick(lid.id)}
-              style={{ cursor: "pointer" }}
-            >
-              <td>{lid.naam}</td>
-              <td>-{lid.gewichtscategorie}</td>
-              <td>{lid.leeftijd}</td>
-              <td>{lid.klasse}</td>
-              <td>
-                <span
-                  className={`insurance-badge insurance-${lid.verzekering.type}`}
-                >
-                  {lid.verzekering.text}
-                </span>
-              </td>
-              <td className="action-column">
-                <button
-                  onClick={(e) => handleDelete(e, lid.id)}
-                  className="delete-button"
-                  title="Verwijder lid"
-                >
-                  <TrashIcon className="delete-icon" width={20} height={20} />
-                </button>
-              </td>
+
+      <div className="table-responsive">
+        <table className="leden-tabel">
+          <thead>
+            <tr>
+              <th className="name-column">Naam</th>
+              {!isMobile && <th className="weight-column">Gewicht</th>}
+              <th className="age-column">Leeftijd</th>
+              {!isMobile && <th className="class-column">Klasse</th>}
+              <th className="insurance-column">Verzekering</th>
+              <th className="action-column"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredLeden.map((lid, i) => (
+              <tr
+                key={i}
+                onClick={() => handleRowClick(lid.id)}
+                style={{ cursor: "pointer" }}
+              >
+                <td className="name-column">{lid.naam}</td>
+                {!isMobile && (
+                  <td className="weight-column">-{lid.gewichtscategorie}</td>
+                )}
+                <td className="age-column">{lid.leeftijd}</td>
+                {!isMobile && <td className="class-column">{lid.klasse}</td>}
+                <td className="insurance-column">
+                  <span
+                    className={`insurance-badge insurance-${lid.verzekering.type}`}
+                  >
+                    {isMobile
+                      ? lid.verzekering.text
+                          .replace("Verloopt over", "")
+                          .replace("dagen", "Dagen")
+                      : lid.verzekering.text}
+                  </span>
+                </td>
+                <td className="action-column">
+                  <button
+                    onClick={(e) => handleDelete(e, lid.id)}
+                    className="delete-button"
+                    title="Verwijder lid"
+                  >
+                    <TrashIcon className="delete-icon" width={20} height={20} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

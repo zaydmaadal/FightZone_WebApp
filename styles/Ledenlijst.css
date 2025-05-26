@@ -1,8 +1,18 @@
 .leden-container {
-  padding: 2rem;
+  padding: 1rem;
   border-radius: 12px;
   font-family: "Inter", sans-serif;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
 }
+
+@media (min-width: 768px) {
+  .leden-container {
+    padding: 2rem;
+  }
+}
+
 .header-section {
   display: flex;
   flex-direction: column;
@@ -21,7 +31,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 12px 24px;
+  padding: 12px;
   background-color: var(--filter-yellow);
   color: #000;
   border: none;
@@ -31,6 +41,13 @@
   transition: background-color 0.2s;
   font-size: 16px;
 }
+
+@media (min-width: 768px) {
+  .filter-button {
+    padding: 12px 24px;
+  }
+}
+
 .filter-button:hover {
   background-color: #e6c05f;
 }
@@ -38,7 +55,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 12px 24px;
+  padding: 12px;
   background-color: var(--primary-blue);
   color: white;
   border-radius: 8px;
@@ -46,6 +63,13 @@
   text-decoration: none;
   transition: background-color 0.2s;
 }
+
+@media (min-width: 768px) {
+  .add-member-button {
+    padding: 12px 24px;
+  }
+}
+
 .add-member-button:hover {
   background-color: var(--hover-blue);
 }
@@ -54,9 +78,15 @@
   height: 20px;
 }
 .leden-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: var(--text-color);
   margin-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+  .leden-title {
+    font-size: 2rem;
+  }
 }
 
 .leden-subtitle {
@@ -72,50 +102,166 @@
   border-radius: 6px;
   font-size: 15px;
 }
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .leden-tabel {
   width: 100%;
-  font-size: 15px;
   border-collapse: separate;
   border-spacing: 0;
   background-color: #fff;
-  border: 1px solid #d5d5d5;
+  border: 1px solid rgba(213, 213, 213, 0.5);
   border-radius: 8px;
-  overflow: hidden;
-}
-.leden-tabel th {
-  padding: 14px 20px;
-}
-
-.leden-tabel td {
-  padding: 18px 20px;
-  text-align: center;
-  font-weight: 500;
-  color: var(--light-text-color);
-  border-bottom: 1px solid #d5d5d5;
+  table-layout: auto;
 }
 
 .leden-tabel th {
-  background-color: #f4f7fb;
+  background-color: #d4e4fd;
   color: #333;
   font-weight: 750;
   text-transform: uppercase;
-  border-bottom: 1px solid #d5d5d5;
+  padding: 16px 8px;
+  border-bottom: 1px solid rgba(213, 213, 213, 0.5);
+  white-space: nowrap;
 }
 
-.leden-tabel tr:last-child td {
-  border-bottom: none;
+.leden-tabel td:last-child {
+  border: none;
 }
 
-.leden-tabel tr:hover {
-  background-color: #f9fbff;
+.leden-tabel td {
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba(213, 213, 213, 0.3);
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* Kolombreedtes */
+.name-column {
+  width: 35%;
+  min-width: 100px;
+}
+
+.weight-column {
+  width: 15%;
+  min-width: 60px;
+  display: none;
+}
+
+.age-column {
+  width: 12%;
+  min-width: 50px;
+}
+
+.class-column {
+  width: 15%;
+  min-width: 70px;
+  display: none;
+}
+
+.insurance-column {
+  width: 30%;
+  min-width: 90px;
+}
+
+.action-column {
+  width: 8%;
+  min-width: 30px;
+}
+
+@media (max-width: 944px) {
+  .leden-tabel {
+    font-size: 14px;
+  }
+
+  .leden-tabel th,
+  .leden-tabel td {
+    padding: 14px 6px;
+    text-align: center;
+  }
+
+  .leden-tabel th {
+    padding: 18px 6px;
+  }
+
+  .insurance-badge {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 945px) {
+  .leden-tabel {
+    font-size: 15px;
+  }
+
+  .leden-tabel th,
+  .leden-tabel td {
+    padding: 16px 12px;
+    text-align: center;
+  }
+
+  .leden-tabel .name-column {
+    width: 25%;
+    text-align: left;
+  }
+  .weight-column,
+  .class-column {
+    display: table-cell;
+  }
+  .age-column {
+    width: 10%;
+  }
+  .class-column {
+    width: 15%;
+  }
+  .insurance-column {
+    width: 25%;
+  }
+  .action-column {
+    width: 8%;
+  }
+
+  .insurance-badge {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .leden-tabel th,
+  .leden-tabel td {
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  .insurance-badge {
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+
+  .delete-icon {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .insurance-badge {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 4px 8px;
   border-radius: 4px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .insurance-badge {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
 }
 
 .insurance-ok {
@@ -131,12 +277,6 @@
 .insurance-error {
   background-color: rgba(239, 56, 38, 0.2);
   color: #ef3826;
-}
-
-.action-column {
-  width: 50px;
-  text-align: center;
-  padding: 0 !important;
 }
 
 .delete-button {
