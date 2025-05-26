@@ -16,13 +16,54 @@ import {
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   ArrowRightCircleIcon,
-} from "@heroicons/react/24/outline";
+} from "@heroicons/react/24/solid";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   if (!user) return null;
+
+  const getMenuItems = () => {
+    if (!user || !user.role) return [];
+
+    switch (user.role) {
+      case "Vechter":
+        return [
+          { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
+          { path: "/agenda", label: "Agenda", icon: CalendarIcon },
+          {
+            path: "/prestatie",
+            label: "Prestaties",
+            icon: ClipboardDocumentListIcon,
+          },
+        ];
+      case "Trainer":
+        return [
+          { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
+          { path: "/leden", label: "Ledenlijst", icon: UsersIcon },
+          { path: "/agenda", label: "Agenda", icon: CalendarIcon },
+          {
+            path: "/results",
+            label: "Resultaat",
+            icon: ClipboardDocumentListIcon,
+          },
+        ];
+      case "VKBMO-lid":
+        return [
+          { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
+          { path: "/jury", label: "Jury", icon: ClipboardDocumentListIcon },
+          { path: "/clubs", label: "Cluboverzicht", icon: UsersIcon },
+          { path: "/agenda", label: "Agenda", icon: CalendarIcon },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <header className="header">
@@ -30,7 +71,7 @@ export default function Header() {
       <div className="desktop-header">
         <div className="profile-info">
           <img
-            src={user.profilePicture || "/default-avatar.png"}
+            src={user.profielfoto || "/default-avatar.png"}
             alt="Profile"
             className="profile-picture"
           />
@@ -52,27 +93,22 @@ export default function Header() {
 
       {/* Mobile Header */}
       <div className="mobile-header">
-        <div className="mobile-header-left">
-          <button
-            className="hamburger profile-icon"
-            onClick={() => setIsMobileMenuOpen(true)}
-          >
-            <Bars3Icon />
-          </button>
-          <div className="mobile-profile">
-            <img
-              src={user.profilePicture || "/default-avatar.png"}
-              alt="Profile"
-              className="profile-picture"
-            />
-            <div>
-              <p className="user-name">
-                {user.voornaam} {user.achternaam}
-              </p>
-              <p className="user-role">{user.role}</p>
-            </div>
+        <div className="mobile-profile">
+          <img
+            src={user.profielfoto || "/default-avatar.png"}
+            alt="Profile"
+            className="profile-picture"
+          />
+          <div>
+            <p className="user-name">
+              {user.voornaam} {user.achternaam}
+            </p>
+            <p className="user-role">{user.role}</p>
           </div>
         </div>
+        <button className="hamburger" onClick={() => setIsMobileMenuOpen(true)}>
+          <Bars3Icon />
+        </button>
       </div>
 
       {/* Sidebar */}
@@ -84,11 +120,20 @@ export default function Header() {
         {/* Logo */}
         <div className="sidebar-logo-row">
           <img
-            src="/FightZoneLogo.png"
+            src="/Sidebar-Logo.png"
             alt="FightZone Logo"
             className="logo-img"
           />
-          <ArrowRightCircleIcon className="logo-arrow" width={28} height={28} />
+          <button
+            className="logo-arrow-button"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <ArrowRightCircleIcon
+              className="logo-arrow"
+              width={28}
+              height={28}
+            />
+          </button>
         </div>
         <button
           className="close-button"
@@ -96,119 +141,34 @@ export default function Header() {
         >
           <XMarkIcon />
         </button>
+
+        {/* Dynamic Navigation */}
         <nav className="sidebar-nav">
-          <Link
-            href="/dashboard"
-            className={`sidebar-nav-link${
-              typeof window !== "undefined" &&
-              window.location.pathname === "/dashboard"
-                ? " active"
-                : ""
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <HomeIcon className="sidebar-icon" width={24} height={24} />
-            <span className="sidebar-title">Home</span>
-          </Link>
-          <Link
-            href="/leden"
-            className={`sidebar-nav-link${
-              typeof window !== "undefined" &&
-              window.location.pathname === "/leden"
-                ? " active"
-                : ""
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <UsersIcon className="sidebar-icon" width={24} height={24} />
-            <span className="sidebar-title">Ledenlijst</span>
-          </Link>
-          <Link
-            href="/agenda"
-            className={`sidebar-nav-link${
-              typeof window !== "undefined" &&
-              window.location.pathname === "/agenda"
-                ? " active"
-                : ""
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <CalendarIcon className="sidebar-icon" width={24} height={24} />
-            <span className="sidebar-title">Agenda</span>
-          </Link>
-          <Link
-            href="/results"
-            className={`sidebar-nav-link${
-              typeof window !== "undefined" &&
-              window.location.pathname === "/results"
-                ? " active"
-                : ""
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <ClipboardDocumentListIcon
-              className="sidebar-icon"
-              width={24}
-              height={24}
-            />
-            <span className="sidebar-title">Results</span>
-          </Link>
+          {menuItems.map((item) => {
+            const isActive = pathname === item.path;
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`sidebar-nav-link ${isActive ? "active" : ""}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Icon className="sidebar-icon" width={24} height={24} />
+                <span className="sidebar-title">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
-        <div className="sidebar-section-title">VKBMO</div>
-        <nav className="sidebar-nav">
-          <Link
-            href="/events"
-            className={`sidebar-nav-link${
-              typeof window !== "undefined" &&
-              window.location.pathname === "/events"
-                ? " active"
-                : ""
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <SparklesIcon className="sidebar-icon" width={24} height={24} />
-            <span className="sidebar-title">Evenementen</span>
-          </Link>
-          <Link
-            href="/news"
-            className={`sidebar-nav-link${
-              typeof window !== "undefined" &&
-              window.location.pathname === "/news"
-                ? " active"
-                : ""
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <NewspaperIcon className="sidebar-icon" width={24} height={24} />
-            <span className="sidebar-title">Nieuws</span>
-          </Link>
-          <Link
-            href="/community"
-            className={`sidebar-nav-link${
-              typeof window !== "undefined" &&
-              window.location.pathname === "/community"
-                ? " active"
-                : ""
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <ChatBubbleLeftRightIcon
-              className="sidebar-icon"
-              width={24}
-              height={24}
-            />
-            <span className="sidebar-title">Community</span>
-          </Link>
-        </nav>
+
+        {/* Bottom Section */}
         <div className="sidebar-bottom">
           <nav className="sidebar-nav">
             <Link
               href="/settings"
               className={`sidebar-nav-link${
-                typeof window !== "undefined" &&
-                window.location.pathname === "/settings"
-                  ? " active"
-                  : ""
+                pathname === "/settings" ? " active" : ""
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
@@ -218,10 +178,7 @@ export default function Header() {
             <Link
               href="/profile"
               className={`sidebar-nav-link${
-                typeof window !== "undefined" &&
-                window.location.pathname === "/profile"
-                  ? " active"
-                  : ""
+                pathname === "/profile" ? " active" : ""
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
@@ -239,7 +196,7 @@ export default function Header() {
           </nav>
           <div className="sidebar-profile-block">
             <img
-              src={user.profilePicture || "/default-avatar.png"}
+              src={user.profielfoto || "/default-avatar.png"}
               alt="Profile"
               className="profile-picture"
             />
@@ -252,6 +209,62 @@ export default function Header() {
           </div>
         </div>
       </aside>
+
+      <style jsx global>{`
+        /* Sidebar Navigation Styles */
+        .sidebar-nav {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .sidebar-nav-link {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          color: #62789b;
+          text-decoration: none;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+          font-size: 1rem;
+          font-weight: 500;
+        }
+
+        .sidebar-nav-link:hover {
+          background-color: #f8f9fb;
+        }
+
+        .sidebar-nav-link.active {
+          background-color: #ebf3ff;
+          color: #3483fe;
+          padding: 0.85rem 1.2rem;
+          font-weight: 600;
+        }
+
+        .sidebar-nav-link .sidebar-icon {
+          flex-shrink: 0;
+          width: 24px;
+          height: 24px;
+          color: inherit;
+        }
+
+        .sidebar-nav-link.active .sidebar-icon {
+          margin-right: 0.5rem;
+          color: #3483fe;
+        }
+
+        .sidebar-nav-link .sidebar-title {
+          font-size: 1rem;
+          line-height: 1.2;
+        }
+
+        .sidebar-nav-link.active .sidebar-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #3483fe;
+        }
+      `}</style>
 
       <style jsx>{`
         .header {
@@ -299,24 +312,22 @@ export default function Header() {
         /* Mobile Styles */
         .mobile-header {
           display: flex;
+          justify-content: space-between;
           align-items: center;
           padding: 1rem;
           position: relative;
+          width: 100%;
         }
         @media (min-width: 769px) {
           .mobile-header {
             display: none;
           }
         }
-        .mobile-header-left {
-          display: flex;
-          align-items: center;
-          gap: 0.7rem;
-        }
         .mobile-profile {
           display: flex;
           align-items: center;
           gap: 0.5rem;
+          flex: 1;
         }
         .profile-picture {
           width: 32px;
@@ -339,6 +350,10 @@ export default function Header() {
           background: none;
           border: none;
           cursor: pointer;
+          color: #3483fe;
+          width: 28px;
+          height: 28px;
+          margin-left: auto;
         }
 
         .profile-icon {
@@ -360,59 +375,70 @@ export default function Header() {
           z-index: 998;
           opacity: 0;
           transition: opacity 0.3s ease;
-        }
-
-        .sidebar-title {
-          font-size: 1.5rem;
-          font-weight: 500;
-          color: #62789b;
-          letter-spacing: 0.02em;
-          line-height: 1.3;
-          margin-left: 0.2rem;
-          transition: color 0.18s;
-          padding: 10px;
+          pointer-events: none;
         }
 
         .sidebar-overlay.active {
           display: block;
           opacity: 1;
+          pointer-events: auto;
         }
 
         .sidebar {
           position: fixed;
           top: 0;
-          left: -300px;
-          width: 300px;
+          left: 0;
+          transform: translateX(-100%);
+          width: 100%;
+          max-width: 300px;
           height: 100vh;
           background-color: #fff;
           z-index: 999;
-          padding: 2.2rem 1.5rem 1.5rem 1.5rem;
           box-shadow: 2px 0 12px rgba(0, 0, 0, 0.07);
-          border-radius: 0 24px 24px 0;
           display: flex;
           flex-direction: column;
-          transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar.active {
-          left: 0;
+          transform: translateX(0);
         }
 
         .sidebar-logo-row {
           display: flex;
           align-items: center;
-          justify-content: flex-start;
+          justify-content: space-between;
           gap: 1.2rem;
           margin-bottom: 1.2rem;
+          color: #3483fe;
+          width: 100%;
         }
 
         .logo-img {
-          height: 200px;
-          width: auto;
+          width: 73%;
+        }
+
+        .logo-arrow-button {
+          background: none;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.2s ease;
+          color: #3483fe;
+          flex-shrink: 0;
+        }
+
+        .logo-arrow-button:hover {
+          transform: scale(1.1);
         }
 
         .logo-arrow {
-          color: #2563eb;
+          width: 28px;
+          height: 28px;
+          color: inherit;
         }
 
         .close-button {
@@ -423,23 +449,6 @@ export default function Header() {
           border: none;
           cursor: pointer;
           color: #666;
-        }
-
-        .sidebar-nav {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .sidebar-nav-link span {
-          display: inline-block;
-          font-size: 1.08rem;
-          line-height: 1.2;
-        }
-
-        .sidebar-icon {
-          display: inline-block;
-          vertical-align: middle;
         }
 
         .sidebar-section-title {
@@ -487,11 +496,14 @@ export default function Header() {
 
         .sidebar-logout {
           background: none;
-          border: 1px solid black;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          border: none;
           text-align: center;
           color: #6b7a99;
           text-align: left;
-          padding: 0.85rem 1rem;
           border-radius: 12px;
           font-size: 1.15rem;
           font-weight: 500;
@@ -507,6 +519,17 @@ export default function Header() {
           color: #e53e3e;
         }
 
+        /* Media Queries */
+        @media (min-width: 769px) {
+          .mobile-header {
+            display: none;
+          }
+          .sidebar,
+          .sidebar-overlay {
+            display: none !important;
+          }
+        }
+
         @media (max-width: 768px) {
           .desktop-header {
             display: none;
@@ -514,6 +537,18 @@ export default function Header() {
           .mobile-header {
             display: flex;
             justify-content: space-between;
+          }
+
+          .sidebar {
+            width: 75%;
+            max-width: 300px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .sidebar {
+            width: 75%;
+            max-width: none;
           }
         }
       `}</style>
