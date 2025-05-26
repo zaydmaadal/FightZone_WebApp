@@ -55,7 +55,7 @@ export default function Layout({ children }) {
 
         .main-content {
           flex: 1;
-          padding: 20px;
+
           background-color: #f5f5f5;
         }
 

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../src/services/auth";
+import Link from "next/link";
+import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -17,8 +19,6 @@ const LoginPage = () => {
         wachtwoord: password,
       });
 
-      // The login function will handle the token storage and user state
-      // We can just redirect based on the role
       const role = localStorage.getItem("role");
       switch (role) {
         case "Vechter":
@@ -40,40 +40,62 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
-      <div className="login-form">
-        <h1>Inloggen</h1>
-        <p className="subtext">
-          Beheer je club, vechters en wedstrijden op één plek
-        </p>
+      {/* Header image */}
+      <div className="login-header-image"></div>
 
-        <form onSubmit={handleLogin}>
+      <div className="login-content">
+        <h1>Login</h1>
+
+        <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
-            <label>Emailadres</label>
-            <input
-              type="email"
-              value={email}
-              placeholder="voorbeeld@mail.com"
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <label className="input-label">Email</label>
+            <div className="input-container">
+              <EnvelopeIcon className="input-icon" />
+              <input
+                type="email"
+                value={email}
+                placeholder="Vul je email in"
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
-            <label>Wachtwoord</label>
-            <input
-              type="password"
-              value={password}
-              placeholder="••••••••"
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <label className="input-label">Wachtwoord</label>
+            <div className="input-container">
+              <LockClosedIcon className="input-icon" />
+              <input
+                type="password"
+                value={password}
+                placeholder="Vul je wachtwoord in"
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Link href="/wachtwoord" className="forgot-password">
+              Wachtwoord Wijzigen
+            </Link>
           </div>
 
           {error && <p className="error-message">{error}</p>}
 
-          <button type="submit" className="login-btn">
-            Inloggen
-          </button>
+          <div className="bottom-section">
+            <button type="submit" className="login-btn">
+              Login
+            </button>
+
+            <p className="support-text">
+              Contacteer{" "}
+              <Link
+                href="https://www.vkbmo.be/algemeen1.html"
+                className="vkbmo-link"
+              >
+                VKBMO
+              </Link>{" "}
+              voor accountondersteuning.
+            </p>
+          </div>
         </form>
       </div>
     </div>

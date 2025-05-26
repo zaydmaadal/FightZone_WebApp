@@ -1,87 +1,203 @@
-.login-page {
+.login-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   min-height: 100vh;
-  background-color: #f4f7fb;
+  background-color: #ffffff;
 }
 
-.login-image {
+.login-header-image {
+  height: 35vh;
+  background-color: #d6e6ff;
+  background-image: url("/LoginHeader.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.login-content {
+  padding: 24px;
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #ffffff;
+  flex-direction: column;
+}
+
+/* Desktop Styles */
+@media (min-width: 1024px) {
+  .login-container {
+    flex-direction: row;
+    height: 100vh;
+  }
+
+  .login-header-image {
+    width: 40%;
+    height: 100%;
+    background-position: center center;
+    background-image: url("/LoginHeader2.png");
+  }
+
+  .login-content {
+    width: 60%;
+    padding: 40px 0px;
+    justify-content: flex-start; /* Changed from center to flex-start */
+    max-width: 45%;
+    margin: 0 auto;
+    position: relative; /* Added for absolute positioning of support text */
+  }
+
+  .login-form {
+    justify-content: flex-start; /* Changed from center to flex-start */
+    width: 100%;
+    margin-top: 5%; /* Added some top margin */
+  }
+
+  .login-content h1 {
+    font-size: 36px;
+    margin-bottom: 40px;
+  }
+
+  .form-group {
+    margin-bottom: 40px;
+  }
+
+  .form-group input {
+    padding: 16px 16px 16px 48px;
+    font-size: 16px;
+  }
+
+  .input-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .login-btn {
+    padding: 18px;
+    font-size: 18px;
+    margin-top: 0px; /* Added margin above button */
+  }
+
+  .bottom-section {
+    padding-bottom: 0;
+  }
+
+  .support-text {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .bottom-section {
+    margin-top: auto;
+  }
+}
+
+/* Mobile styles blijven hetzelfde */
+.login-content h1 {
+  font-size: 32px;
+  color: #000000;
+  margin-bottom: 32px;
+  text-align: left;
+  font-weight: 600;
 }
 
 .login-form {
+  width: 100%;
   flex: 1;
-  max-width: 500px;
-  padding: 80px 40px;
-  background: #fff;
-  margin: auto;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
-  border-radius: 8px;
-}
-
-.login-form h1 {
-  font-size: 2.2rem;
-  color: #3683fe;
-  margin-bottom: 10px;
-}
-
-.subtext {
-  font-size: 15px;
-  color: #555;
-  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 32px;
 }
 
-.form-group label {
-  font-weight: 600;
-  margin-bottom: 8px;
+.input-label {
   display: block;
+  color: #606060;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  color: #3483fe;
+  width: 20px;
+  height: 20px;
 }
 
 .form-group input {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 15px;
-  background: #fefefe;
-  color: var(--text-color);
+  padding: 14px 16px 14px 48px;
+  border: 1px solid #d6e6ff;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #ffffff;
 }
 
 .form-group input:focus {
-  border-color: #3683fe;
+  border-color: #3483fe;
   outline: none;
 }
 
-.login-btn {
-  width: 100%;
-  background-color: #3683fe;
-  color: white;
-  border: none;
-  padding: 14px;
-  font-size: 16px;
+.forgot-password {
+  display: block;
+  margin-top: 12px;
+  color: #000000;
+  font-size: 14px;
   font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.login-btn:hover {
-  background-color: #246ade;
+  text-decoration: underline;
+  text-decoration-color: #3483fe;
+  text-underline-offset: 3px;
+  text-align: left;
 }
 
 .error-message {
   background: #ffe9e9;
   color: #d9534f;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
   font-size: 14px;
+  text-align: center;
+}
+
+.login-btn {
+  width: 100%;
+  background-color: #3483fe;
+  color: white;
+  border: none;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.bottom-section {
+  padding-bottom: 20px;
+}
+
+.support-text {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: #555555;
+}
+
+.vkbmo-link {
+  font-weight: 700;
+  text-decoration: underline;
+  color: #3483fe;
 }
