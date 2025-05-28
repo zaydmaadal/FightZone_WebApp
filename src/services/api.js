@@ -2,7 +2,8 @@ import axios from "axios";
 
 // Basis API-instellingen
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1",
+  baseURL: "https://fightzone-api.onrender.com/api/v1",
+
   withCredentials: true,
 });
 

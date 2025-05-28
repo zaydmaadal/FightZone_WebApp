@@ -2,11 +2,11 @@
 import { useAuth } from "../../src/services/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import nlLocale from '@fullcalendar/core/locales/nl';
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import nlLocale from "@fullcalendar/core/locales/nl";
 import { fetchEvents, createEvent } from "../../src/services/api";
 
 export default function Agenda() {
@@ -16,12 +16,12 @@ export default function Agenda() {
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [newEvent, setNewEvent] = useState({
-    title: '',
-    description: '',
-    start: '',
-    end: '',
-    location: '',
-    type: 'training'
+    title: "",
+    description: "",
+    start: "",
+    end: "",
+    location: "",
+    type: "training",
   });
 
   useEffect(() => {
@@ -39,15 +39,14 @@ export default function Agenda() {
   const loadEvents = async () => {
     try {
       const data = await fetchEvents();
-      console.log("Fetched events:", data);
-      
+
       if (!Array.isArray(data)) {
         console.error("Expected array of events but got:", data);
         setEvents([]);
         return;
       }
 
-      const transformedEvents = data.map(event => ({
+      const transformedEvents = data.map((event) => ({
         id: event._id,
         title: event.title,
         start: new Date(event.start),
@@ -55,18 +54,26 @@ export default function Agenda() {
         description: event.description,
         location: event.location,
         type: event.type,
-        backgroundColor: event.type === "vkbmo" ? "#3B82F6" : 
-                        event.type === "training" ? "#10B981" : "#8B5CF6",
-        borderColor: event.type === "vkbmo" ? "#2563EB" : 
-                    event.type === "training" ? "#059669" : "#7C3AED",
+        backgroundColor:
+          event.type === "vkbmo"
+            ? "#3B82F6"
+            : event.type === "training"
+            ? "#10B981"
+            : "#8B5CF6",
+        borderColor:
+          event.type === "vkbmo"
+            ? "#2563EB"
+            : event.type === "training"
+            ? "#059669"
+            : "#7C3AED",
         extendedProps: {
           description: event.description,
           location: event.location,
           type: event.type,
           createdBy: event.createdBy,
           trainer: event.trainer,
-          club: event.club
-        }
+          club: event.club,
+        },
       }));
 
       setEvents(transformedEvents);
@@ -78,14 +85,14 @@ export default function Agenda() {
 
   const getEventColor = (type) => {
     switch (type) {
-      case 'vkbmo':
-        return '#2563eb'; // Blue
-      case 'training':
-        return '#16a34a'; // Green
-      case 'club':
-        return '#9333ea'; // Purple
+      case "vkbmo":
+        return "#2563eb"; // Blue
+      case "training":
+        return "#16a34a"; // Green
+      case "club":
+        return "#9333ea"; // Purple
       default:
-        return '#6b7280'; // Gray
+        return "#6b7280"; // Gray
     }
   };
 
@@ -95,16 +102,16 @@ export default function Agenda() {
       await createEvent(newEvent);
       setShowAddEvent(false);
       setNewEvent({
-        title: '',
-        description: '',
-        start: '',
-        end: '',
-        location: '',
-        type: 'training'
+        title: "",
+        description: "",
+        start: "",
+        end: "",
+        location: "",
+        type: "training",
       });
       loadEvents();
     } catch (error) {
-      console.error('Error adding event:', error);
+      console.error("Error adding event:", error);
     }
   };
 
@@ -113,7 +120,7 @@ export default function Agenda() {
     setNewEvent({
       ...newEvent,
       start: selectInfo.startStr,
-      end: selectInfo.endStr
+      end: selectInfo.endStr,
     });
     setShowAddEvent(true);
   };
@@ -141,7 +148,7 @@ export default function Agenda() {
     return null;
   }
 
-  const canAddEvents = user?.role === 'vkbmo' || user?.role === 'trainer';
+  const canAddEvents = user?.role === "vkbmo" || user?.role === "trainer";
 
   return (
     <div className="agenda-page">
@@ -154,9 +161,9 @@ export default function Agenda() {
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
           locale={nlLocale}
           selectable={canAddEvents}
@@ -167,9 +174,9 @@ export default function Agenda() {
           select={handleDateSelect}
           eventClick={handleEventClick}
           eventTimeFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
           }}
         />
       </div>
@@ -185,7 +192,9 @@ export default function Agenda() {
                   type="text"
                   id="title"
                   value={newEvent.title}
-                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, title: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -195,7 +204,9 @@ export default function Agenda() {
                 <textarea
                   id="description"
                   value={newEvent.description}
-                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, description: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -206,7 +217,9 @@ export default function Agenda() {
                   type="text"
                   id="location"
                   value={newEvent.location}
-                  onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, location: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -216,7 +229,9 @@ export default function Agenda() {
                 <select
                   id="type"
                   value={newEvent.type}
-                  onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, type: e.target.value })
+                  }
                   required
                 >
                   <option value="training">Training</option>
@@ -226,7 +241,9 @@ export default function Agenda() {
               </div>
 
               <div className="form-actions">
-                <button type="submit" className="btn-primary">Toevoegen</button>
+                <button type="submit" className="btn-primary">
+                  Toevoegen
+                </button>
                 <button
                   type="button"
                   className="btn-secondary"
