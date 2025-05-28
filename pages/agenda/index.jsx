@@ -7,6 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import nlLocale from '@fullcalendar/core/locales/nl';
+import { fetchEvents, createEvent } from "../../src/services/api";
 
 export default function Agenda() {
   const { user, loading } = useAuth();
@@ -31,22 +32,13 @@ export default function Agenda() {
 
   useEffect(() => {
     if (user) {
-      fetchEvents();
+      loadEvents();
     }
   }, [user]);
 
-  const fetchEvents = async () => {
+  const loadEvents = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch("/api/events", {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await fetchEvents();
       console.log("Fetched events:", data);
       
       if (!Array.isArray(data)) {
@@ -100,28 +92,17 @@ export default function Agenda() {
   const handleAddEvent = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(newEvent),
+      await createEvent(newEvent);
+      setShowAddEvent(false);
+      setNewEvent({
+        title: '',
+        description: '',
+        start: '',
+        end: '',
+        location: '',
+        type: 'training'
       });
-
-      if (response.ok) {
-        setShowAddEvent(false);
-        setNewEvent({
-          title: '',
-          description: '',
-          start: '',
-          end: '',
-          location: '',
-          type: 'training'
-        });
-        fetchEvents();
-      }
+      loadEvents();
     } catch (error) {
       console.error('Error adding event:', error);
     }
@@ -199,64 +180,60 @@ export default function Agenda() {
             <h2>Nieuw Event</h2>
             <form onSubmit={handleAddEvent}>
               <div className="form-group">
-                <label>Titel</label>
+                <label htmlFor="title">Titel</label>
                 <input
                   type="text"
+                  id="title"
                   value={newEvent.title}
-                  onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label>Beschrijving</label>
+                <label htmlFor="description">Beschrijving</label>
                 <textarea
+                  id="description"
                   value={newEvent.description}
-                  onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label>Start</label>
-                <input
-                  type="datetime-local"
-                  value={newEvent.start}
-                  onChange={(e) => setNewEvent({...newEvent, start: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Eind</label>
-                <input
-                  type="datetime-local"
-                  value={newEvent.end}
-                  onChange={(e) => setNewEvent({...newEvent, end: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Locatie</label>
+                <label htmlFor="location">Locatie</label>
                 <input
                   type="text"
+                  id="location"
                   value={newEvent.location}
-                  onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                  onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
                   required
                 />
               </div>
-              {user?.role === 'vkbmo' && (
-                <div className="form-group">
-                  <label>Type</label>
-                  <select
-                    value={newEvent.type}
-                    onChange={(e) => setNewEvent({...newEvent, type: e.target.value})}
-                  >
-                    <option value="vkbmo">VKBMO Event</option>
-                    <option value="training">Training</option>
-                  </select>
-                </div>
-              )}
+
+              <div className="form-group">
+                <label htmlFor="type">Type</label>
+                <select
+                  id="type"
+                  value={newEvent.type}
+                  onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
+                  required
+                >
+                  <option value="training">Training</option>
+                  <option value="vkbmo">VKBMO</option>
+                  <option value="club">Club</option>
+                </select>
+              </div>
+
               <div className="form-actions">
-                <button type="submit">Toevoegen</button>
-                <button type="button" onClick={() => setShowAddEvent(false)}>Annuleren</button>
+                <button type="submit" className="btn-primary">Toevoegen</button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowAddEvent(false)}
+                >
+                  Annuleren
+                </button>
               </div>
             </form>
           </div>

@@ -2,12 +2,11 @@ import axios from "axios";
 
 // Basis API-instellingen
 const API = axios.create({
-  baseURL: "https://fightzone-api.onrender.com/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1",
   withCredentials: true,
 });
 
 // Haal huidige gebruiker op
-
 export const fetchCurrentUser = async () => {
   const token = localStorage.getItem("token");
 
@@ -37,6 +36,39 @@ export const fetchCurrentUser = async () => {
     }
 
     return null;
+  }
+};
+
+// Haal alle events op
+export const fetchEvents = async () => {
+  try {
+    const response = await API.get("/events");
+    return response.data;
+  } catch (error) {
+    console.error("Fout bij het ophalen van events:", error);
+    throw error;
+  }
+};
+
+// Maak een nieuw event aan
+export const createEvent = async (eventData) => {
+  try {
+    const response = await API.post("/events", eventData);
+    return response.data;
+  } catch (error) {
+    console.error("Fout bij het aanmaken van een event:", error);
+    throw error;
+  }
+};
+
+// Synchroniseer VKBMO events
+export const syncVkbmoEvents = async () => {
+  try {
+    const response = await API.post("/vkbmo-sync");
+    return response.data;
+  } catch (error) {
+    console.error("Fout bij het synchroniseren van VKBMO events:", error);
+    throw error;
   }
 };
 
