@@ -126,14 +126,7 @@ export default function Agenda() {
   };
 
   const handleEventClick = (info) => {
-    const event = info.event;
-    const eventDetails = `
-      ${event.title}
-      ${event.extendedProps.description}
-      Locatie: ${event.extendedProps.location}
-      Type: ${event.extendedProps.type}
-    `;
-    alert(eventDetails);
+    router.push(`/events/${info.event.id}`);
   };
 
   if (loading) {

@@ -117,21 +117,12 @@ export const createUser = async (userData) => {
   }
 };
 
-export const fetchUserById = async (id) => {
+export const fetchEventById = async (id) => {
   try {
-    const response = await API.get("/users"); // Haal alle gebruikers op
-    const users = response.data;
-
-    const user = users.find((user) => user._id === id);
-
-    if (!user) {
-      throw new Error("Gebruiker niet gevonden");
-    }
-
-    return user;
+    const response = await API.get(`/events/${id}`);
+    return response.data;
   } catch (error) {
-    console.error("Fout bij het ophalen van gebruiker:", error);
-    throw error;
+    throw new Error('Event niet gevonden');
   }
 };
 
