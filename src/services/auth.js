@@ -23,11 +23,26 @@ export function AuthProvider({ children }) {
         const decodedToken = JSON.parse(atob(token.split(".")[1]));
         fetchUserById(decodedToken.id)
           .then((userData) => {
-            setUser({ ...userData, token, role: decodedToken.role });
+            // Create a default user structure if profile is missing
+            const userWithDefaults = {
+              ...userData,
+              token,
+              role: decodedToken.role,
+              profile: userData.profile || {
+                firstName: userData.firstName || '',
+                lastName: userData.lastName || '',
+                email: userData.email || '',
+                phone: userData.phone || '',
+                club: userData.club || '',
+                licenseNumber: userData.licenseNumber || '',
+                role: decodedToken.role
+              }
+            };
+            setUser(userWithDefaults);
             setLoading(false);
           })
-          .catch(() => {
-            console.error("Token parsing error:", error);
+          .catch((error) => {
+            console.error("Error fetching user:", error);
             logout();
           });
       } catch (error) {
@@ -46,7 +61,23 @@ export function AuthProvider({ children }) {
       const { token } = response.data;
       localStorage.setItem("token", token);
       const decodedToken = JSON.parse(atob(token.split(".")[1]));
-      setUser({ token, role: decodedToken.role });
+      
+      // Create a default user structure
+      const defaultUser = {
+        token,
+        role: decodedToken.role,
+        profile: {
+          firstName: '',
+          lastName: '',
+          email: credentials.email,
+          phone: '',
+          club: '',
+          licenseNumber: '',
+          role: decodedToken.role
+        }
+      };
+      
+      setUser(defaultUser);
       return response.data;
     } catch (error) {
       throw new Error("Login failed. Please check your credentials.");
@@ -64,6 +95,7 @@ export function AuthProvider({ children }) {
     return {
       token: user.token,
       role: user.role,
+      profile: user.profile
     };
   };
 
