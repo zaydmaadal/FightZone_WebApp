@@ -20,9 +20,21 @@ import {
 import { usePathname } from "next/navigation";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const [localLoading, setLocalLoading] = useState(true);
+
+  useEffect(() => {
+    if (!loading) {
+      // Add a small delay for better UX
+      const timer = setTimeout(() => {
+        setLocalLoading(false);
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   if (!user) return null;
 
@@ -549,6 +561,31 @@ export default function Header() {
           .sidebar {
             width: 75%;
             max-width: none;
+          }
+        }
+
+        /* Loading states */
+        .loading {
+          background: #f0f0f0;
+          animation: pulse 1.5s infinite;
+        }
+
+        .loading-text {
+          background: #f0f0f0;
+          color: transparent;
+          border-radius: 4px;
+          animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+          0% {
+            opacity: 0.6;
+          }
+          50% {
+            opacity: 0.8;
+          }
+          100% {
+            opacity: 0.6;
           }
         }
       `}</style>

@@ -62,10 +62,11 @@ const LedenlijstPage = () => {
   const [leden, setLeden] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 945); // Updated to match our new breakpoint
     };
 
     handleResize();
@@ -75,8 +76,16 @@ const LedenlijstPage = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      if (!user) return; // Don't try to load if no user
+
       try {
+        setIsLoading(true);
         const data = await fetchUsers();
+
+        if (!data) {
+          console.error("Geen data ontvangen van fetchUsers");
+          return;
+        }
 
         const clubMembers = data.filter(
           (u) => u.club === user?.club && u.role === "Vechter"
@@ -94,13 +103,37 @@ const LedenlijstPage = () => {
         setLeden(mappedLeden);
       } catch (error) {
         console.error("Fout bij laden van leden:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     if (!loading && user) {
       loadData();
     }
-  }, [loading, user]);
+  }, [loading, user]); // Re-run when user or loading state changes
+
+  // Show loading state while either auth is loading or data is being fetched
+  if (loading || isLoading) {
+    return (
+      <div className="leden-container">
+        <div style={{ textAlign: "center", padding: "2rem" }}>
+          <p>Ledenlijst laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message if no user is logged in
+  if (!user) {
+    return (
+      <div className="leden-container">
+        <div style={{ textAlign: "center", padding: "2rem" }}>
+          <p>Je moet ingelogd zijn om de ledenlijst te bekijken.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleRowClick = (id) => {
     router.push(`/member/${id}`); // ✅ Detailpagina route
@@ -120,10 +153,6 @@ const LedenlijstPage = () => {
       }
     }
   };
-
-  if (loading || !user) {
-    return <div style={{ textAlign: "center" }}>Laden...</div>;
-  }
 
   const filteredLeden = leden.filter((lid) =>
     [

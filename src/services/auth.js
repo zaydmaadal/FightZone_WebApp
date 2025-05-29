@@ -17,42 +17,27 @@ export function AuthProvider({ children }) {
 
   // Initialize user on mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decodedToken = JSON.parse(atob(token.split(".")[1]));
-        fetchUserById(decodedToken.id)
-          .then((userData) => {
-            // Create a default user structure if profile is missing
-            const userWithDefaults = {
-              ...userData,
-              token,
-              role: decodedToken.role,
-              profile: userData.profile || {
-                firstName: userData.firstName || '',
-                lastName: userData.lastName || '',
-                email: userData.email || '',
-                phone: userData.phone || '',
-                club: userData.club || '',
-                licenseNumber: userData.licenseNumber || '',
-                role: decodedToken.role
-              }
-            };
-            setUser(userWithDefaults);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.error("Error fetching user:", error);
-            logout();
+    const initializeAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const decodedToken = JSON.parse(atob(token.split(".")[1]));
+          const userData = await fetchUserById(decodedToken.id);
+
+          setUser({
+            ...userData,
+            token,
+            role: decodedToken.role,
           });
-      } catch (error) {
-        console.error("Token parsing error:", error);
-        logout();
-        setLoading(false);
+        } catch (error) {
+          console.error("Auth initialization error:", error);
+          logout();
+        }
       }
-    } else {
       setLoading(false);
-    }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (credentials) => {
@@ -60,24 +45,16 @@ export function AuthProvider({ children }) {
       const response = await API.post("/auth/login", credentials);
       const { token } = response.data;
       localStorage.setItem("token", token);
+
       const decodedToken = JSON.parse(atob(token.split(".")[1]));
-      
-      // Create a default user structure
-      const defaultUser = {
+      const userData = await fetchUserById(decodedToken.id);
+
+      setUser({
+        ...userData,
         token,
         role: decodedToken.role,
-        profile: {
-          firstName: '',
-          lastName: '',
-          email: credentials.email,
-          phone: '',
-          club: '',
-          licenseNumber: '',
-          role: decodedToken.role
-        }
-      };
-      
-      setUser(defaultUser);
+      });
+
       return response.data;
     } catch (error) {
       throw new Error("Login failed. Please check your credentials.");
@@ -95,7 +72,7 @@ export function AuthProvider({ children }) {
     return {
       token: user.token,
       role: user.role,
-      profile: user.profile
+      profile: user.profile,
     };
   };
 
