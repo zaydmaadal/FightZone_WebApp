@@ -54,7 +54,13 @@ export const fetchEvents = async () => {
 // Maak een nieuw event aan
 export const createEvent = async (eventData) => {
   try {
-    const response = await API.post("/events", eventData);
+    const token = localStorage.getItem("token");
+    const response = await API.post("/events", eventData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Fout bij het aanmaken van een event:", error);

@@ -27,6 +27,7 @@ export default function Agenda() {
     type: "training",
   });
   const [currentView, setCurrentView] = useState('dayGridMonth');
+  const [eventTypeFilter, setEventTypeFilter] = useState('all');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -113,7 +114,15 @@ export default function Agenda() {
   const handleAddEvent = async (e) => {
     e.preventDefault();
     try {
-      await createEvent(newEvent);
+      let eventToCreate = { ...newEvent };
+      if (user.role === 'trainer') {
+        eventToCreate.club = user.club; // of user.clubId, afhankelijk van je model
+        eventToCreate.visibleFor = 'club';
+      } else if (user.role === 'vkbmo') {
+        eventToCreate.visibleFor = 'all';
+        eventToCreate.club = null;
+      }
+      await createEvent(eventToCreate);
       setShowAddEvent(false);
       setNewEvent({
         title: "",
@@ -204,6 +213,21 @@ export default function Agenda() {
     };
   };
 
+  // Filter events op zichtbaarheid en type
+  const filteredEvents = events
+    .filter(event => {
+      // VKBMO ziet alles
+      if (user?.role === 'vkbmo') return true;
+      // Events zonder visibleFor/club (oude events) zijn zichtbaar voor iedereen
+      if (!event.visibleFor && !event.club) return true;
+      // Events die voor iedereen zichtbaar zijn
+      if (event.visibleFor === 'all') return true;
+      // Events van de eigen club
+      if (event.club && user?.club && event.club === user.club) return true;
+      return false;
+    })
+    .filter(e => eventTypeFilter === 'all' ? true : (e.type || e.extendedProps?.type) === eventTypeFilter);
+
   if (loading) {
     return (
       <div className="agenda-page">
@@ -216,12 +240,34 @@ export default function Agenda() {
     return null;
   }
 
-  const canAddEvents = user?.role === "vkbmo" || user?.role === "trainer";
+  const canAddEvents = user?.role === "Trainer" || user?.role === "VKBMO-lid";
 
   return (
     <div className="agenda-page">
-      <div className="page-header">
-        <h1>Agenda</h1>
+      {/* Toolbar voor filter en voeg event toe knop */}
+      <div className="agenda-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', minHeight: '40px' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flex: 1 }}>
+          <select
+            className="agenda-filter-select"
+            value={eventTypeFilter}
+            onChange={e => setEventTypeFilter(e.target.value)}
+            style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1.5px solid #e5e7eb', fontSize: '1rem', minWidth: '120px' }}
+          >
+            <option value="all">Alle types</option>
+            <option value="training">Training</option>
+            <option value="vkbmo">VKBMO</option>
+            <option value="club">Club</option>
+          </select>
+        </div>
+        {canAddEvents && (
+          <button
+            className="btn-primary"
+            style={{ minWidth: '120px', padding: '0.5rem 1.2rem', borderRadius: '8px', fontWeight: 500, fontSize: '1rem', background: 'linear-gradient(135deg, var(--primary-color, #3B82F6), #4285f4)', color: 'white', border: 'none', cursor: 'pointer' }}
+            onClick={() => setShowAddEvent(true)}
+          >
+            + Voeg event toe
+          </button>
+        )}
       </div>
 
       <div 
@@ -289,7 +335,7 @@ export default function Agenda() {
           selectMirror={true}
           dayMaxEvents={isMobile ? 2 : true}
           weekends={true}
-          events={events}
+          events={filteredEvents}
           select={handleDateSelect}
           eventClick={handleEventClick}
           eventContent={renderEventContent}
@@ -388,10 +434,55 @@ export default function Agenda() {
                   }
                   required
                 >
-                  <option value="training">Training</option>
-                  <option value="vkbmo">VKBMO</option>
-                  <option value="club">Club</option>
+                  {user?.role === "Trainer" && (
+                    <>
+                      <option value="training">Training</option>
+                      <option value="club">Club</option>
+                    </>
+                  )}
+                  {user?.role === "VKBMO-lid" && (
+                    <>
+                      <option value="vkbmo">VKBMO</option>
+                    </>
+                  )}
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="startDate">Datum</label>
+                <input
+                  type="date"
+                  id="startDate"
+                  value={newEvent.start ? newEvent.start.slice(0, 10) : ""}
+                  onChange={e => {
+                    const date = e.target.value;
+                    const time = newEvent.start ? newEvent.start.slice(11, 16) : "12:00";
+                    setNewEvent({
+                      ...newEvent,
+                      start: date && time ? `${date}T${time}` : "",
+                      end: date && time ? `${date}T${time}` : ""
+                    });
+                  }}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="startTime">Tijd</label>
+                <input
+                  type="time"
+                  id="startTime"
+                  value={newEvent.start ? newEvent.start.slice(11, 16) : ""}
+                  onChange={e => {
+                    const time = e.target.value;
+                    const date = newEvent.start ? newEvent.start.slice(0, 10) : "";
+                    setNewEvent({
+                      ...newEvent,
+                      start: date && time ? `${date}T${time}` : "",
+                      end: date && time ? `${date}T${time}` : ""
+                    });
+                  }}
+                  required
+                />
               </div>
 
               <div className="form-actions">
