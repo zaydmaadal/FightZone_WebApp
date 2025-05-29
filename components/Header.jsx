@@ -55,10 +55,10 @@ export default function Header() {
       case "Trainer":
         return [
           { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
-          { path: "/leden", label: "Ledenlijst", icon: UsersIcon },
+          { path: "/ledenlijst", label: "Ledenlijst", icon: UsersIcon },
           { path: "/agenda", label: "Agenda", icon: CalendarIcon },
           {
-            path: "/results",
+            path: "/resultaat",
             label: "Resultaat",
             icon: ClipboardDocumentListIcon,
           },
