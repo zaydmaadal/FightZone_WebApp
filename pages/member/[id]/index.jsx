@@ -1,8 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { fetchUsers, fetchClubs } from "../../../src/services/api";
+import {
+  fetchUsers,
+  fetchClubs,
+  fetchUserById,
+} from "../../../src/services/api";
 import Link from "next/link";
+import {
+  CheckCircleIcon,
+  ArrowLeftCircleIcon,
+} from "@heroicons/react/24/solid/index.js";
+import { ArrowLeftCircleIcon as OutlineArrowLeftCircleIcon } from "@heroicons/react/24/outline/index.js";
 
 const MemberDetails = () => {
   const router = useRouter();
@@ -11,31 +20,52 @@ const MemberDetails = () => {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [clubs, setClubs] = useState([]);
+  const [opponents, setOpponents] = useState({});
 
   useEffect(() => {
     const loadMember = async () => {
+      if (!id) return;
       try {
-        const [allUsers, clubsData] = await Promise.all([
-          fetchUsers(),
-          fetchClubs(),
-        ]);
-        setUsers(allUsers);
-        setClubs(clubsData);
+        const memberData = await fetchUserById(id);
+        setMember(memberData);
 
-        const selectedUser = allUsers.find((user) => user._id === id);
-        if (selectedUser) {
-          setMember(selectedUser);
+        // Fetch opponent details for each fight
+        if (memberData?.vechterInfo?.fights) {
+          const opponentPromises = memberData.vechterInfo.fights.map(
+            async (fight) => {
+              if (fight.tegenstander) {
+                try {
+                  const opponentData = await fetchUserById(fight.tegenstander);
+                  return { [fight.tegenstander]: opponentData };
+                } catch (error) {
+                  console.error(
+                    `Fout bij ophalen tegenstander ${fight.tegenstander}:`,
+                    error
+                  );
+                  return null;
+                }
+              }
+              return null;
+            }
+          );
+
+          const opponentResults = await Promise.all(opponentPromises);
+          const opponentMap = opponentResults.reduce((acc, curr) => {
+            if (curr) {
+              return { ...acc, ...curr };
+            }
+            return acc;
+          }, {});
+          setOpponents(opponentMap);
         }
       } catch (error) {
-        console.error("Fout bij het ophalen van lid:", error);
+        console.error("Error loading member:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
-      loadMember();
-    }
+    loadMember();
   }, [id]);
 
   const getClubName = (clubId) => {
@@ -43,6 +73,7 @@ const MemberDetails = () => {
     const club = clubs.find((c) => c._id === clubId);
     return club ? club.naam : "Onbekende club";
   };
+
   if (loading) return <p>Gegevens worden geladen...</p>;
   if (!member) return <p>Geen gegevens gevonden voor dit lid.</p>;
 
@@ -52,299 +83,718 @@ const MemberDetails = () => {
     return today.getFullYear() - birthDate.getFullYear();
   };
 
-  const getOpponentDetails = (opponentId) => {
-    return users.find((user) => user._id === opponentId);
+  const getOpponentInfo = (tegenstanderId) => {
+    if (!tegenstanderId) return null;
+    return opponents[tegenstanderId] || null;
   };
 
-  if (loading) return <p>Gegevens worden geladen...</p>;
-  if (!member) return <p>Geen gegevens gevonden voor dit lid.</p>;
+  const getBackLink = () => {
+    if (member.role.toLowerCase() === "trainer") {
+      return "/ledenlijst";
+    }
+    return `/clubs/${member.club}/leden`;
+  };
+
+  const getBackText = () => {
+    if (member.role.toLowerCase() === "trainer") {
+      return "Terug naar ledenoverzicht";
+    }
+    return "Terug naar club leden";
+  };
 
   return (
     <div className="profile-page">
       <div className="back-button-container">
-        <Link href={`/ledenlijst`} className="back-button">
-          ← Terug naar ledenoverzicht
+        <Link href={getBackLink()} className="back-button">
+          <OutlineArrowLeftCircleIcon
+            style={{ width: "24px", height: "24px" }}
+          />
+          Terug
         </Link>
       </div>
 
-      <div className="profile-container">
-        <div className="left">
-          <img
-            className="fighter-photo"
-            src={member.profielfoto}
-            alt={member.voornaam}
-          />
+      <div className="page-content">
+        <div className="profile-header">
+          <div className="fighter-photo-container">
+            <img
+              className="fighter-photo"
+              src={member.profielfoto}
+              alt={member.voornaam}
+            />
+          </div>
+          <div className="fighter-right-info">
+            <div className="fighter-info">
+              <h1>
+                {member.voornaam} {member.achternaam}
+              </h1>
+              <h2>"{member.vechterInfo.bijnaam}"</h2>
+              <p className="record">24-9-5 (W-L-D)</p>
+            </div>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <span className="stat-number">
+                  {member.vechterInfo.koWins || 0}
+                </span>
+                <span className="stat-name">KO Wins</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">
+                  {calculateAge(member.geboortedatum)}
+                </span>
+                <span className="stat-name">Leeftijd</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">
+                  {member.vechterInfo.klasse?.charAt(0) || "-"}
+                </span>
+                <span className="stat-name">Klasse</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">
+                  {member.vechterInfo.gewicht} kg
+                </span>
+                <span className="stat-name">Gewicht</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="right">
-          <h1>
-            {member.voornaam} {member.achternaam}
-          </h1>
-          <h2>"{member.vechterInfo.bijnaam}"</h2>
-          <p className="record">24-9-5 (W-L-D)</p>
-          <div className="tags">
-            <span>Champion lightweight</span>
-            <span>#3</span>
-            <span>Actief</span>
-            <span>{getClubName(member.club)}</span>
+        <div className="info-section">
+          <h3 className="section-title">Info</h3>
+          <div className="info-item">
+            <span className="info-label">Verzekering</span>
+            <span
+              className={`insurance-badge ${
+                member.vechterInfo.verzekering
+                  ? "insurance-ok"
+                  : "insurance-error"
+              }`}
+            >
+              {member.vechterInfo.verzekering ? "Geldig" : "Niet geldig"}
+            </span>
           </div>
-          <div className="stats-grid">
-            <div>
-              <strong>{member.vechterInfo.koWins || 0}</strong>
-              <p>KO Wins</p>
-            </div>
-            <div>
-              <strong>{calculateAge(member.geboortedatum)}</strong>
-              <p>Leeftijd</p>
-            </div>
-            <div>
-              <strong>{member.vechterInfo.klasse}</strong>
-              <p>Klasse</p>
-            </div>
-            <div>
-              <strong>{member.vechterInfo.gewicht} kg</strong>
-              <p>Gewicht</p>
-            </div>
+          <div className="divider"></div>
+          <div className="info-item">
+            <span className="info-label">Fighting Ready</span>
+            <span className="info-value">
+              {member.vechterInfo.fightingReady ? (
+                <div className="check-icon-wrapper">
+                  <CheckCircleIcon className="check-icon" />
+                </div>
+              ) : (
+                "Nee"
+              )}
+            </span>
           </div>
-        </div>
-      </div>
-
-      <div className="info-section">
-        <div className="info-block">
-          <h3>Info</h3>
-          <table>
-            <tbody>
-              <tr>
-                <td>Verzekering</td>
-                <td
-                  className={
-                    member.vechterInfo.verzekering ? "valid" : "invalid"
-                  }
-                >
-                  {member.vechterInfo.verzekering ? "Geldig" : "Niet geldig"}
-                </td>
-              </tr>
-              <tr>
-                <td>Fighting Ready</td>
-                <td
-                  className={
-                    member.vechterInfo.fightingReady ? "valid" : "invalid"
-                  }
-                >
-                  {member.vechterInfo.fightingReady ? "Ja" : "Nee"}
-                </td>
-              </tr>
-              <tr>
-                <td>Email</td>
-                <td>{member.email}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="divider"></div>
+          <div className="info-item">
+            <span className="info-label">Email</span>
+            <span className="info-value">{member.email}</span>
+          </div>
         </div>
 
         <div className="fight-history">
-          <h3>Fight history</h3>
+          <h3 className="section-title">Fight History</h3>
           {member.vechterInfo.fights.length > 0 ? (
-            <table className="fight-table">
-              <tbody>
-                {member.vechterInfo.fights.map((fight, index) => {
-                  const opponent = getOpponentDetails(fight.tegenstander);
-                  return (
-                    <tr key={index}>
-                      <td>{new Date(fight.datum).toLocaleDateString()}</td>
-                      <td>{fight.event}</td>
-                      <td>{fight.locatie}</td>
-                      <td>
-                        {opponent ? (
-                          <>
-                            <img
-                              className="opponent-img"
-                              src={opponent.profielfoto}
-                              alt={opponent.voornaam}
-                            />
-                            {opponent.voornaam} {opponent.achternaam}
-                          </>
-                        ) : (
-                          "Onbekend"
-                        )}
-                      </td>
-                      <td
-                        className={
-                          fight.resultaat === "Winnaar" ? "win" : "loss"
-                        }
-                      >
-                        {fight.resultaat}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            member.vechterInfo.fights.map((fight, index) => {
+              const opponent = getOpponentInfo(fight.tegenstander);
+              return (
+                <div key={index} className="fight-card">
+                  <div className="fight-header">
+                    <span className="fight-event">{fight.event}</span>
+                    <span className="fight-date-location">
+                      {new Date(fight.datum).toLocaleDateString()} -{" "}
+                      {fight.locatie}
+                    </span>
+                  </div>
+                  <div className="fighters-container">
+                    <div className="fighter-left">
+                      <div className="fighter-photo-small">
+                        <img src={member.profielfoto} alt={member.voornaam} />
+                      </div>
+                      <div className="fighter-details">
+                        <span className="fighter-name">
+                          {member.voornaam} {member.achternaam}
+                        </span>
+                        <span className="fighter-record">
+                          {member.vechterInfo.record || "0-0-0"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="fighter-right">
+                      <div className="fighter-details">
+                        <span className="fighter-name">
+                          {opponent
+                            ? `${opponent.voornaam} ${opponent.achternaam}`
+                            : "Onbekend"}
+                        </span>
+                        <span className="fighter-record">
+                          {opponent?.vechterInfo?.record || "0-0-0"}
+                        </span>
+                      </div>
+                      <div className="fighter-photo-small">
+                        <img
+                          src={opponent?.profielfoto || "/default-avatar.png"}
+                          alt={
+                            opponent
+                              ? `${opponent.voornaam} ${opponent.achternaam}`
+                              : "Onbekend"
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="divider"></div>
+                </div>
+              );
+            })
           ) : (
-            <p>Geen gevechten gevonden</p>
+            <p className="no-fights">Geen gevechten gevonden</p>
           )}
         </div>
       </div>
 
       <style jsx>{`
-        .profile-page {
-          padding: 40px;
-          background-color: #f9f9f9;
-        }
-
         .back-button-container {
           margin-bottom: 20px;
+          padding: 0 20px;
         }
 
         .back-button {
-          padding: 10px 20px;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.8rem 1.5rem;
           background-color: #3483fe;
           color: white;
-          text-decoration: none;
-          border-radius: 5px;
+          border: none;
+          border-radius: 8px;
           font-weight: 500;
+          text-decoration: none;
+          transition: background-color 0.2s;
         }
 
-        .profile-container {
+        .back-button:hover {
+          background-color: #2a6cd6;
+        }
+
+        .fighter-right-info {
           display: flex;
-          background: transparent;
+          flex-direction: column;
+          margin: auto;
         }
 
-        .left {
-          flex: 1;
+        .profile-page {
+          width: 100%;
+          min-height: 100vh;
+          overflow-x: hidden;
+        }
+
+        .page-content {
+          max-width: 100%;
+          padding: 20px;
+          margin: 0 auto;
+          box-sizing: border-box;
+        }
+
+        .profile-header {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 0px;
+          width: 100%;
+        }
+
+        .fighter-photo-container {
+          min-width: 80px;
+          width: 80px;
+          height: 80px;
+          overflow: hidden;
+          flex-shrink: 0;
         }
 
         .fighter-photo {
           width: 100%;
-          height: auto;
-          object-fit: cover;
+          height: 100%;
+          object-fit: contain;
         }
 
-        .right {
+        .fighter-info {
           flex: 1;
-          padding: 0 30px;
+          min-width: 0;
+          margin-top: 18px;
         }
 
-        .tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
+        .fighter-info h1 {
+          font-size: 1.5rem;
+          margin: 0;
+          color: #222;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .tags span {
-          background-color: #e7f0ff;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 12px;
+        .fighter-info h2 {
+          font-size: 1rem;
+          margin: 4px 0;
+          color: #666;
+          font-weight: normal;
+          font-style: italic;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .record {
+          font-size: 0.9rem;
+          color: #666;
+          margin: 0;
         }
 
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          margin-top: 20px;
-          gap: 24px;
-          margin-top: 24px;
-        }
-
-        .stats-grid div {
-          text-align: center;
-          background: #f0f4ff;
-          border-radius: 8px;
-          padding: 20px;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .stats-grid strong {
-          font-size: 2.4rem;
-          display: block;
-          color: #222;
-        }
-
-        .stats-grid p {
-          font-weight: 600;
-          margin-top: 8px;
-          font-size: 1rem;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .info-block table {
+          gap: 1px;
           width: 100%;
-          border-spacing: 0 10px;
+          margin: 0px;
+          position: relative;
         }
 
-        .info-block td {
-          padding: 8px 10px;
-          font-weight: 500;
+        .stat-item {
+          padding: 4px;
+          text-align: center;
+          position: relative;
         }
 
-        .info-block td:first-child {
+        .stat-number {
+          display: block;
+          font-size: 1.1rem;
+          font-weight: bold;
+          color: #222;
+          margin-bottom: 4px;
+          position: relative;
+        }
+
+        .stat-number:after {
+          content: "";
+          position: absolute;
+          bottom: -4px;
+          left: 25%;
+          right: 25%;
+          height: 3px;
+          background-color: black;
+          border-radius: 2px;
+        }
+
+        .stat-name {
+          display: block;
+          font-size: 0.8rem;
           color: #666;
-          width: 150px;
+          margin-top: 8px;
+        }
+
+        .stat-item:nth-child(1)::after,
+        .stat-item:nth-child(3)::after {
+          content: "";
+          position: absolute;
+          right: 0;
+          top: 30%;
+          bottom: 30%;
+          width: 1px;
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-item:nth-child(1)::before,
+        .stat-item:nth-child(2)::before {
+          content: "";
+          position: absolute;
+          left: 30%;
+          right: 30%;
+          bottom: 0;
+          height: 1px;
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+          font-size: 1.2rem;
+          color: #222;
+          margin: 0px 0 16px 0;
+          padding-bottom: 8px;
         }
 
         .info-section {
-          display: flex;
-          margin-top: 40px;
-          gap: 40px;
-        }
-
-        .info-block,
-        .fight-history {
-          flex: 1;
-        }
-
-        .fight-table {
+          border-radius: 8px;
+          padding: 0px;
+          margin-bottom: 24px;
           width: 100%;
         }
 
-        .opponent-img {
-          width: 30px;
-          height: 30px;
+        .info-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px 0;
+        }
+
+        .info-label {
+          font-weight: 800;
+          color: #222;
+          font-size: 0.9em;
+          color: #37393a;
+        }
+
+        .insurance-badge {
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 4px;
+          font-weight: 600;
+          font-size: 14px;
+        }
+
+        .insurance-ok {
+          background-color: rgba(0, 182, 155, 0.2);
+          color: #00b69b;
+        }
+
+        .insurance-error {
+          background-color: rgba(239, 56, 38, 0.2);
+          color: #ef3826;
+        }
+
+        .info-value {
+          color: #444;
+          display: flex;
+          align-items: center;
+        }
+
+        .divider {
+          height: 1px;
+          background-color: rgba(32, 34, 36, 0.1);
+          margin: 0 -16px;
+        }
+
+        .fight-card {
+          border-radius: 8px;
+          padding: 0px;
+          margin-bottom: 16px;
+          width: 100%;
+        }
+
+        .fight-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 12px;
+        }
+
+        .fight-event {
+          font-weight: bold;
+          color: #222;
+        }
+
+        .fight-date-location {
+          color: #666;
+          font-size: 0.9rem;
+        }
+
+        .fighters-container {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 16px 0;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .fighter-left,
+        .fighter-right {
+          display: flex;
+          align-items: center;
+          flex: 1;
+          min-width: 0;
+        }
+
+        .fighter-right {
+          text-align: right;
+        }
+
+        .fighter-photo-small {
+          width: 50px;
+          height: 50px;
           border-radius: 50%;
-          margin-right: 6px;
-          vertical-align: middle;
+          overflow: hidden;
+          margin: 0 8px;
+          flex-shrink: 0;
         }
 
-        .valid {
-          color: #10b981;
+        .fighter-photo-small img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+
+        .fighter-details {
+          min-width: 0;
+          flex: 1;
+          padding: 0 8px;
+        }
+
+        .fighter-name {
+          display: block;
           font-weight: bold;
+          color: #222;
+          font-size: 0.8em;
+          white-space: normal;
+          word-wrap: break-word;
+          line-height: 1.2;
         }
 
-        .invalid {
-          color: #ef4444;
-          font-weight: bold;
+        .fight-history {
+          margin-bottom: 60px;
         }
 
-        .win {
-          color: #10b981;
+        .fighter-record {
+          display: block;
+          font-size: 0.8rem;
+          color: #666;
         }
 
-        .loss {
-          color: #ef4444;
+        .no-fights {
+          text-align: center;
+          color: #666;
+          padding: 16px;
         }
 
-        @media (max-width: 768px) {
-          .stats-grid {
-            grid-template-columns: 1fr 1fr;
+        @media (max-width: 767px) {
+          .profile-header {
+            align-items: center;
+          }
+          .check-icon-wrapper {
+            width: 22px;
+            height: 22px;
+          }
+          .page-content {
+            padding: 15px;
           }
 
-          .info-block td {
+          .fighter-photo-container {
+            width: 50%;
+            height: 100%;
+            min-width: 70px;
+          }
+
+          .fighter-info h1 {
+            font-size: 1.1rem;
+          }
+          .fighter-info h2 {
+            font-size: 1rem;
+          }
+          .fighter-info p {
             font-size: 0.9rem;
           }
 
-          .stats-grid strong {
+          .fight-header {
+            flex-direction: column;
+            gap: 4px;
+          }
+
+          .fight-event,
+          .fight-date-location {
+            width: 100%;
+            text-align: left;
+          }
+
+          .fighters-container {
+            flex-direction: row;
+            align-items: stretch;
+          }
+
+          .fighter-left,
+          .fighter-right {
+            justify-content: center;
+            margin: 8px 0;
+          }
+        }
+
+        @media (min-width: 768px) {
+          .check-icon-wrapper {
+            width: 24px;
+            height: 24px;
+          }
+          .page-content {
+            max-width: 95%;
+            padding: 30px 20px;
+          }
+
+          .profile-header {
+            align-items: center;
+          }
+
+          .fighter-photo-container {
+            width: 45%;
+            height: 100%;
+            min-width: 120px;
+          }
+
+          .fighter-info h1 {
+            font-size: 1.8rem;
+            white-space: normal;
+          }
+
+          .fighter-info h2 {
+            font-size: 1.2rem;
+            white-space: normal;
+          }
+
+          .record {
+            font-size: 1.1rem;
+          }
+
+          .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+          }
+
+          .stat-item {
+            padding: 15px;
+          }
+
+          .stat-number {
+            font-size: 1.3rem;
+          }
+
+          .stat-name {
+            font-size: 0.9rem;
+          }
+
+          .section-title {
+            font-size: 1.4rem;
+          }
+
+          .fighter-photo-small {
+            width: 60px;
+            height: 60px;
+          }
+
+          .fighter-name {
+            font-size: 0.9em;
+          }
+
+          .stat-item:nth-child(1)::after,
+          .stat-item:nth-child(3)::after {
+            top: 25%;
+            bottom: 25%;
+          }
+
+          .stat-item:nth-child(1)::before,
+          .stat-item:nth-child(2)::before {
+            left: 25%;
+            right: 25%;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .check-icon-wrapper {
+            width: 24px;
+            height: 24px;
+          }
+          .page-content {
+            max-width: 95%;
+          }
+
+          .profile-header {
+            margin-bottom: 30px;
+          }
+
+          .fighter-photo-container {
+            width: 52%;
+            height: 100%;
+          }
+
+          .fighter-info h1 {
+            font-size: 2rem;
+          }
+
+          .fighter-info h2 {
+            font-size: 1.4rem;
+          }
+
+          .record {
+            font-size: 1.2rem;
+          }
+
+          .stats-grid {
+            gap: 5px;
+            margin-top: 25px;
+          }
+
+          .stat-item {
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+          }
+
+          .stat-number {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            font-weight: 700;
+          }
+
+          .stat-number:after {
+            height: 4px;
+            bottom: -8px;
+            left: 20%;
+            right: 20%;
+          }
+
+          .stat-name {
+            font-size: 1.8rem;
+            margin-top: 16px;
+            font-weight: 700;
+            color: black;
+          }
+
+          .section-title {
             font-size: 1.6rem;
+            margin-bottom: 20px;
+          }
+
+          .info-section {
+            padding: 0px;
+          }
+
+          .info-item {
+            padding: 15px 0;
+          }
+
+          .info-label {
+            font-size: 1em;
+          }
+
+          .fighter-photo-small {
+            width: 70px;
+            height: 70px;
+          }
+
+          .fighter-name {
+            font-size: 1em;
+          }
+
+          .stat-item:nth-child(1)::after,
+          .stat-item:nth-child(3)::after {
+            top: 20%;
+            bottom: 20%;
+          }
+
+          .stat-item:nth-child(1)::before,
+          .stat-item:nth-child(2)::before {
+            left: 20%;
+            right: 20%;
           }
         }
 
         @media (max-width: 768px) {
-          .profile-container,
-          .info-section {
-            flex-direction: column;
-          }
-
-          .right {
-            padding: 20px 0 0 0;
+          .back-button {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
           }
         }
       `}</style>

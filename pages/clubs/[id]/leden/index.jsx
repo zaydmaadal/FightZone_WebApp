@@ -70,6 +70,17 @@ const ClubMembersPage = () => {
   const [club, setClub] = useState(null);
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 945); // Match the breakpoint from ledenlijst
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -94,7 +105,13 @@ const ClubMembersPage = () => {
     (user) =>
       user.club === id &&
       user.role.toLowerCase() === "vechter" &&
-      `${user.voornaam} ${user.achternaam}`
+      [
+        `${user.voornaam} ${user.achternaam}`,
+        `${user.vechterInfo?.gewicht || "Onbekend"} kg`,
+        calculateAge(user.geboortedatum),
+        user.vechterInfo?.klasse || "Onbekend",
+      ]
+        .join(" ")
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
   );
@@ -149,21 +166,24 @@ const ClubMembersPage = () => {
     <div className="leden-container">
       <div className="header-section">
         <div className="title-section">
-          <Link href="/clubs" className="back-link">
-            <ArrowLeftCircleIcon className="back-icon" width={24} height={24} />
-          </Link>
-          <h1 className="leden-title">Leden van {club.naam}</h1>
-        </div>
-        <div className="button-group">
-          <button onClick={exportToCSV} className="export-button">
-            <ArrowDownTrayIcon className="button-icon" width={20} height={20} />
-            Exporteer naar CSV
-          </button>
-          <Link
-            href={`/clubs/${id}/leden/add-member`}
-            className="add-member-button"
-          >
-            + Voeg lid toe
+          <h1 className="leden-title">{club.naam}</h1>
+          <Link href="/clubs" className="back-button">
+            <svg
+              className="arrow-left-circle"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              width="24"
+              height="24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
+              />
+            </svg>
+            Terug
           </Link>
         </div>
       </div>
@@ -196,74 +216,120 @@ const ClubMembersPage = () => {
         )}
       </div>
 
+      <div className="button-group">
+        <button onClick={exportToCSV} className="filter-button">
+          <ArrowDownTrayIcon className="button-icon" width={20} height={20} />
+          Exporteer naar CSV
+        </button>
+        <Link
+          href={`/clubs/${id}/leden/add-member`}
+          className="add-member-button"
+        >
+          + Voeg lid toe
+        </Link>
+      </div>
+
       <input
         type="text"
         className="search-input"
-        placeholder="Zoek op naam, gewicht, leeftijd of klasse..."
+        placeholder={
+          isMobile
+            ? "Zoek lid..."
+            : "Zoek op naam, gewicht, leeftijd of klasse..."
+        }
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
-      <table className="leden-tabel">
-        <thead>
-          <tr>
-            <th>Naam</th>
-            <th>Gewichtscategorie</th>
-            <th>Leeftijd</th>
-            <th>Klasse</th>
-            <th>Verzekering</th>
-            <th className="action-column"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredFighters.length > 0 ? (
-            filteredFighters.map((user) => (
-              <tr
-                key={user._id}
-                onClick={() => router.push(`/member/${user._id}`)}
-                className="clickable-row"
-              >
-                <td>
-                  {user.voornaam} {user.achternaam}
-                </td>
-                <td>-{user.vechterInfo?.gewicht || "Onbekend"} kg</td>
-                <td>{calculateAge(user.geboortedatum)}</td>
-                <td>{user.vechterInfo?.klasse || "Onbekend"}</td>
-                <td>
-                  <span
-                    className={`insurance-badge insurance-${
-                      checkInsuranceStatus(user.vechterInfo).type
-                    }`}
-                  >
-                    {checkInsuranceStatus(user.vechterInfo).text}
-                  </span>
-                </td>
-                <td className="action-column">
-                  <button
-                    onClick={(e) => handleDelete(e, user._id)}
-                    className="delete-button"
-                    title="Verwijder lid"
-                  >
-                    <TrashIcon className="delete-icon" width={20} height={20} />
-                  </button>
+      <div className="table-responsive">
+        <table className="leden-tabel">
+          <thead>
+            <tr>
+              <th className="name-column">Naam</th>
+              {!isMobile && <th className="weight-column">Gewicht</th>}
+              <th className="age-column">Leeftijd</th>
+              {!isMobile && <th className="class-column">Klasse</th>}
+              <th className="insurance-column">Verzekering</th>
+              <th className="action-column"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredFighters.length > 0 ? (
+              filteredFighters.map((user) => (
+                <tr
+                  key={user._id}
+                  onClick={() => router.push(`/member/${user._id}`)}
+                  className="clickable-row"
+                >
+                  <td className="name-column">
+                    {user.voornaam} {user.achternaam}
+                  </td>
+                  {!isMobile && (
+                    <td className="weight-column">
+                      -{user.vechterInfo?.gewicht || "Onbekend"} kg
+                    </td>
+                  )}
+                  <td className="age-column">
+                    {calculateAge(user.geboortedatum)}
+                  </td>
+                  {!isMobile && (
+                    <td className="class-column">
+                      {user.vechterInfo?.klasse || "Onbekend"}
+                    </td>
+                  )}
+                  <td className="insurance-column">
+                    <span
+                      className={`insurance-badge insurance-${
+                        checkInsuranceStatus(user.vechterInfo).type
+                      }`}
+                    >
+                      {isMobile
+                        ? checkInsuranceStatus(user.vechterInfo)
+                            .text.replace("Verloopt over", "")
+                            .replace("dagen", "Dagen")
+                        : checkInsuranceStatus(user.vechterInfo).text}
+                    </span>
+                  </td>
+                  <td className="action-column">
+                    <button
+                      onClick={(e) => handleDelete(e, user._id)}
+                      className="delete-button"
+                      title="Verwijder lid"
+                    >
+                      <TrashIcon
+                        className="delete-icon"
+                        width={20}
+                        height={20}
+                      />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={isMobile ? "4" : "6"} className="no-results">
+                  Geen vechters gevonden
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="6" className="no-results">
-                Geen vechters gevonden
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       <style jsx>{`
         .leden-container {
-          padding: 2rem;
+          padding: 1rem;
           border-radius: 12px;
           font-family: "Inter", sans-serif;
+          width: 100%;
+          box-sizing: border-box;
+          max-width: 100%;
+        }
+
+        @media (min-width: 768px) {
+          .leden-container {
+            padding: 2rem;
+          }
         }
 
         .header-section {
@@ -271,77 +337,61 @@ const ClubMembersPage = () => {
           flex-direction: column;
           align-items: flex-start;
           gap: 1rem;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
         }
 
         .title-section {
           display: flex;
           align-items: center;
-          gap: 1rem;
-          width: 100%;
-        }
-
-        .back-link {
-          display: flex;
-          align-items: center;
-          color: var(--text-color);
-          text-decoration: none;
-        }
-
-        .back-icon {
-          width: 24px;
-          height: 24px;
-          color: var(--text-color);
-        }
-
-        .button-group {
-          display: flex;
-          width: 100%;
-          gap: 1rem;
-          align-items: center;
           justify-content: space-between;
+          width: 100%;
         }
 
-        .export-button {
+        .back-button {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 12px 24px;
-          background-color: var(--filter-yellow);
-          color: #000;
+          padding: 0.8rem 1.5rem;
+          background-color: #3483fe;
+          color: white;
           border: none;
           border-radius: 8px;
           font-weight: 500;
-          cursor: pointer;
-          transition: background-color 0.2s;
-          font-size: 16px;
-        }
-
-        .export-button:hover {
-          background-color: #e6c05f;
-        }
-
-        .add-member-button {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 12px 24px;
-          background-color: var(--primary-blue);
-          color: white;
-          border-radius: 8px;
-          font-weight: 500;
           text-decoration: none;
           transition: background-color 0.2s;
         }
 
-        .add-member-button:hover {
-          background-color: var(--hover-blue);
+        .back-button:hover {
+          background-color: #2a6cd6;
+        }
+
+        .arrow-left-circle {
+          width: 24px;
+          height: 24px;
+        }
+
+        @media (max-width: 768px) {
+          .back-button {
+            padding: 0.6rem 1.2rem;
+            font-size: 14px;
+          }
+
+          .arrow-left-circle {
+            width: 20px;
+            height: 20px;
+          }
         }
 
         .leden-title {
-          font-size: 2rem;
+          font-size: 1.5rem;
           color: var(--text-color);
           margin: 0;
+        }
+
+        @media (min-width: 768px) {
+          .leden-title {
+            font-size: 2rem;
+          }
         }
 
         .trainers-section {
@@ -394,6 +444,63 @@ const ClubMembersPage = () => {
           color: #666;
         }
 
+        .button-group {
+          display: flex;
+          width: 100%;
+          gap: 1rem;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 25px;
+        }
+
+        .filter-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 12px;
+          background-color: var(--filter-yellow);
+          color: #000;
+          border: none;
+          border-radius: 8px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          font-size: 16px;
+        }
+
+        @media (min-width: 768px) {
+          .filter-button {
+            padding: 12px 24px;
+          }
+        }
+
+        .filter-button:hover {
+          background-color: #e6c05f;
+        }
+
+        .add-member-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 12px;
+          background-color: var(--primary-blue);
+          color: white;
+          border-radius: 8px;
+          font-weight: 500;
+          text-decoration: none;
+          transition: background-color 0.2s;
+        }
+
+        @media (min-width: 768px) {
+          .add-member-button {
+            padding: 12px 24px;
+          }
+        }
+
+        .add-member-button:hover {
+          background-color: var(--hover-blue);
+        }
+
         .search-input {
           width: 100%;
           padding: 10px 15px;
@@ -404,40 +511,79 @@ const ClubMembersPage = () => {
           background-color: #f9fafb;
         }
 
+        .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 80px;
+        }
+
         .leden-tabel {
           width: 100%;
-          font-size: 15px;
           border-collapse: separate;
           border-spacing: 0;
           background-color: #fff;
-          border: 1px solid #d5d5d5;
+          border: 1px solid rgba(213, 213, 213, 0.5);
           border-radius: 8px;
-          overflow: hidden;
+          table-layout: auto;
         }
 
         .leden-tabel th {
-          padding: 14px 20px;
-          background-color: #f4f7fb;
+          background-color: #d4e4fd;
           color: #333;
           font-weight: 750;
           text-transform: uppercase;
-          border-bottom: 1px solid #d5d5d5;
+          padding: 24px 8px;
+          border-bottom: 1px solid rgba(213, 213, 213, 0.5);
+          white-space: nowrap;
         }
 
         .leden-tabel td {
-          padding: 18px 20px;
+          padding: 24px 8px;
+          border-bottom: 1px solid rgba(213, 213, 213, 0.3);
+          line-height: 1.3;
           text-align: center;
-          font-weight: 500;
-          color: var(--light-text-color);
-          border-bottom: 1px solid #d5d5d5;
         }
 
-        .leden-tabel tr:last-child td {
-          border-bottom: none;
+        .leden-tabel td:last-child {
+          border: none;
         }
 
         .leden-tabel tr:hover {
           background-color: #f9fbff;
+        }
+
+        /* Column widths */
+        .name-column {
+          width: 35%;
+          min-width: 100px;
+        }
+
+        .weight-column {
+          width: 15%;
+          min-width: 60px;
+          display: none;
+        }
+
+        .age-column {
+          width: 12%;
+          min-width: 50px;
+        }
+
+        .class-column {
+          width: 15%;
+          min-width: 70px;
+          display: none;
+        }
+
+        .insurance-column {
+          width: 30%;
+          min-width: 90px;
+        }
+
+        .action-column {
+          width: 8%;
+          min-width: 30px;
         }
 
         .insurance-badge {
@@ -445,7 +591,114 @@ const ClubMembersPage = () => {
           padding: 6px 12px;
           border-radius: 4px;
           font-weight: 600;
-          font-size: 14px;
+          font-size: 13px;
+          white-space: nowrap;
+        }
+
+        @media (max-width: 944px) {
+          .leden-tabel {
+            font-size: 14px;
+          }
+
+          .leden-tabel th,
+          .leden-tabel td {
+            padding: 20px 6px;
+            text-align: center;
+          }
+
+          .leden-tabel th {
+            padding: 20px 8px;
+          }
+
+          .insurance-badge {
+            padding: 6px 10px;
+            font-size: 12px;
+          }
+
+          .trainers-list {
+            flex-direction: column;
+          }
+
+          .trainer-card {
+            width: 100%;
+          }
+        }
+
+        @media (min-width: 945px) {
+          .leden-tabel {
+            font-size: 15px;
+          }
+
+          .leden-tabel th,
+          .leden-tabel td {
+            padding: 24px 12px;
+            text-align: center;
+          }
+
+          .name-column {
+            width: 25%;
+          }
+
+          .weight-column,
+          .class-column {
+            display: table-cell;
+          }
+
+          .age-column {
+            width: 10%;
+          }
+
+          .class-column {
+            width: 15%;
+          }
+
+          .insurance-column {
+            width: 25%;
+          }
+
+          .action-column {
+            width: 8%;
+          }
+
+          .insurance-badge {
+            padding: 8px 14px;
+            font-size: 14px;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .leden-tabel th,
+          .leden-tabel td {
+            padding: 20px 6px;
+            font-size: 11px;
+          }
+
+          .insurance-badge {
+            padding: 5px 8px;
+            font-size: 11px;
+          }
+
+          .delete-icon {
+            width: 16px;
+            height: 16px;
+          }
+
+          .trainer-card {
+            padding: 10px;
+          }
+
+          .trainer-profile-img {
+            width: 60px;
+            height: 60px;
+          }
+
+          .trainer-name {
+            font-size: 1em;
+          }
+
+          .trainer-birthdate {
+            font-size: 0.8em;
+          }
         }
 
         .insurance-ok {
@@ -454,19 +707,13 @@ const ClubMembersPage = () => {
         }
 
         .insurance-warning {
-          background-color: rgba(255, 171, 0, 0.2);
-          color: #ffab00;
+          background-color: rgba(255, 196, 47, 0.2);
+          color: #ffc42f;
         }
 
         .insurance-error {
-          background-color: rgba(255, 71, 87, 0.2);
-          color: #ff4757;
-        }
-
-        .action-column {
-          width: 50px;
-          text-align: center;
-          padding: 0;
+          background-color: rgba(239, 56, 38, 0.2);
+          color: #ef3826;
         }
 
         .delete-button {
@@ -475,15 +722,18 @@ const ClubMembersPage = () => {
           padding: 8px;
           cursor: pointer;
           border-radius: 4px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           transition: background-color 0.2s;
         }
 
         .delete-button:hover {
-          background-color: rgba(255, 71, 87, 0.1);
+          background-color: rgba(239, 56, 38, 0.1);
         }
 
         .delete-icon {
-          color: #ff4757;
+          color: #ef3826;
         }
 
         .no-results {
@@ -510,40 +760,6 @@ const ClubMembersPage = () => {
           width: 20px;
           height: 20px;
           flex-shrink: 0;
-        }
-
-        @media (max-width: 768px) {
-          .leden-container {
-            padding: 1rem;
-          }
-
-          .button-group {
-            flex-direction: column;
-            align-items: stretch;
-          }
-
-          .export-button,
-          .add-member-button {
-            width: 100%;
-            justify-content: center;
-          }
-
-          .trainers-list {
-            flex-direction: column;
-          }
-
-          .trainer-card {
-            width: 100%;
-          }
-
-          .leden-tabel {
-            font-size: 14px;
-          }
-
-          .leden-tabel th,
-          .leden-tabel td {
-            padding: 12px 8px;
-          }
         }
       `}</style>
     </div>

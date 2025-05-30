@@ -11,6 +11,17 @@ const ClubsPage = () => {
   const { user, loading } = useAuth();
   const [clubs, setClubs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 945); // Match the breakpoint from ledenlijst
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -50,10 +61,6 @@ const ClubsPage = () => {
             <FunnelIcon className="button-icon" width={20} height={20} />
             Filter
           </button>
-          <Link href="/clubs/add-club" className="add-member-button">
-            <UserPlusIcon className="button-icon" width={20} height={20} />+
-            Voeg club toe
-          </Link>
         </div>
       </div>
       <input
@@ -63,50 +70,65 @@ const ClubsPage = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <table className="leden-tabel">
-        <thead>
-          <tr>
-            <th>Club Logo</th>
-            <th>Clubnaam</th>
-            <th>Locatie</th>
-            <th>Aantal Leden</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredClubs.length > 0 ? (
-            filteredClubs.map((club) => (
-              <tr
-                key={club._id}
-                onClick={() => handleRowClick(club._id)}
-                style={{ cursor: "pointer" }}
-              >
-                <td>
-                  <img
-                    src={club.clublogo}
-                    alt={club.naam}
-                    className="club-logo"
-                  />
-                </td>
-                <td>{club.naam}</td>
-                <td>{club.locatie || "Onbekend"}</td>
-                <td>{club.leden?.length || 0}</td>
-              </tr>
-            ))
-          ) : (
+      <div className="table-responsive">
+        <table className="leden-tabel">
+          <thead>
             <tr>
-              <td colSpan="5" className="no-results">
-                Geen clubs gevonden
-              </td>
+              <th className="logo-column">Club Logo</th>
+              <th className="name-column">Clubnaam</th>
+              {!isMobile && <th className="location-column">Locatie</th>}
+              <th className="members-column">Aantal Leden</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredClubs.length > 0 ? (
+              filteredClubs.map((club) => (
+                <tr
+                  key={club._id}
+                  onClick={() => handleRowClick(club._id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <td className="logo-column">
+                    <img
+                      src={club.clublogo}
+                      alt={club.naam}
+                      className="club-logo"
+                    />
+                  </td>
+                  <td className="name-column">{club.naam}</td>
+                  {!isMobile && (
+                    <td className="location-column">
+                      {club.locatie || "Onbekend"}
+                    </td>
+                  )}
+                  <td className="members-column">{club.leden?.length || 0}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={isMobile ? "3" : "4"} className="no-results">
+                  Geen clubs gevonden
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       <style jsx>{`
         .leden-container {
-          padding: 2rem;
+          padding: 1rem;
           border-radius: 12px;
           font-family: "Inter", sans-serif;
+          width: 100%;
+          box-sizing: border-box;
+          max-width: 100%;
+        }
+
+        @media (min-width: 768px) {
+          .leden-container {
+            padding: 2rem;
+          }
         }
 
         .header-section {
@@ -129,7 +151,7 @@ const ClubsPage = () => {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 12px 24px;
+          padding: 12px;
           background-color: var(--filter-yellow);
           color: #000;
           border: none;
@@ -140,6 +162,12 @@ const ClubsPage = () => {
           font-size: 16px;
         }
 
+        @media (min-width: 768px) {
+          .filter-button {
+            padding: 12px 24px;
+          }
+        }
+
         .filter-button:hover {
           background-color: #e6c05f;
         }
@@ -148,13 +176,19 @@ const ClubsPage = () => {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 12px 24px;
+          padding: 12px;
           background-color: var(--primary-blue);
           color: white;
           border-radius: 8px;
           font-weight: 500;
           text-decoration: none;
           transition: background-color 0.2s;
+        }
+
+        @media (min-width: 768px) {
+          .add-member-button {
+            padding: 12px 24px;
+          }
         }
 
         .add-member-button:hover {
@@ -167,9 +201,15 @@ const ClubsPage = () => {
         }
 
         .leden-title {
-          font-size: 2rem;
+          font-size: 1.5rem;
           color: var(--text-color);
           margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+          .leden-title {
+            font-size: 2rem;
+          }
         }
 
         .search-input {
@@ -181,83 +221,138 @@ const ClubsPage = () => {
           font-size: 15px;
         }
 
+        .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
         .leden-tabel {
           width: 100%;
-          font-size: 15px;
           border-collapse: separate;
           border-spacing: 0;
           background-color: #fff;
-          border: 1px solid #d5d5d5;
+          border: 1px solid rgba(213, 213, 213, 0.5);
           border-radius: 8px;
-          overflow: hidden;
+          table-layout: auto;
         }
 
         .leden-tabel th {
-          padding: 14px 20px;
-          background-color: #f4f7fb;
+          background-color: #d4e4fd;
           color: #333;
           font-weight: 750;
           text-transform: uppercase;
-          border-bottom: 1px solid #d5d5d5;
+          padding: 16px 8px;
+          border-bottom: 1px solid rgba(213, 213, 213, 0.5);
+          white-space: nowrap;
         }
 
         .leden-tabel td {
-          padding: 18px 20px;
+          padding: 12px 8px;
+          border-bottom: 1px solid rgba(213, 213, 213, 0.3);
+          line-height: 1.3;
           text-align: center;
-          font-weight: 500;
-          color: var(--light-text-color);
-          border-bottom: 1px solid #d5d5d5;
         }
 
-        .leden-tabel tr:last-child td {
-          border-bottom: none;
+        .leden-tabel td:last-child {
+          border: none;
         }
 
         .leden-tabel tr:hover {
           background-color: #f9fbff;
         }
 
+        /* Column widths */
+        .logo-column {
+          width: 15%;
+          min-width: 60px;
+        }
+
+        .name-column {
+          width: 45%;
+          min-width: 120px;
+        }
+
+        .location-column {
+          width: 25%;
+          min-width: 100px;
+          display: none;
+        }
+
+        .members-column {
+          width: 15%;
+          min-width: 80px;
+        }
+
         .club-logo {
-          width: 50px;
-          height: 50px;
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
           object-fit: contain;
         }
 
-        .insurance-badge {
-          display: inline-block;
-          padding: 6px 12px;
-          border-radius: 4px;
-          font-weight: 600;
-          font-size: 14px;
+        @media (max-width: 944px) {
+          .leden-tabel {
+            font-size: 14px;
+          }
+
+          .leden-tabel th,
+          .leden-tabel td {
+            padding: 24px 6px;
+          }
+
+          .leden-tabel th {
+            padding: 20px 8px;
+          }
+
+          .club-logo {
+            width: 35px;
+            height: 35px;
+          }
         }
 
-        .insurance-ok {
-          background-color: rgba(0, 182, 155, 0.2);
-          color: #00b69b;
+        @media (min-width: 945px) {
+          .leden-tabel {
+            font-size: 15px;
+          }
+
+          .leden-tabel th,
+          .leden-tabel td {
+            padding: 24px 12px;
+          }
+
+          .location-column {
+            display: table-cell;
+          }
+
+          .name-column {
+            width: 35%;
+            text-align: center;
+          }
+
+          .club-logo {
+            width: 40px;
+            height: 40px;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .leden-tabel th,
+          .leden-tabel td {
+            padding: 6px;
+            font-size: 11px;
+          }
+
+          .club-logo {
+            width: 30px;
+            height: 30px;
+          }
         }
 
         .no-results {
           text-align: center;
           padding: 20px;
           color: #666;
-        }
-
-        @media (max-width: 768px) {
-          .leden-container {
-            padding: 1rem;
-          }
-
-          .button-group {
-            flex-direction: column;
-            align-items: stretch;
-          }
-
-          .filter-button,
-          .add-member-button {
-            width: 100%;
-            justify-content: center;
-          }
         }
       `}</style>
     </div>
