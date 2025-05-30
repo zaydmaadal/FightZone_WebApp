@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   fetchUsers,
   fetchClubById,
@@ -11,6 +11,10 @@ import {
   ArrowLeftCircleIcon,
   TrashIcon,
   ArrowDownTrayIcon,
+  FunnelIcon,
+  XMarkIcon,
+  PlusIcon,
+  MinusIcon,
 } from "@heroicons/react/24/solid";
 
 // Helper function to calculate age
@@ -64,6 +68,88 @@ const checkInsuranceStatus = (vechterInfo) => {
   }
 };
 
+// Add DoubleRangeSlider component
+const DoubleRangeSlider = ({
+  min,
+  max,
+  step = 1,
+  values,
+  onChange,
+  unit = "",
+}) => {
+  const containerRef = useRef(null);
+  const trackRef = useRef(null);
+  const minBubbleRef = useRef(null);
+  const maxBubbleRef = useRef(null);
+
+  useEffect(() => {
+    updateRangeTrack();
+  }, [values]);
+
+  const updateRangeTrack = () => {
+    if (!containerRef.current || !trackRef.current) return;
+
+    const minPercent = ((values.min - min) / (max - min)) * 100;
+    const maxPercent = ((values.max - min) / (max - min)) * 100;
+
+    trackRef.current.style.left = `${minPercent}%`;
+    trackRef.current.style.width = `${maxPercent - minPercent}%`;
+
+    if (minBubbleRef.current) {
+      minBubbleRef.current.style.left = `${minPercent}%`;
+      minBubbleRef.current.textContent = `${values.min}${unit}`;
+    }
+
+    if (maxBubbleRef.current) {
+      maxBubbleRef.current.style.left = `${maxPercent}%`;
+      maxBubbleRef.current.textContent = `${values.max}${unit}`;
+    }
+  };
+
+  const handleMinChange = (e) => {
+    const newMin = parseInt(e.target.value);
+    if (newMin <= values.max) {
+      onChange({ min: newMin, max: values.max });
+    }
+  };
+
+  const handleMaxChange = (e) => {
+    const newMax = parseInt(e.target.value);
+    if (newMax >= values.min) {
+      onChange({ min: values.min, max: newMax });
+    }
+  };
+
+  return (
+    <div className="double-range-container">
+      <div className="double-range-slider" ref={containerRef}>
+        <div className="slider-background"></div>
+        <span className="range-track" ref={trackRef}></span>
+        <input
+          type="range"
+          className="min-range"
+          min={min}
+          max={max}
+          step={step}
+          value={values.min}
+          onChange={handleMinChange}
+        />
+        <input
+          type="range"
+          className="max-range"
+          min={min}
+          max={max}
+          step={step}
+          value={values.max}
+          onChange={handleMaxChange}
+        />
+        <div className="min-value-bubble" ref={minBubbleRef}></div>
+        <div className="max-value-bubble" ref={maxBubbleRef}></div>
+      </div>
+    </div>
+  );
+};
+
 const ClubMembersPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -71,6 +157,29 @@ const ClubMembersPage = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [openFilter, setOpenFilter] = useState(null);
+  const [sliderValues, setSliderValues] = useState({
+    leeftijd: { min: 1, max: 60 },
+    gewicht: { min: -20, max: 100 },
+  });
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    gewicht: "",
+    leeftijd: "",
+    klasse: "",
+    verzekering: "",
+  });
+
+  // Fixed filter options
+  const klasseOptions = ["A", "B", "C", "Nieuweling", "Jeugd"];
+  const verzekeringOptions = [
+    { value: "In Orde", label: "Gereed" },
+    { value: "Verloopt over", label: "Vervalend" },
+    { value: "Niet in orde", label: "Verlopen" },
+  ];
 
   useEffect(() => {
     const handleResize = () => {
@@ -101,20 +210,116 @@ const ClubMembersPage = () => {
     }
   }, [id]);
 
-  const filteredFighters = users.filter(
-    (user) =>
-      user.club === id &&
-      user.role.toLowerCase() === "vechter" &&
-      [
-        `${user.voornaam} ${user.achternaam}`,
-        `${user.vechterInfo?.gewicht || "Onbekend"} kg`,
-        calculateAge(user.geboortedatum),
-        user.vechterInfo?.klasse || "Onbekend",
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    // Initialize slider ranges with fixed values
+    setSliderValues({
+      leeftijd: { min: 1, max: 60 },
+      gewicht: { min: -20, max: 100 },
+    });
+  }, []);
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      gewicht: "",
+      leeftijd: "",
+      klasse: "",
+      verzekering: "",
+    });
+
+    setSliderValues({
+      leeftijd: { min: 1, max: 60 },
+      gewicht: { min: -20, max: 100 },
+    });
+  };
+
+  const handleSliderChange = (filterType, newValues) => {
+    setSliderValues((prev) => ({
+      ...prev,
+      [filterType]: newValues,
+    }));
+
+    if (filterType === "leeftijd") {
+      if (newValues.min === 1 && newValues.max === 60) {
+        handleFilterChange("leeftijd", "");
+      } else {
+        handleFilterChange("leeftijd", `${newValues.min}-${newValues.max}`);
+      }
+    } else if (filterType === "gewicht") {
+      if (newValues.min === -20 && newValues.max === 100) {
+        handleFilterChange("gewicht", "");
+      } else {
+        handleFilterChange("gewicht", `${newValues.min}-${newValues.max}`);
+      }
+    }
+  };
+
+  const toggleFilter = (filterName) => {
+    setOpenFilter(openFilter === filterName ? null : filterName);
+  };
+
+  // Update filteredFighters to include all filters
+  const filteredFighters = users.filter((user) => {
+    if (user.club !== id || user.role.toLowerCase() !== "vechter") return false;
+
+    // Search term filter
+    const searchMatch = [
+      `${user.voornaam} ${user.achternaam}`,
+      `${user.vechterInfo?.gewicht || "Onbekend"} kg`,
+      calculateAge(user.geboortedatum),
+      user.vechterInfo?.klasse || "Onbekend",
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    // Slider filters
+    const leeftijdMatch = (() => {
+      if (!filters.leeftijd) return true;
+      const leeftijd = parseInt(calculateAge(user.geboortedatum));
+      return (
+        leeftijd >= sliderValues.leeftijd.min &&
+        leeftijd <= sliderValues.leeftijd.max
+      );
+    })();
+
+    const gewichtMatch = (() => {
+      if (!filters.gewicht) return true;
+      const gewicht = parseInt(user.vechterInfo?.gewicht || "0");
+      return (
+        gewicht >= sliderValues.gewicht.min &&
+        gewicht <= sliderValues.gewicht.max
+      );
+    })();
+
+    // Other filters
+    const klasseMatch =
+      !filters.klasse || user.vechterInfo?.klasse === filters.klasse;
+    const verzekeringMatch =
+      !filters.verzekering ||
+      (filters.verzekering === "In Orde" &&
+        checkInsuranceStatus(user.vechterInfo).text === "In Orde") ||
+      (filters.verzekering === "Verloopt over" &&
+        checkInsuranceStatus(user.vechterInfo).text.includes(
+          "Verloopt over"
+        )) ||
+      (filters.verzekering === "Niet in orde" &&
+        checkInsuranceStatus(user.vechterInfo).text === "Niet in orde");
+
+    return (
+      searchMatch &&
+      leeftijdMatch &&
+      gewichtMatch &&
+      klasseMatch &&
+      verzekeringMatch
+    );
+  });
 
   const trainers = users.filter(
     (user) => user.club === id && user.role.toLowerCase() === "trainer"
@@ -217,10 +422,25 @@ const ClubMembersPage = () => {
       </div>
 
       <div className="button-group">
-        <button onClick={exportToCSV} className="filter-button">
-          <ArrowDownTrayIcon className="button-icon" width={20} height={20} />
-          Exporteer naar CSV
-        </button>
+        <div className="left-buttons">
+          <button
+            className={`filter-button ${showFilters ? "active" : ""}`}
+            onClick={() => {
+              if (isMobile) {
+                setShowMobileFilters(true);
+              } else {
+                setShowFilters(!showFilters);
+              }
+            }}
+          >
+            <FunnelIcon className="button-icon" width={20} height={20} />
+            Filter
+          </button>
+          {/* <button onClick={exportToCSV} className="filter-button">
+            <ArrowDownTrayIcon className="button-icon" width={20} height={20} />
+            Exporteer naar CSV
+          </button> */}
+        </div>
         <Link
           href={`/clubs/${id}/leden/add-member`}
           className="add-member-button"
@@ -228,6 +448,237 @@ const ClubMembersPage = () => {
           + Voeg lid toe
         </Link>
       </div>
+
+      {/* Desktop Filters */}
+      {!isMobile && showFilters && (
+        <div className="filter-dropdowns">
+          <div className="filter-grid">
+            <div className="filter-group">
+              <select
+                value={filters.gewicht}
+                onChange={(e) => handleFilterChange("gewicht", e.target.value)}
+              >
+                <option value="">Gewicht</option>
+                {Array.from(
+                  new Set(users.map((u) => u.vechterInfo?.gewicht))
+                ).map((gewicht) => (
+                  <option key={gewicht} value={gewicht}>
+                    {gewicht} kg
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <select
+                value={filters.leeftijd}
+                onChange={(e) => handleFilterChange("leeftijd", e.target.value)}
+              >
+                <option value="">Leeftijd</option>
+                {Array.from(
+                  new Set(users.map((u) => calculateAge(u.geboortedatum)))
+                ).map((leeftijd) => (
+                  <option key={leeftijd} value={leeftijd}>
+                    {leeftijd}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <select
+                value={filters.klasse}
+                onChange={(e) => handleFilterChange("klasse", e.target.value)}
+              >
+                <option value="">Klasse</option>
+                {klasseOptions.map((klasse) => (
+                  <option key={klasse} value={klasse}>
+                    {klasse}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <select
+                value={filters.verzekering}
+                onChange={(e) =>
+                  handleFilterChange("verzekering", e.target.value)
+                }
+              >
+                <option value="">Verzekering</option>
+                {verzekeringOptions.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button onClick={clearFilters} className="clear-filters">
+              Wissen
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Filter Popup */}
+      {isMobile && showMobileFilters && (
+        <>
+          <div
+            className="mobile-filter-overlay"
+            onClick={() => setShowMobileFilters(false)}
+          />
+          <div className="mobile-filter-popup">
+            <div className="mobile-filter-header">
+              <div className="mobile-filter-title">
+                <FunnelIcon className="button-icon" width={20} height={20} />
+                <span>Filters</span>
+              </div>
+              <button
+                className="close-filter-button"
+                onClick={() => setShowMobileFilters(false)}
+              >
+                <XMarkIcon width={24} height={24} />
+              </button>
+            </div>
+
+            <div className="mobile-filter-content">
+              {/* Leeftijd Filter */}
+              <div className="mobile-filter-section">
+                <button
+                  className="mobile-filter-label"
+                  onClick={() => toggleFilter("leeftijd")}
+                >
+                  <span>Leeftijd</span>
+                  {openFilter === "leeftijd" ? (
+                    <MinusIcon width={20} height={20} />
+                  ) : (
+                    <PlusIcon width={20} height={20} />
+                  )}
+                </button>
+
+                {openFilter === "leeftijd" && (
+                  <div className="mobile-filter-slider">
+                    <DoubleRangeSlider
+                      min={1}
+                      max={60}
+                      values={sliderValues.leeftijd}
+                      onChange={(newValues) =>
+                        handleSliderChange("leeftijd", newValues)
+                      }
+                      unit="J"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Gewicht Filter */}
+              <div className="mobile-filter-section">
+                <button
+                  className="mobile-filter-label"
+                  onClick={() => toggleFilter("gewicht")}
+                >
+                  <span>Gewicht</span>
+                  {openFilter === "gewicht" ? (
+                    <MinusIcon width={20} height={20} />
+                  ) : (
+                    <PlusIcon width={20} height={20} />
+                  )}
+                </button>
+
+                {openFilter === "gewicht" && (
+                  <div className="mobile-filter-slider">
+                    <DoubleRangeSlider
+                      min={-20}
+                      max={100}
+                      values={sliderValues.gewicht}
+                      onChange={(newValues) =>
+                        handleSliderChange("gewicht", newValues)
+                      }
+                      unit=" kg"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Klasse Filter */}
+              <div className="mobile-filter-section">
+                <button
+                  className="mobile-filter-label"
+                  onClick={() => toggleFilter("klasse")}
+                >
+                  <span>Klasse</span>
+                  {openFilter === "klasse" ? (
+                    <MinusIcon width={20} height={20} />
+                  ) : (
+                    <PlusIcon width={20} height={20} />
+                  )}
+                </button>
+
+                {openFilter === "klasse" && (
+                  <div className="mobile-filter-options">
+                    {klasseOptions.map((klasse) => (
+                      <button
+                        key={klasse}
+                        className={`filter-option ${
+                          filters.klasse === klasse ? "active" : ""
+                        }`}
+                        onClick={() => handleFilterChange("klasse", klasse)}
+                      >
+                        {klasse}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Verzekering Filter */}
+              <div className="mobile-filter-section">
+                <button
+                  className="mobile-filter-label"
+                  onClick={() => toggleFilter("verzekering")}
+                >
+                  <span>Verzekering</span>
+                  {openFilter === "verzekering" ? (
+                    <MinusIcon width={20} height={20} />
+                  ) : (
+                    <PlusIcon width={20} height={20} />
+                  )}
+                </button>
+
+                {openFilter === "verzekering" && (
+                  <div className="mobile-filter-options">
+                    {verzekeringOptions.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        className={`filter-option ${
+                          filters.verzekering === value ? "active" : ""
+                        }`}
+                        onClick={() => handleFilterChange("verzekering", value)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mobile-filter-footer">
+              <button onClick={clearFilters} className="clear-filters">
+                Filters wissen
+              </button>
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                className="apply-filters"
+              >
+                Toepassen
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       <input
         type="text"
@@ -760,6 +1211,355 @@ const ClubMembersPage = () => {
           width: 20px;
           height: 20px;
           flex-shrink: 0;
+        }
+
+        .left-buttons {
+          display: flex;
+          gap: 1rem;
+        }
+
+        /* Add all the filter styles from Ledenlijst.css */
+        .filter-dropdowns {
+          margin-bottom: 1.5rem;
+        }
+
+        .filter-grid {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        .filter-group {
+          flex: 1;
+        }
+
+        .filter-group select {
+          width: 100%;
+          padding: 0.75rem;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          font-size: 0.95rem;
+          color: var(--text-color);
+          background-color: white;
+          cursor: pointer;
+          transition: border-color 0.2s;
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 0.75rem center;
+          background-size: 1em;
+          padding-right: 2.5rem;
+        }
+
+        .filter-group select:hover {
+          border-color: #999;
+        }
+
+        .filter-group select:focus {
+          outline: none;
+          border-color: var(--primary-blue);
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+        }
+
+        .clear-filters {
+          background: none;
+          border: none;
+          color: var(--primary-blue);
+          font-size: 0.9rem;
+          cursor: pointer;
+          padding: 0.75rem 1rem;
+          border-radius: 6px;
+          font-weight: 500;
+          transition: background-color 0.2s;
+          white-space: nowrap;
+          border: 1px solid #ddd;
+        }
+
+        .clear-filters:hover {
+          background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        /* Mobile Filter Styles */
+        .mobile-filter-popup {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: white;
+          border-radius: 20px 20px 0 0;
+          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+          z-index: 1000;
+          max-height: 90vh;
+          display: flex;
+          flex-direction: column;
+          animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+
+        .mobile-filter-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 999;
+        }
+
+        .mobile-filter-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem;
+          border-bottom: 1px solid #eee;
+        }
+
+        .mobile-filter-title {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-weight: 600;
+          font-size: 1.1rem;
+          color: #0b48ab;
+        }
+
+        .mobile-filter-content {
+          flex: 1;
+          overflow-y: auto;
+          padding: 1rem;
+        }
+
+        .mobile-filter-section {
+          border-bottom: 1px solid #eee;
+        }
+
+        .mobile-filter-label {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem 0;
+          background: none;
+          border: none;
+          font-size: 1rem;
+          font-weight: 500;
+          color: #0b48ab;
+          cursor: pointer;
+        }
+
+        .mobile-filter-slider {
+          padding: 10px 0;
+          background: white;
+          border-radius: 8px;
+          display: flex;
+          justify-content: center;
+        }
+
+        .mobile-filter-options {
+          padding: 0.5rem;
+          display: flex;
+          gap: 0.5rem;
+          background-color: #f0f6ff;
+          border-radius: 8px;
+        }
+
+        .filter-option {
+          flex: 1;
+          padding: 0.75rem 1rem;
+          border: none;
+          border-radius: 6px;
+          background-color: rgba(52, 131, 254, 0.3);
+          text-align: center;
+          font-size: 0.95rem;
+          color: var(--text-color);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .filter-option.active {
+          background-color: #3483fe;
+          color: white;
+        }
+
+        .mobile-filter-footer {
+          padding: 1rem;
+          border-top: 1px solid #eee;
+          display: flex;
+          gap: 1rem;
+        }
+
+        .mobile-filter-footer button {
+          flex: 1;
+          padding: 0.75rem;
+          border-radius: 6px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .mobile-filter-footer .clear-filters {
+          background: none;
+          border: 1px solid #ddd;
+          color: var(--text-color);
+        }
+
+        .mobile-filter-footer .apply-filters {
+          background-color: #3483fe;
+          border: none;
+          color: white;
+        }
+
+        .mobile-filter-footer .clear-filters:hover {
+          background-color: #f5f5f5;
+        }
+
+        .mobile-filter-footer .apply-filters:hover {
+          background-color: #0b48ab;
+        }
+
+        /* Double Range Slider Styles */
+        .double-range-container {
+          margin: 15px 0;
+          display: flex;
+          justify-content: center;
+          width: 95%;
+        }
+
+        .double-range-slider {
+          position: relative;
+          height: 40px;
+          width: calc(100% - 20px);
+          margin: 20px 0;
+          padding: 0;
+        }
+
+        .slider-background {
+          position: absolute;
+          height: 4px;
+          background-color: #d6e6ff;
+          border-radius: 2px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 100%;
+          z-index: 0;
+        }
+
+        .range-track {
+          position: absolute;
+          height: 4px;
+          background-color: rgba(52, 131, 254, 0.5);
+          border-radius: 2px;
+          top: 50%;
+          transform: translateY(-50%);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .double-range-slider input[type="range"] {
+          position: absolute;
+          width: 100%;
+          height: 4px;
+          background: none;
+          pointer-events: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 2;
+          margin: 0;
+          padding: 0;
+        }
+
+        .double-range-slider input[type="range"]::-webkit-slider-thumb {
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          border: 2px solid #3483fe;
+          background-color: white;
+          pointer-events: auto;
+          -webkit-appearance: none;
+          cursor: pointer;
+          z-index: 3;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .double-range-slider input[type="range"]::-moz-range-thumb {
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          border: 2px solid #3483fe;
+          background-color: white;
+          pointer-events: auto;
+          -moz-appearance: none;
+          cursor: pointer;
+          z-index: 3;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .min-value-bubble,
+        .max-value-bubble {
+          position: absolute;
+          padding: 4px 8px;
+          background: white;
+          border: 1px solid #d6e6ff;
+          border-radius: 12px;
+          color: #0b48ab;
+          font-size: 12px;
+          font-weight: 500;
+          transform: translateX(-50%);
+          top: -28px;
+          pointer-events: none;
+          transition: left 0.1s ease-out;
+          z-index: 4;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          white-space: nowrap;
+        }
+
+        .min-value-bubble::after,
+        .max-value-bubble::after {
+          content: "";
+          position: absolute;
+          bottom: -4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          border-top: 4px solid #d6e6ff;
+        }
+
+        @media (max-width: 768px) {
+          .filter-grid {
+            flex-direction: column;
+            gap: 0.75rem;
+          }
+
+          .filter-group {
+            width: 100%;
+          }
+
+          .clear-filters {
+            width: 100%;
+            text-align: center;
+          }
+
+          .left-buttons {
+            flex-direction: column;
+            width: 100%;
+          }
+
+          .left-buttons .filter-button {
+            width: 100%;
+          }
         }
       `}</style>
     </div>

@@ -56,12 +56,6 @@ const ClubsPage = () => {
         <div>
           <h1 className="leden-title">Club Overzicht</h1>
         </div>
-        <div className="button-group">
-          <button className="filter-button">
-            <FunnelIcon className="button-icon" width={20} height={20} />
-            Filter
-          </button>
-        </div>
       </div>
       <input
         type="text"
