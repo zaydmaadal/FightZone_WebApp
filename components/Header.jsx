@@ -105,6 +105,9 @@ export default function Header() {
 
       {/* Mobile Header */}
       <div className="mobile-header">
+        <button className="hamburger" onClick={() => setIsMobileMenuOpen(true)}>
+          <Bars3Icon />
+        </button>
         <div className="mobile-profile">
           <img
             src={user.profielfoto || "/default-avatar.png"}
@@ -118,9 +121,6 @@ export default function Header() {
             <p className="user-role">{user.role}</p>
           </div>
         </div>
-        <button className="hamburger" onClick={() => setIsMobileMenuOpen(true)}>
-          <Bars3Icon />
-        </button>
       </div>
 
       {/* Sidebar */}
@@ -339,7 +339,7 @@ export default function Header() {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          flex: 1;
+          margin-left: auto;
         }
         .profile-picture {
           width: 32px;
@@ -365,7 +365,10 @@ export default function Header() {
           color: #3483fe;
           width: 28px;
           height: 28px;
-          margin-left: auto;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .profile-icon {
@@ -384,7 +387,7 @@ export default function Header() {
           right: 0;
           bottom: 0;
           background-color: rgba(248, 249, 251, 0.7);
-          z-index: 998;
+          z-index: 1001;
           opacity: 0;
           transition: opacity 0.3s ease;
           pointer-events: none;
@@ -405,7 +408,7 @@ export default function Header() {
           max-width: 300px;
           height: 100vh;
           background-color: #fff;
-          z-index: 999;
+          z-index: 1002;
           box-shadow: 2px 0 12px rgba(0, 0, 0, 0.07);
           display: flex;
           flex-direction: column;

@@ -93,12 +93,14 @@ export default function Sidebar() {
                     pathname.startsWith("/member/")))
               : false;
 
+            const Icon = item.icon;
             return (
               <Link
                 key={item.path}
                 href={item.path}
                 className={`nav-item ${isActive ? "active" : ""}`}
               >
+                <Icon className="nav-icon" />
                 {item.label}
               </Link>
             );
@@ -189,24 +191,38 @@ export default function Sidebar() {
         }
 
         .nav-item {
-          display: block;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
           padding: 14px 15px;
-          color: #9db2ce;
+          color: #62789b;
           text-decoration: none;
-          border-radius: 5px;
+          border-radius: 8px;
           transition: all 0.2s ease;
           font-size: 16px;
           font-weight: 500;
         }
 
         .nav-item:hover {
-          background-color: #f5f5f5;
+          background-color: #f8f9fb;
         }
 
         .nav-item.active {
-          background-color: #3483fe;
-          color: #ffffff;
+          background-color: #ebf3ff;
+          color: #3483fe;
           font-weight: 600;
+          padding: 0.85rem 1.2rem;
+        }
+
+        .nav-item svg {
+          width: 24px;
+          height: 24px;
+          flex-shrink: 0;
+          color: inherit;
+        }
+
+        .nav-item.active svg {
+          color: #3483fe;
         }
 
         .sidebar-footer {
@@ -256,16 +272,16 @@ export default function Sidebar() {
           flex-direction: column;
           align-items: center;
           text-decoration: none;
-          color: #9db2ce;
+          color: #62789b;
           padding: 10px 5px;
           gap: 5px;
-          border-radius: 9999px;
+          border-radius: 8px;
           transition: all 0.2s ease;
         }
 
         .mobile-nav-item.active {
-          background-color: #0b48ab;
-          color: #ffffff;
+          background-color: #ebf3ff;
+          color: #3483fe;
           flex-direction: row;
           gap: 8px;
           padding: 12px 14px;
@@ -274,11 +290,11 @@ export default function Sidebar() {
         .mobile-nav-icon {
           width: 24px;
           height: 24px;
-          margin-bottom: 4px;
+          color: inherit;
         }
 
         .mobile-nav-item.active .mobile-nav-icon {
-          margin-bottom: 0;
+          color: #3483fe;
         }
 
         .mobile-nav-item span {
