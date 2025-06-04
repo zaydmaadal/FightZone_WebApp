@@ -11,6 +11,7 @@ import {
   CheckCircleIcon,
   ArrowLeftCircleIcon,
 } from "@heroicons/react/24/solid/index.js";
+import { PencilSquareIcon } from "@heroicons/react/24/outline/index.js";
 import { ArrowLeftCircleIcon as OutlineArrowLeftCircleIcon } from "@heroicons/react/24/outline/index.js";
 
 const MemberDetails = () => {
@@ -21,6 +22,8 @@ const MemberDetails = () => {
   const [users, setUsers] = useState([]);
   const [clubs, setClubs] = useState([]);
   const [opponents, setOpponents] = useState({});
+  const [editingField, setEditingField] = useState(null);
+  const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
     const loadMember = async () => {
@@ -102,6 +105,34 @@ const MemberDetails = () => {
     return "Terug naar club leden";
   };
 
+  const handleEditClick = (field) => {
+    setEditingField(field);
+    setEditValue(member.vechterInfo[field] || "");
+  };
+
+  const handleSave = async (field) => {
+    try {
+      // Here you would typically make an API call to update the value
+      // For now, we'll just update the local state
+      const updatedMember = {
+        ...member,
+        vechterInfo: {
+          ...member.vechterInfo,
+          [field]: editValue,
+        },
+      };
+      setMember(updatedMember);
+      setEditingField(null);
+    } catch (error) {
+      console.error("Error updating field:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingField(null);
+    setEditValue("");
+  };
+
   return (
     <div className="profile-page">
       <div className="back-button-container">
@@ -132,10 +163,42 @@ const MemberDetails = () => {
             </div>
             <div className="stats-grid">
               <div className="stat-item">
-                <span className="stat-number">
-                  {member.vechterInfo.koWins || 0}
-                </span>
-                <span className="stat-name">KO Wins</span>
+                <button
+                  className="edit-button"
+                  onClick={() => handleEditClick("lengte")}
+                  aria-label="Bewerk lengte"
+                >
+                  <PencilSquareIcon
+                    style={{ width: "20px", height: "20px", color: "#000000" }}
+                  />
+                </button>
+                {editingField === "lengte" ? (
+                  <div className="edit-container">
+                    <input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="edit-input"
+                      placeholder="Lengte in cm"
+                    />
+                    <div className="edit-actions">
+                      <button
+                        onClick={() => handleSave("lengte")}
+                        className="save-button"
+                      >
+                        Opslaan
+                      </button>
+                      <button onClick={handleCancel} className="cancel-button">
+                        Annuleren
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="stat-number">
+                    {member.vechterInfo.lengte || "-"} cm
+                  </span>
+                )}
+                <span className="stat-name">Lengte</span>
               </div>
               <div className="stat-item">
                 <span className="stat-number">
@@ -144,15 +207,79 @@ const MemberDetails = () => {
                 <span className="stat-name">Leeftijd</span>
               </div>
               <div className="stat-item">
-                <span className="stat-number">
-                  {member.vechterInfo.klasse?.charAt(0) || "-"}
-                </span>
+                <button
+                  className="edit-button"
+                  onClick={() => handleEditClick("klasse")}
+                  aria-label="Bewerk klasse"
+                >
+                  <PencilSquareIcon
+                    style={{ width: "20px", height: "20px", color: "#000000" }}
+                  />
+                </button>
+                {editingField === "klasse" ? (
+                  <div className="edit-container">
+                    <input
+                      type="text"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="edit-input"
+                      placeholder="Klasse"
+                    />
+                    <div className="edit-actions">
+                      <button
+                        onClick={() => handleSave("klasse")}
+                        className="save-button"
+                      >
+                        Opslaan
+                      </button>
+                      <button onClick={handleCancel} className="cancel-button">
+                        Annuleren
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="stat-number">
+                    {member.vechterInfo.klasse?.charAt(0) || "-"}
+                  </span>
+                )}
                 <span className="stat-name">Klasse</span>
               </div>
               <div className="stat-item">
-                <span className="stat-number">
-                  {member.vechterInfo.gewicht} kg
-                </span>
+                <button
+                  className="edit-button"
+                  onClick={() => handleEditClick("gewicht")}
+                  aria-label="Bewerk gewicht"
+                >
+                  <PencilSquareIcon
+                    style={{ width: "20px", height: "20px", color: "#000000" }}
+                  />
+                </button>
+                {editingField === "gewicht" ? (
+                  <div className="edit-container">
+                    <input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="edit-input"
+                      placeholder="Gewicht in kg"
+                    />
+                    <div className="edit-actions">
+                      <button
+                        onClick={() => handleSave("gewicht")}
+                        className="save-button"
+                      >
+                        Opslaan
+                      </button>
+                      <button onClick={handleCancel} className="cancel-button">
+                        Annuleren
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="stat-number">
+                    {member.vechterInfo.gewicht} kg
+                  </span>
+                )}
                 <span className="stat-name">Gewicht</span>
               </div>
             </div>
@@ -562,6 +689,88 @@ const MemberDetails = () => {
           padding: 16px;
         }
 
+        .edit-button {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background-color: #ffd56a;
+          border: none;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 50%;
+          transition: all 0.2s ease;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          min-width: 36px;
+          min-height: 36px;
+        }
+
+        .edit-button:hover {
+          background-color: #ffc94a;
+          transform: scale(1.05);
+        }
+
+        .edit-button svg {
+          width: 20px;
+          height: 20px;
+          color: #000000 !important;
+          stroke: #000000 !important;
+          fill: none !important;
+        }
+
+        .edit-container {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 8px;
+        }
+
+        .edit-input {
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 1rem;
+          width: 100%;
+          text-align: center;
+        }
+
+        .edit-actions {
+          display: flex;
+          gap: 8px;
+          justify-content: center;
+        }
+
+        .save-button,
+        .cancel-button {
+          padding: 6px 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          transition: background-color 0.2s;
+        }
+
+        .save-button {
+          background-color: #3483fe;
+          color: white;
+        }
+
+        .save-button:hover {
+          background-color: #2a6cd6;
+        }
+
+        .cancel-button {
+          background-color: #f5f5f5;
+          color: #666;
+        }
+
+        .cancel-button:hover {
+          background-color: #e5e5e5;
+        }
+
         @media (max-width: 767px) {
           .profile-header {
             align-items: center;
@@ -610,6 +819,33 @@ const MemberDetails = () => {
           .fighter-right {
             justify-content: center;
             margin: 8px 0;
+          }
+
+          .edit-button {
+            top: 4px;
+            right: 4px;
+            padding: 6px;
+            min-width: 32px;
+            min-height: 32px;
+          }
+
+          .edit-button svg {
+            width: 18px;
+            height: 18px;
+            color: #000000 !important;
+            stroke: #000000 !important;
+            fill: none !important;
+          }
+
+          .edit-input {
+            font-size: 0.9rem;
+            padding: 6px;
+          }
+
+          .save-button,
+          .cancel-button {
+            padding: 4px 8px;
+            font-size: 0.8rem;
           }
         }
 

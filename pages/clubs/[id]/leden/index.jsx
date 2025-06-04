@@ -15,7 +15,9 @@ import {
   XMarkIcon,
   PlusIcon,
   MinusIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/solid";
+import * as XLSX from "xlsx";
 
 // Helper function to calculate age
 const calculateAge = (birthDate) => {
@@ -164,6 +166,9 @@ const ClubMembersPage = () => {
     leeftijd: { min: 1, max: 60 },
     gewicht: { min: -20, max: 100 },
   });
+  const [selectedFighters, setSelectedFighters] = useState([]);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -339,28 +344,174 @@ const ClubMembersPage = () => {
     }
   };
 
-  const exportToCSV = () => {
-    const headers = ["Naam", "Gewichtscategorie", "Leeftijd", "Klasse"];
-    const rows = filteredFighters.map((user) => [
-      `${user.voornaam} ${user.achternaam}`,
-      `${user.vechterInfo?.gewicht || "Onbekend"} kg`,
-      calculateAge(user.geboortedatum),
-      user.vechterInfo?.klasse || "Onbekend",
-    ]);
+  const exportToExcel = () => {
+    const worksheetData = filteredFighters.map((userData) => {
+      const fightsCount = Array.isArray(userData?.vechterInfo?.fights)
+        ? userData.vechterInfo.fights.length
+        : 0;
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      headers.join(",") +
-      "\n" +
-      rows.map((row) => row.join(",")).join("\n");
+      return {
+        Naam: `${userData.voornaam} ${userData.achternaam}`,
+        Email: userData.email,
+        Geboortedatum: new Date(userData.geboortedatum).toLocaleDateString(
+          "nl-NL"
+        ),
+        Leeftijd: calculateAge(userData.geboortedatum),
+        Gewicht: userData.vechterInfo?.gewicht || "",
+        Lengte: userData.vechterInfo?.lengte || "",
+        Klasse: userData.vechterInfo?.klasse || "",
+        "Verzekering Vervaldatum": userData.vechterInfo?.vervalDatum
+          ? new Date(userData.vechterInfo.vervalDatum).toLocaleDateString(
+              "nl-NL"
+            )
+          : "",
+        "Aantal Gevechten": fightsCount,
+      };
+    });
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "vechters_export.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+
+    // Set column widths
+    const colWidths = [
+      { wch: 30 }, // Naam
+      { wch: 25 }, // Email
+      { wch: 15 }, // Geboortedatum
+      { wch: 10 }, // Leeftijd
+      { wch: 10 }, // Gewicht
+      { wch: 10 }, // Lengte
+      { wch: 15 }, // Klasse
+      { wch: 20 }, // Verzekering Vervaldatum
+      { wch: 15 }, // Aantal Gevechten
+    ];
+    ws["!cols"] = colWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Ledenlijst");
+
+    // Generate filename
+    const date = new Date()
+      .toLocaleDateString("nl-NL", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replace(/\//g, "-");
+
+    const safeClubName = club?.naam
+      ? club.naam.replace(/[^a-zA-Z0-9]/g, "_")
+      : "Club";
+
+    const filename = `FightZone_${safeClubName}_Ledenlijst_${date}.xlsx`;
+
+    // Save the file
+    XLSX.writeFile(wb, filename);
+  };
+
+  const handleSelectiveExport = () => {
+    if (selectedFighters.length === 0) {
+      alert("Selecteer ten minste één vechter om te exporteren");
+      return;
+    }
+
+    const selectedMembers = filteredFighters.filter((member) =>
+      selectedFighters.includes(member._id)
+    );
+
+    const worksheetData = selectedMembers.map((userData) => {
+      const fightsCount = Array.isArray(userData?.vechterInfo?.fights)
+        ? userData.vechterInfo.fights.length
+        : 0;
+
+      return {
+        Naam: `${userData.voornaam} ${userData.achternaam}`,
+        Email: userData.email,
+        Geboortedatum: new Date(userData.geboortedatum).toLocaleDateString(
+          "nl-NL"
+        ),
+        Leeftijd: calculateAge(userData.geboortedatum),
+        Gewicht: userData.vechterInfo?.gewicht || "",
+        Lengte: userData.vechterInfo?.lengte || "",
+        Klasse: userData.vechterInfo?.klasse || "",
+        "Verzekering Vervaldatum": userData.vechterInfo?.vervalDatum
+          ? new Date(userData.vechterInfo.vervalDatum).toLocaleDateString(
+              "nl-NL"
+            )
+          : "",
+        "Aantal Gevechten": fightsCount,
+      };
+    });
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+
+    // Set column widths
+    const colWidths = [
+      { wch: 30 }, // Naam
+      { wch: 25 }, // Email
+      { wch: 15 }, // Geboortedatum
+      { wch: 10 }, // Leeftijd
+      { wch: 10 }, // Gewicht
+      { wch: 10 }, // Lengte
+      { wch: 15 }, // Klasse
+      { wch: 20 }, // Verzekering Vervaldatum
+      { wch: 15 }, // Aantal Gevechten
+    ];
+    ws["!cols"] = colWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Geselecteerde Vechters");
+
+    // Generate filename
+    const date = new Date()
+      .toLocaleDateString("nl-NL", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replace(/\//g, "-");
+
+    const safeClubName = club?.naam
+      ? club.naam.replace(/[^a-zA-Z0-9]/g, "_")
+      : "Club";
+
+    const filename = `FightZone_${safeClubName}_Geselecteerde_Vechters_${date}.xlsx`;
+
+    // Save the file
+    XLSX.writeFile(wb, filename);
+
+    // Reset selection mode and selected fighters
+    setIsSelectMode(false);
+    setSelectedFighters([]);
+  };
+
+  // Add toggleFighterSelection function
+  const toggleFighterSelection = (id, e) => {
+    e.stopPropagation(); // Prevent row click when clicking checkbox
+    setSelectedFighters((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((fighterId) => fighterId !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  // Modify handleRowClick
+  const handleRowClick = (id) => {
+    if (isSelectMode) {
+      setSelectedFighters((prev) => {
+        if (prev.includes(id)) {
+          return prev.filter((fighterId) => fighterId !== id);
+        } else {
+          return [...prev, id];
+        }
+      });
+    } else {
+      router.push(`/member/${id}`);
+    }
   };
 
   if (!club) {
@@ -436,18 +587,85 @@ const ClubMembersPage = () => {
             <FunnelIcon className="button-icon" width={20} height={20} />
             Filter
           </button>
-          {/* <button onClick={exportToCSV} className="filter-button">
-            <ArrowDownTrayIcon className="button-icon" width={20} height={20} />
-            Exporteer naar CSV
-          </button> */}
         </div>
-        <Link
-          href={`/clubs/${id}/leden/add-member`}
-          className="add-member-button"
-        >
-          + Voeg lid toe
-        </Link>
+        <div className="right-buttons">
+          <div className="export-container">
+            <button
+              className="export-button"
+              onClick={() => setShowExportDropdown(!showExportDropdown)}
+            >
+              <ArrowDownTrayIcon
+                className="button-icon"
+                width={20}
+                height={20}
+              />
+              Exporteren
+              <ChevronDownIcon
+                className={`dropdown-icon ${
+                  showExportDropdown ? "rotate" : ""
+                }`}
+                width={16}
+                height={16}
+              />
+            </button>
+            {showExportDropdown && (
+              <div className="export-dropdown">
+                <button
+                  className="export-option"
+                  onClick={() => {
+                    exportToExcel();
+                    setShowExportDropdown(false);
+                  }}
+                >
+                  Exporteer volledige lijst
+                </button>
+                <button
+                  className="export-option"
+                  onClick={() => {
+                    setIsSelectMode(true);
+                    setShowExportDropdown(false);
+                  }}
+                >
+                  Selecteer vechters om te exporteren
+                </button>
+              </div>
+            )}
+          </div>
+          <Link
+            href={`/clubs/${id}/leden/add-member`}
+            className="add-member-button"
+          >
+            + Voeg lid toe
+          </Link>
+        </div>
       </div>
+
+      {/* Add selection mode indicator */}
+      {isSelectMode && (
+        <div className="selection-mode-bar">
+          <div className="selection-info">
+            {selectedFighters.length} vechter(s) geselecteerd
+          </div>
+          <div className="selection-actions">
+            <button
+              className="cancel-selection"
+              onClick={() => {
+                setIsSelectMode(false);
+                setSelectedFighters([]);
+              }}
+            >
+              Annuleren
+            </button>
+            <button
+              className="export-selected"
+              onClick={handleSelectiveExport}
+              disabled={selectedFighters.length === 0}
+            >
+              Exporteer geselecteerde
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Desktop Filters */}
       {!isMobile && showFilters && (
@@ -693,9 +911,10 @@ const ClubMembersPage = () => {
       />
 
       <div className="table-responsive">
-        <table className="leden-tabel">
+        <table className={`leden-tabel ${isSelectMode ? "select-mode" : ""}`}>
           <thead>
             <tr>
+              {isSelectMode && <th className="checkbox-column"></th>}
               <th className="name-column">Naam</th>
               {!isMobile && <th className="weight-column">Gewicht</th>}
               <th className="age-column">Leeftijd</th>
@@ -709,9 +928,24 @@ const ClubMembersPage = () => {
               filteredFighters.map((user) => (
                 <tr
                   key={user._id}
-                  onClick={() => router.push(`/member/${user._id}`)}
-                  className="clickable-row"
+                  onClick={() => handleRowClick(user._id)}
+                  className={`clickable-row ${
+                    selectedFighters.includes(user._id) ? "selected" : ""
+                  }`}
                 >
+                  {isSelectMode && (
+                    <td
+                      className="checkbox-column"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedFighters.includes(user._id)}
+                        onChange={(e) => toggleFighterSelection(user._id, e)}
+                        className="fighter-checkbox"
+                      />
+                    </td>
+                  )}
                   <td className="name-column">
                     {user.voornaam} {user.achternaam}
                   </td>
@@ -758,7 +992,7 @@ const ClubMembersPage = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={isMobile ? "4" : "6"} className="no-results">
+                <td colSpan={isSelectMode ? "7" : "6"} className="no-results">
                   Geen vechters gevonden
                 </td>
               </tr>
@@ -1558,6 +1792,189 @@ const ClubMembersPage = () => {
           }
 
           .left-buttons .filter-button {
+            width: 100%;
+          }
+        }
+
+        .right-buttons {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        .selection-mode-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem;
+          background-color: #f8f9fb;
+          border-radius: 8px;
+          margin-bottom: 1rem;
+        }
+
+        .selection-info {
+          font-weight: 500;
+          color: #0b48ab;
+        }
+
+        .selection-actions {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .cancel-selection {
+          padding: 0.5rem 1rem;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          background: white;
+          color: #666;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .cancel-selection:hover {
+          background-color: #f5f5f5;
+        }
+
+        .export-selected {
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 6px;
+          background-color: #3483fe;
+          color: white;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .export-selected:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+
+        .export-selected:not(:disabled):hover {
+          background-color: #2b6cd9;
+        }
+
+        .checkbox-column {
+          width: 40px;
+          text-align: center;
+          padding: 0 10px;
+        }
+
+        .fighter-checkbox {
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+        }
+
+        .leden-tabel.select-mode tr.selected {
+          background-color: rgba(52, 131, 254, 0.1);
+        }
+
+        .leden-tabel.select-mode tr:hover {
+          background-color: rgba(52, 131, 254, 0.05);
+        }
+
+        /* Export Button Styles */
+        .export-container {
+          position: relative;
+        }
+
+        .export-button {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.25rem;
+          background-color: #3483fe;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .export-button:hover {
+          background-color: #2b6cd9;
+        }
+
+        .export-button .button-icon {
+          width: 20px;
+          height: 20px;
+        }
+
+        .export-button .dropdown-icon {
+          width: 16px;
+          height: 16px;
+          transition: transform 0.2s ease;
+        }
+
+        .export-button .dropdown-icon.rotate {
+          transform: rotate(180deg);
+        }
+
+        .export-dropdown {
+          position: absolute;
+          top: calc(100% + 0.5rem);
+          right: 0;
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          min-width: 220px;
+          z-index: 1000;
+          overflow: hidden;
+          animation: dropdownFade 0.2s ease;
+        }
+
+        @keyframes dropdownFade {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .export-option {
+          display: block;
+          width: 100%;
+          padding: 0.75rem 1rem;
+          text-align: left;
+          background: none;
+          border: none;
+          color: #333;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+
+        .export-option:hover {
+          background-color: #f8f9fb;
+        }
+
+        .export-option:not(:last-child) {
+          border-bottom: 1px solid #e8e8e8;
+        }
+
+        @media (max-width: 768px) {
+          .right-buttons {
+            flex-direction: column;
+            width: 100%;
+          }
+
+          .export-container {
+            width: 100%;
+          }
+
+          .export-button {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .export-dropdown {
             width: 100%;
           }
         }

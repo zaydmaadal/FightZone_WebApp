@@ -210,7 +210,7 @@
 
   .leden-tabel .name-column {
     width: 25%;
-    text-align: left;
+    text-align: center;
   }
   .weight-column,
   .class-column {
@@ -718,4 +718,106 @@
   border-radius: 8px;
   display: flex;
   justify-content: center;
+}
+
+/* Export Button Styles */
+.export-container {
+  position: relative;
+  margin: 0.5rem 0 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.export-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background-color: #3483fe;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.export-button:hover {
+  background-color: #2b6cd9;
+}
+
+.export-button .button-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.export-button .dropdown-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.export-button .dropdown-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.export-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 220px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownFade 0.2s ease;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.export-option {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.export-option:hover {
+  background-color: #f8f9fb;
+}
+
+.export-option:not(:last-child) {
+  border-bottom: 1px solid #e8e8e8;
+}
+
+@media (max-width: 768px) {
+  .export-container {
+    margin: 0.5rem 0 0.75rem;
+  }
+
+  .export-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .export-dropdown {
+    min-width: 200px;
+  }
 }

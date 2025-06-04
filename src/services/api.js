@@ -102,12 +102,18 @@ export const fetchClubs = async () => {
 };
 
 //Haal club op basis van ID
-export const fetchClubById = async (id) => {
+export const fetchClubById = async (clubId) => {
   try {
-    const response = await API.get(`/clubs/${id}`);
+    const response = await API.get(`/clubs/${clubId}`);
+    if (!response.data) {
+      throw new Error("No club data received");
+    }
     return response.data;
   } catch (error) {
-    console.error("Fout bij het ophalen van club:", error);
+    console.error(
+      "Error fetching club:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
