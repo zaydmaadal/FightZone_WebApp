@@ -1,11 +1,15 @@
 "use client";
 import { useAuth } from "../../src/services/auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { fetchEvents } from "../../src/services/api";
 
 const JuryPage = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -13,7 +17,24 @@ const JuryPage = () => {
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const data = await fetchEvents();
+        setEvents(data);
+      } catch (error) {
+        console.error("Error loading events:", error);
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
+    if (user) {
+      loadEvents();
+    }
+  }, [user]);
+
+  if (loading || loadingEvents) {
     return (
       <div className="jury-page">
         <div className="loading">Laden...</div>
@@ -31,16 +52,34 @@ const JuryPage = () => {
         <h1>Jury Overzicht</h1>
       </div>
 
-      <div className="jury-content">
-        <div className="placeholder-content">
-          <div className="placeholder-icon">👨‍⚖️</div>
-          <h2>Jury Management</h2>
-          <p>Deze pagina is momenteel in ontwikkeling.</p>
-          <p className="placeholder-subtext">
-            Hier komt binnenkort een overzicht van alle juryleden en hun
-            beschikbaarheid voor aankomende wedstrijden.
-          </p>
-        </div>
+      <div className="events-list">
+        {events.length === 0 ? (
+          <div className="no-events">
+            <p>Geen aankomende events gevonden.</p>
+          </div>
+        ) : (
+          events.map((event) => (
+            <div key={event._id} className="event-card">
+              <div className="event-info">
+                <h2>{event.name}</h2>
+                <p className="event-date">
+                  {new Date(event.date).toLocaleDateString("nl-NL", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+                <p className="event-location">{event.location}</p>
+              </div>
+              <div className="event-actions">
+                <Link href={`/jury/${event._id}`} className="view-matches-btn">
+                  Bekijk Matchmaking
+                </Link>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       <style jsx>{`
@@ -60,40 +99,64 @@ const JuryPage = () => {
           margin: 0;
         }
 
-        .jury-content {
+        .events-list {
+          display: grid;
+          gap: 1.5rem;
+        }
+
+        .event-card {
           background: white;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          padding: 3rem;
-          text-align: center;
+          padding: 1.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
-        .placeholder-content {
+        .event-info h2 {
+          margin: 0 0 0.5rem 0;
+          color: var(--text-color);
+          font-size: 1.25rem;
+        }
+
+        .event-date {
+          color: var(--text-color);
+          margin: 0 0 0.25rem 0;
+          font-size: 0.9rem;
+        }
+
+        .event-location {
+          color: var(--placeholder-color);
+          margin: 0;
+          font-size: 0.9rem;
+        }
+
+        .event-actions {
           display: flex;
-          flex-direction: column;
-          align-items: center;
           gap: 1rem;
         }
 
-        .placeholder-icon {
-          font-size: 3rem;
-          margin-bottom: 1rem;
+        .view-matches-btn {
+          background: var(--primary-color);
+          color: white;
+          padding: 0.75rem 1.5rem;
+          border-radius: 4px;
+          text-decoration: none;
+          font-weight: 500;
+          transition: background-color 0.2s;
         }
 
-        .placeholder-content h2 {
-          color: var(--text-color);
-          font-size: 1.5rem;
-          margin: 0;
+        .view-matches-btn:hover {
+          background: var(--primary-color-dark);
         }
 
-        .placeholder-content p {
-          color: var(--text-color);
-          margin: 0;
-        }
-
-        .placeholder-subtext {
-          color: var(--placeholder-color);
-          font-size: 0.9rem;
+        .no-events {
+          text-align: center;
+          padding: 3rem;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .loading {
@@ -107,8 +170,15 @@ const JuryPage = () => {
             padding: 1rem;
           }
 
-          .jury-content {
-            padding: 2rem 1rem;
+          .event-card {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+          }
+
+          .event-actions {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>

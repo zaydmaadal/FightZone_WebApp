@@ -149,9 +149,31 @@ export const fetchUserById = async (id) => {
 
 export const fetchEventById = async (id) => {
   try {
+    console.log("Fetching event by ID:", id);
     const response = await API.get(`/events/${id}`);
+    console.log("Event API response:", {
+      status: response.status,
+      data: response.data,
+      hasName: !!response.data?.name,
+      hasTitle: !!response.data?.title,
+      fields: response.data ? Object.keys(response.data) : [],
+    });
+
+    if (!response.data) {
+      throw new Error("No event data received");
+    }
+
+    if (!response.data.name && !response.data.title) {
+      console.warn("Event data missing name/title:", response.data);
+    }
+
     return response.data;
   } catch (error) {
+    console.error("Error fetching event:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
     throw new Error("Event niet gevonden");
   }
 };
@@ -183,6 +205,64 @@ export const deleteUserById = async (id) => {
     return response.data;
   } catch (error) {
     console.error("Fout bij het verwijderen van gebruiker:", error);
+    throw error;
+  }
+};
+
+// Jury API functions
+export const fetchEventMatches = async (eventId) => {
+  try {
+    const response = await API.get(`/jury/events/${eventId}/matches`);
+    console.log("Event matches API response:", response.data); // Debug log
+    // Ensure we return an array
+    return Array.isArray(response.data)
+      ? response.data
+      : Array.isArray(response.data.matches)
+      ? response.data.matches
+      : [];
+  } catch (error) {
+    console.error("Error fetching event matches:", error);
+    throw error;
+  }
+};
+
+export const confirmWeight = async (matchId, fighterNumber) => {
+  try {
+    const response = await API.patch(
+      `/jury/matches/${matchId}/weight/${fighterNumber}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming weight:", error);
+    throw error;
+  }
+};
+
+export const fetchMatchDetails = async (matchId) => {
+  try {
+    const response = await API.get(`/matches/${matchId}`);
+    console.log("Match details API response:", response.data); // Debug log
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching match details:", error);
+    throw error;
+  }
+};
+
+export const fetchEvent = fetchEventById;
+
+export const getEventWithMatches = async (eventId) => {
+  try {
+    const [event, matches] = await Promise.all([
+      fetchEvent(eventId),
+      fetchEventMatches(eventId),
+    ]);
+    return {
+      ...event,
+      matches,
+    };
+  } catch (error) {
+    console.error("Error fetching event with matches:", error);
     throw error;
   }
 };

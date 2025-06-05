@@ -13,12 +13,18 @@ export default function Layout({ children }) {
 
   useEffect(() => {
     if (!isLoginPage && user) {
+      let isChecking = false; // Prevent multiple simultaneous checks
+
       // Check token validity every minute
       const interval = setInterval(async () => {
+        if (isChecking) return; // Skip if already checking
+        isChecking = true;
+
         try {
           const token = localStorage.getItem("token");
           if (!token) {
-            logout();
+            console.log("No token found, logging out");
+            await logout();
             return;
           }
 
@@ -29,9 +35,18 @@ export default function Layout({ children }) {
             },
           });
         } catch (error) {
+          console.log("Token validation error:", {
+            status: error.response?.status,
+            message: error.message,
+          });
+
+          // Only logout on 401 (Unauthorized) errors
           if (error.response?.status === 401) {
-            logout();
+            console.log("Token expired, logging out");
+            await logout();
           }
+        } finally {
+          isChecking = false;
         }
       }, 60000); // Check every minute
 
