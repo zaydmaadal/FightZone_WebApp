@@ -7,6 +7,7 @@ import Layout from "../../components/Layout";
 import VechterDashboard from "../../components/dashboards/VechterDashboard";
 import TrainerDashboard from "../../components/dashboards/TrainerDashboard";
 import VKBMODashboard from "../../components/dashboards/VKBMODashboard";
+import Loading from "../../components/Loading";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -21,7 +22,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <Layout>
-        <div className="loading">Loading...</div>
+        <Loading />
       </Layout>
     );
   }

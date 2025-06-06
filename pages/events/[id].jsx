@@ -1,8 +1,9 @@
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { fetchEventById } from '../../src/services/api';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { fetchEventById } from "../../src/services/api";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
+import Loading from "../../components/Loading";
 
 export default function EventDetail() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function EventDetail() {
         const data = await fetchEventById(id);
         setEvent(data);
       } catch (err) {
-        setError('Event niet gevonden');
+        setError("Event niet gevonden");
       } finally {
         setLoading(false);
       }
@@ -26,30 +27,27 @@ export default function EventDetail() {
     getEvent();
   }, [id]);
 
-  if (loading) return (
-    <div className="event-detail-page">
-      <div className="loading">Laden...</div>
-    </div>
-  );
-  
-  if (error) return (
-    <div className="event-detail-page">
-      <div className="error-message">{error}</div>
-    </div>
-  );
-  
-  if (!event) return (
-    <div className="event-detail-page">
-      <div className="error-message">Geen event gevonden.</div>
-    </div>
-  );
+  if (loading) return <Loading />;
+
+  if (error)
+    return (
+      <div className="event-detail-page">
+        <div className="error-message">{error}</div>
+      </div>
+    );
+
+  if (!event)
+    return (
+      <div className="event-detail-page">
+        <div className="error-message">Geen event gevonden.</div>
+      </div>
+    );
 
   return (
     <div className="event-detail-page">
       <div className="page-header">
         <Link href="/agenda" className="back-link">
           <ArrowLeftIcon className="back-icon" width={20} height={20} />
-          
         </Link>
         <h1>{event.title}</h1>
       </div>
@@ -59,27 +57,37 @@ export default function EventDetail() {
           <div className="info-section">
             <div className="info-item">
               <span className="info-label">Beschrijving</span>
-              <span className="info-value">{event.description || 'Geen beschrijving'}</span>
+              <span className="info-value">
+                {event.description || "Geen beschrijving"}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Locatie</span>
-              <span className="info-value">{event.location || 'Onbekend'}</span>
+              <span className="info-value">{event.location || "Onbekend"}</span>
             </div>
             <div className="info-item">
               <span className="info-label">Start</span>
-              <span className="info-value">{event.start ? new Date(event.start).toLocaleString() : 'Onbekend'}</span>
+              <span className="info-value">
+                {event.start
+                  ? new Date(event.start).toLocaleString()
+                  : "Onbekend"}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Einde</span>
-              <span className="info-value">{event.end ? new Date(event.end).toLocaleString() : 'Onbekend'}</span>
+              <span className="info-value">
+                {event.end ? new Date(event.end).toLocaleString() : "Onbekend"}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Type</span>
-              <span className="info-value">{event.type || 'Onbekend'}</span>
+              <span className="info-value">{event.type || "Onbekend"}</span>
             </div>
             <div className="info-item">
               <span className="info-label">Aangemaakt door</span>
-              <span className="info-value">{event.createdBy || 'Onbekend'}</span>
+              <span className="info-value">
+                {event.createdBy || "Onbekend"}
+              </span>
             </div>
             {event.club && (
               <div className="info-item">
@@ -207,4 +215,4 @@ export default function EventDetail() {
       `}</style>
     </div>
   );
-} 
+}

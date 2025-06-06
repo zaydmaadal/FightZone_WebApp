@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../src/services/auth";
+import Loading from "../components/Loading";
 
 export default function Home() {
   const router = useRouter();
@@ -8,7 +9,7 @@ export default function Home() {
 
   // Show loading state while checking authentication
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   // Redirect based on authentication status

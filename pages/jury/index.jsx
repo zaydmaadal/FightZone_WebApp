@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fetchEvents } from "../../src/services/api";
+import Loading from "../../components/Loading";
 
 const JuryPage = () => {
   const { user, loading } = useAuth();
@@ -21,7 +22,11 @@ const JuryPage = () => {
     const loadEvents = async () => {
       try {
         const data = await fetchEvents();
-        setEvents(data);
+        // Filter alleen events met matchmaking
+        const eventsWithMatchmaking = data.filter(
+          (event) => event.hasMatchmaking
+        );
+        setEvents(eventsWithMatchmaking);
       } catch (error) {
         console.error("Error loading events:", error);
       } finally {
@@ -35,11 +40,7 @@ const JuryPage = () => {
   }, [user]);
 
   if (loading || loadingEvents) {
-    return (
-      <div className="jury-page">
-        <div className="loading">Laden...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!user) {

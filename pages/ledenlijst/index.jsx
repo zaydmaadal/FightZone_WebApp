@@ -18,6 +18,7 @@ import {
   ChevronDownIcon,
 } from "@heroicons/react/24/solid";
 import * as XLSX from "xlsx";
+import Loading from "../../components/Loading";
 
 // Helper function to calculate age
 const calculateAge = (birthDate) => {
@@ -433,13 +434,7 @@ const LedenlijstPage = () => {
 
   // Show loading state while either auth is loading or data is being fetched
   if (loading || isLoading) {
-    return (
-      <div className="leden-container">
-        <div style={{ textAlign: "center", padding: "2rem" }}>
-          <p>Ledenlijst laden...</p>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   // Show message if no user is logged in

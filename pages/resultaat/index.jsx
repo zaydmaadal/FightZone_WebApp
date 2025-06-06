@@ -2,6 +2,7 @@
 import { useAuth } from "../../src/services/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Loading from "../../components/Loading";
 
 export default function ResultaatPage() {
   const { user, loading } = useAuth();
@@ -14,11 +15,7 @@ export default function ResultaatPage() {
   }, [user, loading, router]);
 
   if (loading) {
-    return (
-      <div className="resultaat-page">
-        <div className="loading">Laden...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!user) {

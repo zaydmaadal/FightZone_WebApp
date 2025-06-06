@@ -8,6 +8,9 @@ import {
   confirmWeight,
   fetchEventById,
 } from "../../src/services/api";
+import Loading from "../../components/Loading";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 
 export default function EventMatches() {
   const router = useRouter();
@@ -57,54 +60,39 @@ export default function EventMatches() {
     }
   };
 
-  const handleExportPDF = async () => {
+  const handleExportExcel = async () => {
     try {
-      console.log("Starting PDF export for event:", {
-        eventId,
-        eventData: event,
-        hasName: !!event?.name,
-        hasDate: !!event?.date,
-        eventFields: event ? Object.keys(event) : [],
-      });
-
-      const response = await fetch(`/api/events/${eventId}/export-pdf`);
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `https://fightzone-api.onrender.com/api/v1/jury/events/${eventId}/export`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("PDF export failed:", {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-          eventData: event, // Log the event data when export fails
-        });
-        throw new Error(
-          errorData.details || errorData.message || "PDF export failed"
-        );
+        throw new Error("Excel export mislukt");
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `matchmaking-${event?.name || eventId}.pdf`;
+      a.download = `matchmaking-${event?.name || eventId}.xlsx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error("Error exporting PDF:", error);
-      alert(
-        `Er is een fout opgetreden bij het exporteren van de PDF: ${error.message}`
-      );
+      console.error("Error exporting Excel:", error);
+      alert(`Er is een fout opgetreden bij het exporteren: ${error.message}`);
     }
   };
 
   if (loading || authLoading) {
-    return (
-      <div className="event-matches-page">
-        <div className="loading">Laden...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!user) {
@@ -114,20 +102,30 @@ export default function EventMatches() {
   return (
     <div className="event-matches-page">
       <div className="page-header">
-        <Link href="/jury" className="back-link">
-          ← Terug naar overzicht
-        </Link>
-        <h1>{event?.name || "Matchmaking"}</h1>
-        {event && (
-          <p className="event-date">
-            {new Date(event.date).toLocaleDateString("nl-NL", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
-        )}
+        <div className="header-content">
+          <Link href="/jury" className="back-button">
+            <ArrowLeftCircleIcon className="w-6 h-6" width={24} height={24} />
+            Terug
+          </Link>
+          <h1>{event?.name || "Matchmaking"}</h1>
+          {event && event.start && (
+            <p className="event-date">
+              {new Date(event.start).toLocaleDateString("nl-NL", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="export-container">
+        <button onClick={handleExportExcel} className="export-button">
+          <ArrowDownTrayIcon className="button-icon" width={20} height={20} />
+          Exporteer naar Excel
+        </button>
       </div>
 
       <div className="matches-table-container">
@@ -152,15 +150,16 @@ export default function EventMatches() {
                 {matches.map((match) => (
                   <tr key={match._id}>
                     <td>
-                      {match.fighter1.voornaam} {match.fighter1.achternaam}
+                      {match.fighters[0]?.user?.voornaam}{" "}
+                      {match.fighters[0]?.user?.achternaam}
                     </td>
                     <td>
                       <div className="weight-confirmation">
-                        {match.weight1Confirmed ? (
+                        {match.fighters[0]?.weightConfirmed ? (
                           <span className="confirmed">✅</span>
                         ) : (
                           <button
-                            onClick={() => handleConfirmWeight(match._id, 1)}
+                            onClick={() => handleConfirmWeight(match._id, 0)}
                             className="confirm-btn"
                           >
                             Bevestig
@@ -170,15 +169,16 @@ export default function EventMatches() {
                     </td>
                     <td className="vs-cell">VS</td>
                     <td>
-                      {match.fighter2.voornaam} {match.fighter2.achternaam}
+                      {match.fighters[1]?.user?.voornaam}{" "}
+                      {match.fighters[1]?.user?.achternaam}
                     </td>
                     <td>
                       <div className="weight-confirmation">
-                        {match.weight2Confirmed ? (
+                        {match.fighters[1]?.weightConfirmed ? (
                           <span className="confirmed">✅</span>
                         ) : (
                           <button
-                            onClick={() => handleConfirmWeight(match._id, 2)}
+                            onClick={() => handleConfirmWeight(match._id, 1)}
                             className="confirm-btn"
                           >
                             Bevestig
@@ -198,11 +198,6 @@ export default function EventMatches() {
                 ))}
               </tbody>
             </table>
-            <div className="export-actions">
-              <button onClick={handleExportPDF} className="export-btn">
-                Exporteer naar PDF
-              </button>
-            </div>
           </>
         )}
       </div>
@@ -215,19 +210,39 @@ export default function EventMatches() {
         }
 
         .page-header {
-          margin-bottom: 2rem;
-        }
-
-        .back-link {
-          display: inline-block;
-          color: var(--text-color);
-          text-decoration: none;
           margin-bottom: 1rem;
-          font-size: 0.9rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
         }
 
-        .back-link:hover {
-          text-decoration: underline;
+        .header-content {
+          align-items: center;
+          justify-content: space-between;
+          display: flex;
+          -webkit-box-flex: 1;
+          -webkit-flex: 1;
+          -moz-box-flex: 1;
+          -ms-flex: 1;
+          flex: 1;
+        }
+
+        .back-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.8rem 1.5rem;
+          background-color: #3483fe;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 500;
+          text-decoration: none;
+          transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+          background-color: #2b6cd9;
         }
 
         .page-header h1 {
@@ -309,26 +324,39 @@ export default function EventMatches() {
           text-decoration: underline;
         }
 
-        .export-actions {
-          padding: 1rem;
+        .export-container {
           display: flex;
           justify-content: flex-end;
-          border-top: 1px solid var(--border-color);
+          margin-bottom: 1rem;
+          padding: 0.5rem;
+          background: #f8f9fa;
+          border-radius: 8px;
         }
 
-        .export-btn {
-          background: var(--primary-color);
+        .export-button {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: #3483fe;
           color: white;
           border: none;
           padding: 0.75rem 1.5rem;
-          border-radius: 4px;
+          border-radius: 6px;
           cursor: pointer;
           font-weight: 500;
-          transition: background-color 0.2s;
+          transition: all 0.2s;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .export-btn:hover {
-          background: var(--primary-color-dark);
+        .export-button:hover {
+          background: #2b6cd9;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .button-icon {
+          width: 20px;
+          height: 20px;
         }
 
         .no-matches {

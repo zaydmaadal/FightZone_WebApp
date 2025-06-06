@@ -5,6 +5,7 @@ import Link from "next/link";
 import { fetchClubs } from "../../src/services/api";
 import { useAuth } from "../../src/services/auth";
 import { FunnelIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import Loading from "../../components/Loading";
 
 const ClubsPage = () => {
   const router = useRouter();
@@ -43,7 +44,7 @@ const ClubsPage = () => {
   };
 
   if (loading || !user) {
-    return <div style={{ textAlign: "center" }}>Laden...</div>;
+    return <Loading />;
   }
 
   const filteredClubs = clubs.filter((club) =>

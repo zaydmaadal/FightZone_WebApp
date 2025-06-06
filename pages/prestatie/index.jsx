@@ -7,6 +7,7 @@ import {
   fetchUserById,
 } from "../../src/services/api";
 import { CheckCircleIcon } from "@heroicons/react/24/solid/index.js";
+import Loading from "../../components/Loading";
 
 const PrestatiePage = () => {
   const [member, setMember] = useState(null);
@@ -80,7 +81,7 @@ const PrestatiePage = () => {
     return opponents[tegenstanderId] || null;
   };
 
-  if (loading) return <p>Gegevens worden geladen...</p>;
+  if (loading) return <Loading />;
   if (!member) return <p>Geen gegevens gevonden.</p>;
 
   return (

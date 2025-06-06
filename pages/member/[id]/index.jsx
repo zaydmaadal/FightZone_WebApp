@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/solid/index.js";
 import { PencilSquareIcon } from "@heroicons/react/24/outline/index.js";
 import { ArrowLeftCircleIcon as OutlineArrowLeftCircleIcon } from "@heroicons/react/24/outline/index.js";
+import Loading from "../../../components/Loading";
 
 const MemberDetails = () => {
   const router = useRouter();
@@ -77,7 +78,7 @@ const MemberDetails = () => {
     return club ? club.naam : "Onbekende club";
   };
 
-  if (loading) return <p>Gegevens worden geladen...</p>;
+  if (loading) return <Loading />;
   if (!member) return <p>Geen gegevens gevonden voor dit lid.</p>;
 
   const calculateAge = (birthdate) => {

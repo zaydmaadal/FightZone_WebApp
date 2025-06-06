@@ -212,7 +212,13 @@ export const deleteUserById = async (id) => {
 // Jury API functions
 export const fetchEventMatches = async (eventId) => {
   try {
-    const response = await API.get(`/jury/events/${eventId}/matches`);
+    const token = localStorage.getItem("token");
+    const response = await API.get(`/jury/events/${eventId}/matches`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
     console.log("Event matches API response:", response.data); // Debug log
     // Ensure we return an array
     return Array.isArray(response.data)
@@ -226,10 +232,11 @@ export const fetchEventMatches = async (eventId) => {
   }
 };
 
-export const confirmWeight = async (matchId, fighterNumber) => {
+// Bevestig gewicht
+export const confirmWeight = async (matchId, fighterIndex) => {
   try {
     const response = await API.patch(
-      `/jury/matches/${matchId}/weight/${fighterNumber}`
+      `/jury/matches/${matchId}/weight/${fighterIndex}`
     );
     return response.data;
   } catch (error) {
@@ -240,8 +247,11 @@ export const confirmWeight = async (matchId, fighterNumber) => {
 
 export const fetchMatchDetails = async (matchId) => {
   try {
-    const response = await API.get(`/matches/${matchId}`);
-    console.log("Match details API response:", response.data); // Debug log
+    const response = await API.get(`/matches/${matchId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching match details:", error);
@@ -263,6 +273,19 @@ export const getEventWithMatches = async (eventId) => {
     };
   } catch (error) {
     console.error("Error fetching event with matches:", error);
+    throw error;
+  }
+};
+
+// Stel resultaat in
+export const setMatchResult = async (matchId, winnerId) => {
+  try {
+    const response = await API.patch(`/jury/matches/${matchId}/result`, {
+      winnerId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error setting match result:", error);
     throw error;
   }
 };
