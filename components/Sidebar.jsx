@@ -37,11 +37,6 @@ export default function Sidebar() {
           { path: "/dashboard", label: "Dashboard", icon: HomeIcon },
           { path: "/ledenlijst", label: "Ledenlijst", icon: UserGroupIcon },
           { path: "/agenda", label: "Agenda", icon: CalendarIcon },
-          {
-            path: "/resultaat",
-            label: "Resultaat",
-            icon: ClipboardDocumentCheckIcon,
-          },
         ];
       case "VKBMO-lid":
         return [
