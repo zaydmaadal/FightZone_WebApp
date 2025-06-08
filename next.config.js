@@ -27,6 +27,13 @@ const nextConfig = {
     if (dev && !isServer) {
       config.devtool = "eval-source-map";
     }
+    // Ensure proper handling of node modules
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
     return config;
   },
   // Configure headers for better caching and security
