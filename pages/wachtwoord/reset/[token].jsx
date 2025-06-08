@@ -22,7 +22,7 @@ const ResetPasswordPage = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/api/v1/auth/reset-password/${token}`, {
+      const response = await fetch(`https://fightzone-api.onrender.com/api/v1/auth/reset-password/${token}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
