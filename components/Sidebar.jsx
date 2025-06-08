@@ -10,6 +10,8 @@ import {
   UserGroupIcon,
   CalendarIcon,
   Bars3Icon,
+  Cog6ToothIcon,
+  ArrowRightStartOnRectangleIcon,
 } from "@heroicons/react/24/solid";
 
 export default function Sidebar() {
@@ -102,7 +104,15 @@ export default function Sidebar() {
           })}
         </nav>
         <div className="sidebar-footer">
-          <button onClick={handleLogout} className="logout-button">
+          <Link
+            href="/settings"
+            className={`nav-item ${pathname === "/settings" ? "active" : ""}`}
+          >
+            <Cog6ToothIcon className="nav-icon" />
+            Instellingen
+          </Link>
+          <button onClick={handleLogout} className="nav-item logout-button">
+            <ArrowRightStartOnRectangleIcon className="nav-icon" />
             Uitloggen
           </button>
         </div>
@@ -133,6 +143,13 @@ export default function Sidebar() {
               </Link>
             );
           })}
+          <button
+            onClick={handleLogout}
+            className="mobile-nav-item logout-button"
+          >
+            <ArrowRightStartOnRectangleIcon className="mobile-nav-icon" />
+            <span>Uitloggen</span>
+          </button>
         </nav>
       </div>
 
@@ -228,19 +245,29 @@ export default function Sidebar() {
 
         .logout-button {
           width: 100%;
-          padding: 12px;
-          background-color: #ff4444;
-          color: white;
+          background-color: transparent;
+          color: #62789b;
           border: none;
-          border-radius: 5px;
           font-size: 16px;
           font-weight: 500;
           cursor: pointer;
-          transition: background-color 0.2s ease;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 14px 15px;
+          text-align: left;
         }
 
         .logout-button:hover {
-          background-color: #cc0000;
+          background-color: #f8f9fb;
+        }
+
+        .logout-button svg {
+          width: 24px;
+          height: 24px;
+          flex-shrink: 0;
+          color: inherit;
         }
 
         /* Mobile Navigation Styles */
@@ -295,6 +322,31 @@ export default function Sidebar() {
         .mobile-nav-item span {
           font-size: 12px;
           font-weight: 500;
+        }
+
+        .mobile-nav-item.logout-button {
+          background-color: transparent;
+          color: #62789b;
+          border: none;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+          padding: 10px 5px;
+        }
+
+        .mobile-nav-item.logout-button:hover {
+          background-color: #f8f9fb;
+        }
+
+        .mobile-nav-item.logout-button svg {
+          width: 24px;
+          height: 24px;
+          color: inherit;
         }
 
         /* Responsive Styles */

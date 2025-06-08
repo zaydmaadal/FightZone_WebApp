@@ -1,7 +1,8 @@
 "use client";
 import { useAuth } from "../src/services/auth";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
 import {
   Bars3Icon,
   XMarkIcon,
@@ -13,9 +14,9 @@ import {
   UserCircleIcon,
   ArrowRightOnRectangleIcon,
   NewspaperIcon,
-  ChatBubbleLeftRightIcon,
   SparklesIcon,
   ArrowRightCircleIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/solid";
 import { usePathname } from "next/navigation";
 
@@ -24,7 +25,8 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const [localLoading, setLocalLoading] = useState(true);
-
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   useEffect(() => {
     if (!loading) {
       // Add a small delay for better UX
@@ -35,6 +37,20 @@ export default function Header() {
       return () => clearTimeout(timer);
     }
   }, [loading]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        isDropdownOpen &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isDropdownOpen]);
 
   if (!user) return null;
 
@@ -81,26 +97,39 @@ export default function Header() {
     <header className="header">
       {/* Desktop Header */}
       <div className="desktop-header">
-        <div className="profile-info">
+        <div className="search"></div>
+
+        {/* Profiel + dropdown */}
+        <div
+          className="profile-area"
+          ref={dropdownRef}
+          onClick={() => setIsDropdownOpen((o) => !o)}
+        >
           <img
             src={user.profielfoto || "/default-avatar.png"}
             alt="Profile"
             className="profile-picture"
           />
-          <div>
+          <div className="profile-text">
             <p className="user-name">{user.voornaam}</p>
             <p className="user-role">{user.role}</p>
           </div>
-        </div>
+          <ChevronDownIcon
+            className={`dropdown-arrow ${isDropdownOpen ? "open" : ""}`}
+          />
 
-        <nav className="desktop-nav">
-          <Link href="/settings" className="nav-link">
-            Instellingen
-          </Link>
-          <button onClick={logout} className="logout-button">
-            Uitloggen
-          </button>
-        </nav>
+          {isDropdownOpen && (
+            <div className="dropdown-menu">
+              {/* Legacy-behavior zorgt dat Next.js een <a> rendeert */}
+              <Link href="/settings" legacyBehavior>
+                <a className="dropdown-item">Instellingen</a>
+              </Link>
+              <button className="dropdown-item" onClick={logout}>
+                Uitloggen
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Mobile Header */}
@@ -187,22 +216,7 @@ export default function Header() {
               <Cog6ToothIcon className="sidebar-icon" width={24} height={24} />
               <span className="sidebar-title">Instellingen</span>
             </Link>
-            <Link
-              href="/profile"
-              className={`sidebar-nav-link${
-                pathname === "/profile" ? " active" : ""
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <UserCircleIcon className="sidebar-icon" width={24} height={24} />
-              <span className="sidebar-title">Profiel</span>
-            </Link>
             <button onClick={logout} className="sidebar-logout">
-              <ArrowRightOnRectangleIcon
-                className="sidebar-icon"
-                width={24}
-                height={24}
-              />
               <span>Log uit</span>
             </button>
           </nav>
@@ -283,42 +297,89 @@ export default function Header() {
           position: relative;
         }
 
-        /* Desktop Styles */
+        /* Desktop */
         .desktop-header {
           display: flex;
-          justify-content: space-between;
           align-items: center;
           padding: 1rem 2rem;
-        }
-
-        .profile-info {
-          display: flex;
-          align-items: center;
+          background: #fff;
+          border-bottom: 1px solid #e5e7eb;
           gap: 1rem;
         }
-
+        .search {
+          flex: 1;
+        }
+        .search-input {
+          width: 100%;
+          padding: 0.5rem 1rem;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 0.9rem;
+        }
+        .profile-area {
+          display: flex;
+          align-items: center;
+          position: relative;
+          cursor: pointer;
+        }
+        .profile-text {
+          text-align: right;
+          margin-right: 0.75rem;
+        }
+        .user-name {
+          margin: 0;
+          font-weight: 600;
+          font-size: 0.95rem;
+        }
+        .user-role {
+          margin: 0;
+          font-size: 0.75rem;
+          color: #6b7280;
+        }
         .profile-picture {
-          width: 40px;
-          height: 40px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           object-fit: cover;
+          margin-right: 0.5rem;
         }
-
-        .user-name {
-          font-weight: 600;
-          margin: 0;
+        .dropdown-icon {
+          width: 20px;
+          height: 20px;
+          color: #6b7280;
         }
-
-        .user-role {
-          color: #666;
-          margin: 0;
-          font-size: 0.875rem;
+        .dropdown-menu {
+          position: absolute;
+          top: 120%;
+          right: 0;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 6px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+          z-index: 10;
         }
-
-        .desktop-nav {
+        .dropdown-item {
           display: flex;
-          gap: 2rem;
           align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          font-size: 0.9rem;
+          color: #374151;
+          text-decoration: none;
+          background: none;
+          border: none;
+          width: 100%;
+          text-align: left;
+          cursor: pointer;
+        }
+        .dropdown-item:hover {
+          background: #f8f9fb;
+        }
+        .dropdown-item-icon {
+          width: 16px;
+          height: 16px;
+          color: inherit;
         }
 
         /* Mobile Styles */
@@ -520,7 +581,7 @@ export default function Header() {
           color: #6b7a99;
           text-align: left;
           border-radius: 12px;
-          font-size: 1.15rem;
+          font-size: 1em;
           font-weight: 500;
           cursor: pointer;
         }

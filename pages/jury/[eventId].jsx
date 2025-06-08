@@ -327,6 +327,7 @@ export default function EventMatches() {
         .export-container {
           display: flex;
           justify-content: flex-end;
+          gap: 1rem;
           margin-bottom: 1rem;
           padding: 0.5rem;
           background: #f8f9fa;
@@ -385,6 +386,16 @@ export default function EventMatches() {
           .matches-table td {
             padding: 0.75rem;
             font-size: 0.9rem;
+          }
+
+          .export-container {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .export-button {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>

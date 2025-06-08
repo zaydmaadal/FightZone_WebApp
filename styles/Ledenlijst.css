@@ -263,6 +263,9 @@
 }
 
 @media (min-width: 768px) {
+  .double-range-container {
+    width: 100%;
+  }
   .insurance-badge {
     padding: 6px 12px;
     font-size: 14px;
@@ -365,6 +368,9 @@
 }
 
 @media (max-width: 768px) {
+  .double-range-container {
+    width: 95%;
+  }
   .filter-grid {
     flex-direction: column;
     gap: 0.75rem;
@@ -601,17 +607,15 @@
 
 /* Double Range Slider Styles */
 .double-range-container {
-  margin: 15px 0;
   display: flex;
   justify-content: center;
-  width: 95%;
 }
 
 .double-range-slider {
   position: relative;
   height: 40px;
   width: calc(100% - 20px);
-  margin: 20px 0;
+  margin: 0px;
   padding: 0;
 }
 

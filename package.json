@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "echo 'Building...' && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postbuild": "next telemetry disable"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.17",

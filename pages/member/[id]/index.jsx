@@ -5,6 +5,7 @@ import {
   fetchUsers,
   fetchClubs,
   fetchUserById,
+  fetchCurrentUser,
 } from "../../../src/services/api";
 import Link from "next/link";
 import {
@@ -19,6 +20,7 @@ const MemberDetails = () => {
   const router = useRouter();
   const { id } = router.query;
   const [member, setMember] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [clubs, setClubs] = useState([]);
@@ -27,11 +29,15 @@ const MemberDetails = () => {
   const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
-    const loadMember = async () => {
+    const loadData = async () => {
       if (!id) return;
       try {
-        const memberData = await fetchUserById(id);
+        const [memberData, currentUserData] = await Promise.all([
+          fetchUserById(id),
+          fetchCurrentUser(),
+        ]);
         setMember(memberData);
+        setCurrentUser(currentUserData);
 
         // Fetch opponent details for each fight
         if (memberData?.vechterInfo?.fights) {
@@ -69,7 +75,7 @@ const MemberDetails = () => {
       }
     };
 
-    loadMember();
+    loadData();
   }, [id]);
 
   const getClubName = (clubId) => {
@@ -93,14 +99,20 @@ const MemberDetails = () => {
   };
 
   const getBackLink = () => {
-    if (member.role.toLowerCase() === "trainer") {
+    if (!currentUser) return "/ledenlijst"; // Fallback if current user not loaded
+
+    const userRole = currentUser.role.toLowerCase();
+    if (userRole === "trainer" || userRole === "vkbmo") {
       return "/ledenlijst";
     }
     return `/clubs/${member.club}/leden`;
   };
 
   const getBackText = () => {
-    if (member.role.toLowerCase() === "trainer") {
+    if (!currentUser) return "Terug naar ledenoverzicht"; // Fallback if current user not loaded
+
+    const userRole = currentUser.role.toLowerCase();
+    if (userRole === "trainer" || userRole === "vkbmo") {
       return "Terug naar ledenoverzicht";
     }
     return "Terug naar club leden";

@@ -7,8 +7,10 @@ import {
   fetchClubById,
 } from "../../../../../src/services/api";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const AddUserPage = () => {
+  const router = useRouter();
   const [hasMounted, setHasMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const videoRef = useRef(null);
@@ -376,7 +378,7 @@ const AddUserPage = () => {
       }
 
       // Get club ID from URL
-      const clubId = window.location.pathname.split("/")[2];
+      const clubId = router.query.id;
 
       // Create user data with club ID from URL
       const userData = {
@@ -439,10 +441,7 @@ const AddUserPage = () => {
     <div className="add-user-page">
       <div className="page-header">
         <h1 className="page-title">Registreer nieuwe vechter</h1>
-        <Link
-          href={`/clubs/${window.location.pathname.split("/")[2]}/leden`}
-          className="back-button"
-        >
+        <Link href={`/clubs/${router.query.id}/leden`} className="back-button">
           <svg
             className="arrow-left-circle"
             viewBox="0 0 24 24"
