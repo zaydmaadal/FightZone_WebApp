@@ -112,7 +112,7 @@ const EventMatchesPage = () => {
         <Link href="/jury" className="back-button">
           ← Terug naar overzicht
         </Link>
-        <h1>Matchmaking: Kickboks Gala Rotterdam</h1>
+        <h1>Matchmaking: Kickboks Gala Boom</h1>
       </div>
 
       <div className="matches-list">
