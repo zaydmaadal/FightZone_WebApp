@@ -27,17 +27,32 @@ const ClubsPage = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Check if user is a trainer and redirect
+        if (user?.role === "Trainer") {
+          router.push("/ledenlijst");
+          return;
+        }
+        if (user?.role === "Vechter") {
+          router.push("/dashboard");
+          return;
+        }
+
         const data = await fetchClubs();
         setClubs(data);
       } catch (error) {
         console.error("Fout bij laden van clubs:", error);
+        console.log("Error state - User:", user);
+        console.log("Error state - User role:", user?.role);
       }
     };
 
     if (!loading && user) {
+      console.log("loadData triggered - User exists and not loading");
       loadData();
+    } else {
+      console.log("loadData not triggered - Loading:", loading, "User:", user);
     }
-  }, [loading, user]);
+  }, [loading, user, router]);
 
   const handleRowClick = (id) => {
     router.push(`/clubs/${id}/leden`);

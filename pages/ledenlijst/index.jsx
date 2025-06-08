@@ -181,6 +181,19 @@ const LedenlijstPage = () => {
     verzekering: "",
   });
 
+  // Add role-based redirection
+  useEffect(() => {
+    if (!loading && user) {
+      if (user.role === "VKBMO") {
+        router.push("/clubs");
+        return;
+      } else if (user.role === "Vechter") {
+        router.push("/dashboard");
+        return;
+      }
+    }
+  }, [loading, user, router]);
+
   // Fetch club name
   useEffect(() => {
     const fetchClubName = async () => {

@@ -18,6 +18,7 @@ import {
   ChevronDownIcon,
 } from "@heroicons/react/24/solid";
 import * as XLSX from "xlsx";
+import { useAuth } from "../../../../src/services/auth";
 
 // Helper function to calculate age
 const calculateAge = (birthDate) => {
@@ -169,6 +170,21 @@ const ClubMembersPage = () => {
   const [selectedFighters, setSelectedFighters] = useState([]);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
+
+  // Add useAuth hook
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    // Check if user is a trainer and redirect
+    if (!loading && user?.role === "Trainer") {
+      router.push("/ledenlijst");
+      return;
+    }
+    if (!loading && user?.role === "Vechter") {
+      router.push("/dashboard");
+      return;
+    }
+  }, [loading, user, router]);
 
   // Filter states
   const [filters, setFilters] = useState({

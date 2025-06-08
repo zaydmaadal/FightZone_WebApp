@@ -143,13 +143,6 @@ export default function Sidebar() {
               </Link>
             );
           })}
-          <button
-            onClick={handleLogout}
-            className="mobile-nav-item logout-button"
-          >
-            <ArrowRightStartOnRectangleIcon className="mobile-nav-icon" />
-            <span>Uitloggen</span>
-          </button>
         </nav>
       </div>
 
