@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import QrScanner from "qr-scanner";
+import axios from "axios";
 import {
   createUser,
   validateLicense,
@@ -15,6 +16,7 @@ const AddUserPage = () => {
   const [isMobile, setIsMobile] = useState(false);
   const videoRef = useRef(null);
   const [qrScanner, setQrScanner] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     voornaam: "",
     achternaam: "",
@@ -23,6 +25,7 @@ const AddUserPage = () => {
     geboortedatum: "",
     licentieNummer: "",
     vervalDatum: "",
+    profielfoto: null,
     vechterInfo: {
       gewicht: "",
       lengte: "",
@@ -385,6 +388,7 @@ const AddUserPage = () => {
         ...formData,
         role: "Vechter",
         club: clubId, // Use club ID from URL
+        profielfoto: formData.profielfoto || null, // Include profielfoto
         vechterInfo: {
           ...formData.vechterInfo,
           licentieNummer: formData.licentieNummer,
@@ -415,6 +419,7 @@ const AddUserPage = () => {
       geboortedatum: "",
       licentieNummer: "",
       vervalDatum: "",
+      profielfoto: null,
       vechterInfo: {
         gewicht: "",
         lengte: "",
@@ -424,16 +429,76 @@ const AddUserPage = () => {
     });
     setScanResult(null);
     setVkbmoUrl("");
+    setProfileImage(null);
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (!file) return;
+
+    // Controleer bestandstype
+    if (!file.type.match("image.*")) {
+      alert("Alleen afbeeldingen zijn toegestaan");
+      return;
+    }
+
+    // Controleer bestandsgrootte (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Afbeelding mag niet groter zijn dan 5MB");
+      return;
+    }
+
+    setUploading(true);
+
+    try {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result);
+
+      reader.onloadend = async () => {
+        try {
+          const response = await axios.post(
+            "/api/upload",
+            {
+              file: reader.result,
+              name: file.name,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.data.success) {
+            setProfileImage(response.data.url);
+            // Voeg de URL toe aan je formData als je dat nodig hebt
+            setFormData((prev) => ({
+              ...prev,
+              profielfoto: response.data.url,
+            }));
+          } else {
+            throw new Error(response.data.error || "Upload mislukt");
+          }
+        } catch (error) {
+          console.error("Upload error:", error);
+          alert(
+            "Upload mislukt: " +
+              (error.response?.data?.details || error.message)
+          );
+        } finally {
+          setUploading(false);
+        }
       };
+
+      reader.onerror = () => {
+        setUploading(false);
+        alert("Fout bij het lezen van het bestand");
+      };
+
       reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error:", error);
+      setUploading(false);
+      alert("Er is een fout opgetreden: " + error.message);
     }
   };
 
@@ -465,8 +530,10 @@ const AddUserPage = () => {
         {/* Profile upload section */}
         <div className="profile-upload-section">
           <div
-            className="profile-upload-circle"
-            onClick={() => document.getElementById("profile-upload").click()}
+            className={`profile-upload-circle ${uploading ? "uploading" : ""}`}
+            onClick={() =>
+              !uploading && document.getElementById("profile-upload").click()
+            }
           >
             {profileImage ? (
               <img
@@ -501,9 +568,16 @@ const AddUserPage = () => {
               accept="image/*"
               style={{ display: "none" }}
               onChange={handleImageUpload}
+              disabled={uploading}
             />
           </div>
           <span className="profile-upload-text">Upload Profielfoto</span>
+          {uploading && (
+            <div className="upload-indicator">
+              <p>Uploaden...</p>
+              <div className="spinner"></div>
+            </div>
+          )}
         </div>
 
         {/* URL input section temporarily disabled
