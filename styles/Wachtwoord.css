@@ -22,14 +22,82 @@
   font-size: 1.8rem;
 }
 
-.message {
+.reset-form {
   margin-bottom: 2rem;
-  color: #666;
-  line-height: 1.6;
 }
 
-.message p {
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.input-label {
+  display: block;
   margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #666;
+}
+
+.input-container input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-container input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.error-message {
+  color: #dc3545;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.success-message {
+  color: #28a745;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.reset-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.reset-btn:hover {
+  background-color: #0056b3;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .vkbmoLink {
@@ -39,7 +107,6 @@
   padding: 0.8rem 1.5rem;
   border-radius: 4px;
   text-decoration: none;
-  margin-bottom: 1rem;
   transition: background-color 0.2s;
 }
 
@@ -48,10 +115,8 @@
 }
 
 .backLink {
-  display: block;
   color: #666;
   text-decoration: none;
-  margin-top: 1rem;
   transition: color 0.2s;
 }
 

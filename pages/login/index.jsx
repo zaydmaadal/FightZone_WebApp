@@ -74,7 +74,7 @@ const LoginPage = () => {
               />
             </div>
             <Link href="/wachtwoord" className="forgot-password">
-              Wachtwoord Wijzigen
+              Wachtwoord vergeten
             </Link>
           </div>
 
