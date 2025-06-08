@@ -233,6 +233,7 @@ const ClubsPage = () => {
 
         .table-responsive {
           width: 100%;
+          margin-bottom: 90px;
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
         }

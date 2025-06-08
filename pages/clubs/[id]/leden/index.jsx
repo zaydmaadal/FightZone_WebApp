@@ -548,7 +548,7 @@ const ClubMembersPage = () => {
   }
 
   return (
-    <div className="leden-container">
+    <div className="leden-container" style={{ overflowX: "hidden" }}>
       <div className="header-section">
         <div className="title-section">
           <h1 className="leden-title">{club.naam}</h1>
@@ -1203,8 +1203,9 @@ const ClubMembersPage = () => {
         .table-responsive {
           width: 100%;
           overflow-x: auto;
+          margin-bottom: 80px;
           -webkit-overflow-scrolling: touch;
-          padding-bottom: 80px;
+          -ms-overflow-style: -ms-autohiding-scrollbar;
         }
 
         .leden-tabel {
@@ -1972,6 +1973,44 @@ const ClubMembersPage = () => {
 
           .export-dropdown {
             width: 100%;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .checkbox-column {
+            display: none;
+          }
+
+          .leden-tabel.select-mode th:first-child,
+          .leden-tabel.select-mode td:first-child {
+            display: none;
+          }
+
+          .selection-mode-bar {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+            border-radius: 0;
+            padding: 0.75rem 1rem;
+          }
+
+          .selection-actions {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .selection-actions button {
+            flex: 1;
+          }
+
+          .table-responsive {
+          }
+
+          .leden-tabel {
+            width: 100%;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
           }
         }
       `}</style>

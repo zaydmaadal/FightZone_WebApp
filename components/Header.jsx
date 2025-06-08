@@ -11,10 +11,7 @@ import {
   CalendarIcon,
   ClipboardDocumentListIcon,
   Cog6ToothIcon,
-  UserCircleIcon,
-  ArrowRightOnRectangleIcon,
-  NewspaperIcon,
-  SparklesIcon,
+  ArrowRightStartOnRectangleIcon,
   ArrowRightCircleIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/solid";
@@ -216,8 +213,9 @@ export default function Header() {
               <Cog6ToothIcon className="sidebar-icon" width={24} height={24} />
               <span className="sidebar-title">Instellingen</span>
             </Link>
-            <button onClick={logout} className="sidebar-logout">
-              <span>Log uit</span>
+            <button onClick={logout} className="sidebar-logout logout-button">
+              <ArrowRightStartOnRectangleIcon className="nav-icon" />
+              Uitloggen
             </button>
           </nav>
           <div className="sidebar-profile-block">
@@ -295,6 +293,33 @@ export default function Header() {
       <style jsx>{`
         .header {
           position: relative;
+        }
+
+        .logout-button {
+          width: 100%;
+          background-color: transparent;
+          color: #62789b;
+          border: none;
+          font-size: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 14px 15px;
+          text-align: left;
+        }
+
+        .logout-button:hover {
+          background-color: #f8f9fb;
+        }
+
+        .logout-button svg {
+          width: 24px;
+          height: 24px;
+          flex-shrink: 0;
+          color: inherit;
         }
 
         /* Desktop */
