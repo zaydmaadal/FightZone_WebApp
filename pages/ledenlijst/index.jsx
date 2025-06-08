@@ -1268,8 +1268,6 @@ const LedenlijstPage = () => {
             gap: 0.5rem;
             align-items: flex-start;
             border-radius: 0;
-            margin-left: -1rem;
-            width: calc(100% + 2rem);
             padding: 0.75rem 1rem;
           }
 
@@ -1283,13 +1281,9 @@ const LedenlijstPage = () => {
           }
 
           .table-responsive {
-            margin-left: -1rem;
-            width: calc(100% + 2rem);
           }
 
           .leden-tabel {
-            width: 100vw;
-            margin-left: -1rem;
             border-radius: 0;
             border-left: none;
             border-right: none;

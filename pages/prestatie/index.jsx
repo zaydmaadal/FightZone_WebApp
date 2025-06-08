@@ -5,8 +5,10 @@ import {
   fetchCurrentUser,
   fetchClubs,
   fetchUserById,
+  updateVechter,
 } from "../../src/services/api";
-import { CheckCircleIcon } from "@heroicons/react/24/solid/index.js";
+import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid/index.js";
+import { PencilSquareIcon } from "@heroicons/react/24/outline/index.js";
 import Loading from "../../components/Loading";
 
 const PrestatiePage = () => {
@@ -14,6 +16,8 @@ const PrestatiePage = () => {
   const [loading, setLoading] = useState(true);
   const [clubs, setClubs] = useState([]);
   const [opponents, setOpponents] = useState({});
+  const [editingField, setEditingField] = useState(null);
+  const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
     const loadMember = async () => {
@@ -81,6 +85,111 @@ const PrestatiePage = () => {
     return opponents[tegenstanderId] || null;
   };
 
+  const handleEditClick = (field) => {
+    setEditingField(field);
+    setEditValue(member.vechterInfo[field] || "");
+  };
+
+  const handleSave = async (field) => {
+    try {
+      // Validate empty values
+      if (!editValue.trim()) {
+        alert("Waarde mag niet leeg zijn");
+        return;
+      }
+
+      // Validate numeric fields
+      if (field === "gewicht" || field === "lengte") {
+        const numValue = Number(editValue);
+        if (isNaN(numValue)) {
+          alert("Ongeldige numerieke waarde");
+          return;
+        }
+
+        // Add specific validation for weight and height
+        if (field === "gewicht" && (numValue < 40 || numValue > 150)) {
+          alert("Gewicht moet tussen 40 en 150 kg liggen");
+          return;
+        }
+        if (field === "lengte" && (numValue < 140 || numValue > 220)) {
+          alert("Lengte moet tussen 140 en 220 cm liggen");
+          return;
+        }
+      }
+
+      // Create update data object
+      const updateData = {
+        [field]:
+          field === "gewicht" || field === "lengte"
+            ? Number(editValue)
+            : editValue.trim(),
+      };
+
+      // Show loading state
+      setEditingField(null); // Temporarily hide edit UI
+
+      // API call
+      const response = await updateVechter(member._id, updateData);
+
+      // Update local state with response data
+      setMember(
+        response.updatedUser || {
+          ...member,
+          vechterInfo: {
+            ...member.vechterInfo,
+            [field]: updateData[field],
+          },
+        }
+      );
+
+      // Show success message
+    } catch (error) {
+      console.error("Error updating field:", error);
+      // Show error message to user
+      alert(error.message || "Update mislukt");
+      // Restore edit UI
+      setEditingField(field);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingField(null);
+    setEditValue("");
+  };
+
+  // Helper function to check insurance status
+  const checkInsuranceStatus = (vechterInfo) => {
+    // If using old system (no vervalDatum), always return "Niet in orde"
+    if (!vechterInfo?.vervalDatum) {
+      return { text: "Niet in orde", type: "error" };
+    }
+
+    const today = new Date();
+    const expiryDate = new Date(vechterInfo.vervalDatum);
+
+    // Check if date is valid
+    if (isNaN(expiryDate.getTime())) {
+      return { text: "Niet in orde", type: "error" };
+    }
+
+    // Calculate days until expiry
+    const daysUntilExpiry = Math.ceil(
+      (expiryDate - today) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysUntilExpiry < 0) {
+      return { text: "Niet in orde", type: "error" };
+    } else if (daysUntilExpiry <= 30) {
+      // Within 1 month
+      return {
+        text: `Verloopt over ${daysUntilExpiry} dagen`,
+        type: "warning",
+      };
+    } else {
+      return { text: "In Orde", type: "ok" };
+    }
+  };
+
   if (loading) return <Loading />;
   if (!member) return <p>Geen gegevens gevonden.</p>;
 
@@ -105,10 +214,49 @@ const PrestatiePage = () => {
             </div>
             <div className="stats-grid">
               <div className="stat-item">
-                <span className="stat-number">
-                  {member.vechterInfo?.koWins || 0}
-                </span>
-                <span className="stat-name">KO Wins</span>
+                <button
+                  className="edit-button"
+                  onClick={() => handleEditClick("lengte")}
+                  aria-label="Bewerk lengte"
+                >
+                  <PencilSquareIcon
+                    style={{ width: "12px", height: "12px", color: "#000000" }}
+                  />
+                </button>
+                {editingField === "lengte" ? (
+                  <div className="edit-container">
+                    <input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="edit-input"
+                      placeholder="Lengte in cm"
+                    />
+                    <div className="edit-actions">
+                      <button
+                        onClick={() => handleSave("lengte")}
+                        className="save-button"
+                        aria-label="Opslaan"
+                      >
+                        <span className="button-text">Opslaan</span>
+                        <CheckCircleIcon className="save-icon" />
+                      </button>
+                      <button
+                        onClick={handleCancel}
+                        className="cancel-button"
+                        aria-label="Annuleren"
+                      >
+                        <span className="button-text">Annuleren</span>
+                        <XMarkIcon className="cancel-icon" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="stat-number">
+                    {member.vechterInfo?.lengte || "-"} cm
+                  </span>
+                )}
+                <span className="stat-name">Lengte</span>
               </div>
               <div className="stat-item">
                 <span className="stat-number">
@@ -123,9 +271,48 @@ const PrestatiePage = () => {
                 <span className="stat-name">Klasse</span>
               </div>
               <div className="stat-item">
-                <span className="stat-number">
-                  {member.vechterInfo?.gewicht} kg
-                </span>
+                <button
+                  className="edit-button"
+                  onClick={() => handleEditClick("gewicht")}
+                  aria-label="Bewerk gewicht"
+                >
+                  <PencilSquareIcon
+                    style={{ width: "20px", height: "20px", color: "#000000" }}
+                  />
+                </button>
+                {editingField === "gewicht" ? (
+                  <div className="edit-container">
+                    <input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="edit-input"
+                      placeholder="Gewicht in kg"
+                    />
+                    <div className="edit-actions">
+                      <button
+                        onClick={() => handleSave("gewicht")}
+                        className="save-button"
+                        aria-label="Opslaan"
+                      >
+                        <span className="button-text">Opslaan</span>
+                        <CheckCircleIcon className="save-icon" />
+                      </button>
+                      <button
+                        onClick={handleCancel}
+                        className="cancel-button"
+                        aria-label="Annuleren"
+                      >
+                        <span className="button-text">Annuleren</span>
+                        <XMarkIcon className="cancel-icon" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="stat-number">
+                    {member.vechterInfo?.gewicht} kg
+                  </span>
+                )}
                 <span className="stat-name">Gewicht</span>
               </div>
             </div>
@@ -137,13 +324,11 @@ const PrestatiePage = () => {
           <div className="info-item">
             <span className="info-label">Verzekering</span>
             <span
-              className={`insurance-badge ${
-                member.vechterInfo?.verzekering
-                  ? "insurance-ok"
-                  : "insurance-error"
+              className={`insurance-badge insurance-${
+                checkInsuranceStatus(member.vechterInfo).type
               }`}
             >
-              {member.vechterInfo?.verzekering ? "Geldig" : "Niet geldig"}
+              {checkInsuranceStatus(member.vechterInfo).text}
             </span>
           </div>
           <div className="divider"></div>
@@ -228,7 +413,7 @@ const PrestatiePage = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         .check-icon-wrapper {
           display: inline-flex;
           align-items: center;
@@ -321,6 +506,7 @@ const PrestatiePage = () => {
           padding: 4px;
           text-align: center;
           position: relative;
+          padding-top: 12px;
         }
 
         .stat-number {
@@ -409,13 +595,18 @@ const PrestatiePage = () => {
         }
 
         .insurance-ok {
-          background-color: rgba(0, 182, 155, 0.2);
-          color: #00b69b;
+          background-color: #00b69b;
+          color: white;
+        }
+
+        .insurance-warning {
+          background-color: #ffc42f;
+          color: black;
         }
 
         .insurance-error {
-          background-color: rgba(239, 56, 38, 0.2);
-          color: #ef3826;
+          background-color: #ef3826;
+          color: white;
         }
 
         .info-value {
@@ -548,6 +739,111 @@ const PrestatiePage = () => {
           padding: 16px;
         }
 
+        .edit-button {
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          background-color: #ffd56a;
+          border: none;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 50%;
+          transition: all 0.2s ease;
+          z-index: 5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          min-width: 36px;
+          min-height: 36px;
+        }
+
+        .edit-button:hover {
+          background-color: #ffc94a;
+          transform: scale(1.05);
+        }
+
+        .edit-button svg {
+          width: 20px !important;
+          height: 20px !important;
+          color: #000000 !important;
+          stroke: #000000 !important;
+          fill: none !important;
+        }
+
+        .edit-container {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 8px;
+        }
+
+        .edit-input {
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 1rem;
+          width: 100%;
+          text-align: center;
+        }
+
+        .edit-actions {
+          display: flex;
+          gap: 8px;
+          justify-content: center;
+        }
+
+        .save-button,
+        .cancel-button {
+          padding: 6px 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          transition: background-color 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+        }
+
+        .save-button {
+          background-color: #3483fe;
+          color: white;
+        }
+
+        .save-button:hover {
+          background-color: #2a6cd6;
+        }
+
+        .cancel-button {
+          background-color: #f5f5f5;
+          color: #666;
+        }
+
+        .cancel-button:hover {
+          background-color: #e5e5e5;
+        }
+
+        .button-text {
+          display: inline;
+        }
+
+        .save-icon,
+        .cancel-icon {
+          display: none;
+          width: 20px;
+          height: 20px;
+        }
+
+        .save-icon {
+          color: white;
+        }
+
+        .cancel-icon {
+          color: #666;
+        }
+
         /* Mobile styles (unchanged) */
         @media (max-width: 767px) {
           .profile-header {
@@ -602,10 +898,91 @@ const PrestatiePage = () => {
           .vs-circle {
             margin: 8px auto;
           }
+
+          .edit-button {
+            top: -2px;
+            right: -2px;
+            padding: 2px;
+            min-width: 24px;
+            min-height: 24px;
+            box-shadow: none;
+            z-index: 5;
+          }
+
+          .edit-button svg {
+            width: 14px !important;
+            height: 14px !important;
+            color: #000000 !important;
+            stroke: #000000 !important;
+            fill: none !important;
+          }
+
+          .edit-container {
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+          }
+
+          .edit-input {
+            width: 60%;
+            padding: 6px;
+            font-size: 0.9rem;
+            margin: 0;
+          }
+
+          .edit-actions {
+            gap: 4px;
+            flex: 1;
+          }
+
+          .save-button,
+          .cancel-button {
+            padding: 6px;
+            min-width: 36px;
+            min-height: 36px;
+            border-radius: 50%;
+          }
+
+          .button-text {
+            display: none;
+          }
+
+          .save-icon,
+          .cancel-icon {
+            display: block;
+          }
+
+          .save-icon {
+            color: white;
+          }
+
+          .cancel-icon {
+            color: #666;
+          }
+
+          .stat-item {
+            padding-top: 16px;
+          }
         }
 
         /* Tablet styles */
         @media (min-width: 768px) {
+          .edit-button {
+            top: 2px;
+            right: 2px;
+            padding: 6px;
+            min-width: 24px;
+            min-height: 24px;
+            -webkit-box-shadow: none;
+            -moz-box-shadow: none;
+            box-shadow: none;
+            z-index: 5;
+          }
+          .edit-button svg {
+            width: 16px !important;
+            height: 16px !important;
+          }
           .check-icon-wrapper {
             width: 24px;
             height: 24px;
@@ -726,7 +1103,7 @@ const PrestatiePage = () => {
           }
 
           .stat-number {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 12px;
             font-weight: 700;
           }
@@ -739,7 +1116,7 @@ const PrestatiePage = () => {
           }
 
           .stat-name {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             margin-top: 16px;
             font-weight: 700;
             color: black;
@@ -781,6 +1158,14 @@ const PrestatiePage = () => {
           .stat-item:nth-child(2)::before {
             left: 20%;
             right: 20%;
+          }
+
+          .edit-button {
+            padding: 8px;
+          }
+          .edit-button svg {
+            width: 24px !important;
+            height: 24px !important;
           }
         }
       `}</style>

@@ -327,4 +327,37 @@ export const updateCurrentUser = async (userData) => {
   }
 };
 
+export const updateVechter = async (id, updateData) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await API.patch(`/users/vechter/${id}`, updateData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    // Gedetailleerde foutafhandeling
+    let errorMessage = "Update mislukt";
+
+    if (error.response) {
+      // Backend gaf een foutrespons
+      if (error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else {
+        errorMessage = `Server error: ${error.response.status}`;
+      }
+    } else if (error.request) {
+      // Verzoek is gemaakt maar geen respons ontvangen
+      errorMessage = "Geen respons van server";
+    } else {
+      // Andere fouten
+      errorMessage = error.message;
+    }
+
+    throw new Error(errorMessage);
+  }
+};
+
 export default API;

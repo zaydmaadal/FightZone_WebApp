@@ -1392,18 +1392,18 @@ const ClubMembersPage = () => {
         }
 
         .insurance-ok {
-          background-color: rgba(0, 182, 155, 0.2);
-          color: #00b69b;
+          background-color: #00b69b;
+          color: white;
         }
 
         .insurance-warning {
-          background-color: rgba(255, 196, 47, 0.2);
-          color: #ffc42f;
+          background-color: #ffc42f;
+          color: black;
         }
 
         .insurance-error {
-          background-color: rgba(239, 56, 38, 0.2);
-          color: #ef3826;
+          background-color: #ef3826;
+          color: white;
         }
 
         .delete-button {

@@ -79,6 +79,12 @@
   gap: 2rem;
 }
 
+@media (max-width: 767px) {
+  .stat-item {
+    padding-top: 16px;
+  }
+}
+
 .stat-section {
   background-color: white;
   padding: 1.5rem;

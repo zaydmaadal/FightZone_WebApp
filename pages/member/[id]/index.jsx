@@ -1,11 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import {
   fetchUsers,
   fetchClubs,
   fetchUserById,
   fetchCurrentUser,
+  updateVechter,
 } from "../../../src/services/api";
 import Link from "next/link";
 import {
@@ -125,19 +127,29 @@ const MemberDetails = () => {
 
   const handleSave = async (field) => {
     try {
-      // Here you would typically make an API call to update the value
-      // For now, we'll just update the local state
-      const updatedMember = {
-        ...member,
-        vechterInfo: {
-          ...member.vechterInfo,
-          [field]: editValue,
-        },
+      // Controleer lege waarden
+      if (!editValue.trim()) {
+        alert("Waarde mag niet leeg zijn");
+        return;
+      }
+
+      // Maak update data object
+      const updateData = {
+        [field]:
+          field === "gewicht" || field === "lengte"
+            ? Number(editValue)
+            : editValue,
       };
-      setMember(updatedMember);
+
+      // API call
+      const response = await updateVechter(member._id, updateData);
+
+      // Update local state met response data
+      setMember(response.updatedUser);
       setEditingField(null);
     } catch (error) {
       console.error("Error updating field:", error);
+      alert(error.message);
     }
   };
 
@@ -146,24 +158,59 @@ const MemberDetails = () => {
     setEditValue("");
   };
 
+  // Helper function to check insurance status
+  const checkInsuranceStatus = (vechterInfo) => {
+    // If using old system (no vervalDatum), always return "Niet in orde"
+    if (!vechterInfo?.vervalDatum) {
+      return { text: "Niet in orde", type: "error" };
+    }
+
+    const today = new Date();
+    const expiryDate = new Date(vechterInfo.vervalDatum);
+
+    // Check if date is valid
+    if (isNaN(expiryDate.getTime())) {
+      return { text: "Niet in orde", type: "error" };
+    }
+
+    // Calculate days until expiry
+    const daysUntilExpiry = Math.ceil(
+      (expiryDate - today) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysUntilExpiry < 0) {
+      return { text: "Niet in orde", type: "error" };
+    } else if (daysUntilExpiry <= 30) {
+      // Within 1 month
+      return {
+        text: `Verloopt over ${daysUntilExpiry} dagen`,
+        type: "warning",
+      };
+    } else {
+      return { text: "In Orde", type: "ok" };
+    }
+  };
+
   return (
     <div className="profile-page">
-      <div className="back-button-container">
-        <Link href={getBackLink()} className="back-button">
-          <OutlineArrowLeftCircleIcon
-            style={{ width: "24px", height: "24px" }}
-          />
-          Terug
-        </Link>
-      </div>
-
       <div className="page-content">
+        <div className="back-button-container">
+          <Link href={getBackLink()} className="back-button">
+            <OutlineArrowLeftCircleIcon
+              style={{ width: "24px", height: "24px" }}
+            />
+            Terug
+          </Link>
+        </div>
         <div className="profile-header">
           <div className="fighter-photo-container">
-            <img
+            <Image
               className="fighter-photo"
-              src={member.profielfoto}
-              alt={member.voornaam}
+              src={member.profielfoto || "/default-avatar.png"}
+              alt={`${member.voornaam} ${member.achternaam}`}
+              width={80}
+              height={80}
+              style={{ objectFit: "contain" }}
             />
           </div>
           <div className="fighter-right-info">
@@ -182,7 +229,7 @@ const MemberDetails = () => {
                   aria-label="Bewerk lengte"
                 >
                   <PencilSquareIcon
-                    style={{ width: "20px", height: "20px", color: "#000000" }}
+                    style={{ width: "12px", height: "12px", color: "#000000" }}
                   />
                 </button>
                 {editingField === "lengte" ? (
@@ -199,10 +246,10 @@ const MemberDetails = () => {
                         onClick={() => handleSave("lengte")}
                         className="save-button"
                       >
-                        Opslaan
+                        <span>Opslaan</span>
                       </button>
                       <button onClick={handleCancel} className="cancel-button">
-                        Annuleren
+                        <span>Annuleren</span>
                       </button>
                     </div>
                   </div>
@@ -226,7 +273,7 @@ const MemberDetails = () => {
                   aria-label="Bewerk klasse"
                 >
                   <PencilSquareIcon
-                    style={{ width: "20px", height: "20px", color: "#000000" }}
+                    style={{ width: "12px", height: "12px", color: "#000000" }}
                   />
                 </button>
                 {editingField === "klasse" ? (
@@ -243,10 +290,10 @@ const MemberDetails = () => {
                         onClick={() => handleSave("klasse")}
                         className="save-button"
                       >
-                        Opslaan
+                        <span>Opslaan</span>
                       </button>
                       <button onClick={handleCancel} className="cancel-button">
-                        Annuleren
+                        <span>Annuleren</span>
                       </button>
                     </div>
                   </div>
@@ -264,7 +311,7 @@ const MemberDetails = () => {
                   aria-label="Bewerk gewicht"
                 >
                   <PencilSquareIcon
-                    style={{ width: "20px", height: "20px", color: "#000000" }}
+                    style={{ width: "12px", height: "12px", color: "#000000" }}
                   />
                 </button>
                 {editingField === "gewicht" ? (
@@ -281,10 +328,10 @@ const MemberDetails = () => {
                         onClick={() => handleSave("gewicht")}
                         className="save-button"
                       >
-                        Opslaan
+                        <span>Opslaan</span>
                       </button>
                       <button onClick={handleCancel} className="cancel-button">
-                        Annuleren
+                        <span>Annuleren</span>
                       </button>
                     </div>
                   </div>
@@ -304,13 +351,11 @@ const MemberDetails = () => {
           <div className="info-item">
             <span className="info-label">Verzekering</span>
             <span
-              className={`insurance-badge ${
-                member.vechterInfo.verzekering
-                  ? "insurance-ok"
-                  : "insurance-error"
+              className={`insurance-badge insurance-${
+                checkInsuranceStatus(member.vechterInfo).type
               }`}
             >
-              {member.vechterInfo.verzekering ? "Geldig" : "Niet geldig"}
+              {checkInsuranceStatus(member.vechterInfo).text}
             </span>
           </div>
           <div className="divider"></div>
@@ -350,7 +395,13 @@ const MemberDetails = () => {
                   <div className="fighters-container">
                     <div className="fighter-left">
                       <div className="fighter-photo-small">
-                        <img src={member.profielfoto} alt={member.voornaam} />
+                        <Image
+                          src={member.profielfoto || "/default-avatar.png"}
+                          alt={`${member.voornaam} ${member.achternaam}`}
+                          width={50}
+                          height={50}
+                          style={{ objectFit: "contain" }}
+                        />
                       </div>
                       <div className="fighter-details">
                         <span className="fighter-name">
@@ -373,13 +424,16 @@ const MemberDetails = () => {
                         </span>
                       </div>
                       <div className="fighter-photo-small">
-                        <img
+                        <Image
                           src={opponent?.profielfoto || "/default-avatar.png"}
                           alt={
                             opponent
                               ? `${opponent.voornaam} ${opponent.achternaam}`
                               : "Onbekend"
                           }
+                          width={50}
+                          height={50}
+                          style={{ objectFit: "contain" }}
                         />
                       </div>
                     </div>
@@ -394,7 +448,7 @@ const MemberDetails = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         .back-button-container {
           margin-bottom: 20px;
           padding: 0 20px;
@@ -442,6 +496,7 @@ const MemberDetails = () => {
           align-items: flex-start;
           margin-bottom: 0px;
           width: 100%;
+          margin-bottom: 2em;
         }
 
         .fighter-photo-container {
@@ -450,12 +505,13 @@ const MemberDetails = () => {
           height: 80px;
           overflow: hidden;
           flex-shrink: 0;
+          position: relative;
         }
 
         .fighter-photo {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
+          width: 100% !important;
+          height: 100% !important;
+          position: relative !important;
         }
 
         .fighter-info {
@@ -497,12 +553,14 @@ const MemberDetails = () => {
           width: 100%;
           margin: 0px;
           position: relative;
+          margin-top: 12px;
         }
 
         .stat-item {
           padding: 4px;
           text-align: center;
           position: relative;
+          padding-top: 12px;
         }
 
         .stat-number {
@@ -590,13 +648,18 @@ const MemberDetails = () => {
         }
 
         .insurance-ok {
-          background-color: rgba(0, 182, 155, 0.2);
-          color: #00b69b;
+          background-color: #00b69b;
+          color: white;
+        }
+
+        .insurance-warning {
+          background-color: #ffc42f;
+          color: black;
         }
 
         .insurance-error {
-          background-color: rgba(239, 56, 38, 0.2);
-          color: #ef3826;
+          background-color: #ef3826;
+          color: white;
         }
 
         .info-value {
@@ -662,12 +725,13 @@ const MemberDetails = () => {
           overflow: hidden;
           margin: 0 8px;
           flex-shrink: 0;
+          position: relative;
         }
 
         .fighter-photo-small img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
+          width: 100% !important;
+          height: 100% !important;
+          position: relative !important;
         }
 
         .fighter-details {
@@ -704,15 +768,15 @@ const MemberDetails = () => {
 
         .edit-button {
           position: absolute;
-          top: 8px;
-          right: 8px;
+          top: 2px;
+          right: 2px;
           background-color: #ffd56a;
           border: none;
           cursor: pointer;
           padding: 8px;
           border-radius: 50%;
           transition: all 0.2s ease;
-          z-index: 2;
+          z-index: 5;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -783,7 +847,9 @@ const MemberDetails = () => {
         .cancel-button:hover {
           background-color: #e5e5e5;
         }
-
+        .check-icon-wrapper {
+          color: #;
+        }
         @media (max-width: 767px) {
           .profile-header {
             align-items: center;
@@ -812,6 +878,28 @@ const MemberDetails = () => {
             font-size: 0.9rem;
           }
 
+          .edit-button {
+            top: -2px;
+            right: -2px;
+            padding: 2px;
+            min-width: 24px;
+            min-height: 24px;
+            box-shadow: none;
+            z-index: 5;
+          }
+
+          .edit-button svg {
+            width: 14px;
+            height: 14px;
+            color: #000000 !important;
+            stroke: #000000 !important;
+            fill: none !important;
+          }
+
+          .stat-item {
+            padding-top: 16px;
+          }
+
           .fight-header {
             flex-direction: column;
             gap: 4px;
@@ -834,31 +922,65 @@ const MemberDetails = () => {
             margin: 8px 0;
           }
 
-          .edit-button {
-            top: 4px;
-            right: 4px;
-            padding: 6px;
-            min-width: 32px;
-            min-height: 32px;
-          }
-
-          .edit-button svg {
-            width: 18px;
-            height: 18px;
-            color: #000000 !important;
-            stroke: #000000 !important;
-            fill: none !important;
-          }
-
-          .edit-input {
-            font-size: 0.9rem;
-            padding: 6px;
-          }
-
           .save-button,
           .cancel-button {
             padding: 4px 8px;
             font-size: 0.8rem;
+          }
+
+          /* Kleinere input voor mobiel */
+          .edit-input {
+            padding: 6px !important;
+            font-size: 0.9rem !important;
+            width: 80% !important;
+            margin: 0 auto !important;
+          }
+
+          /* Verberg knoptekst en toon iconen op mobiel */
+          .edit-actions .save-button span,
+          .edit-actions .cancel-button span {
+            display: none;
+          }
+
+          .edit-actions .save-button::after {
+            content: "✓";
+            font-size: 1.2rem;
+          }
+
+          .edit-actions .cancel-button::after {
+            content: "✕";
+            font-size: 1.1rem;
+          }
+
+          /* Vierkante knoppen met iconen */
+          .save-button,
+          .cancel-button {
+            min-width: 36px !important;
+            min-height: 36px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+          }
+
+          /* Kleuraanpassingen voor iconen */
+          .save-button::after {
+            color: white;
+          }
+
+          .cancel-button::after {
+            color: #666;
+          }
+
+          /* Compacte layout voor edit-container */
+          .edit-container {
+            flex-direction: column !important;
+            gap: 4px !important;
+          }
+
+          .edit-actions {
+            gap: 4px !important;
           }
         }
 
@@ -866,6 +988,7 @@ const MemberDetails = () => {
           .check-icon-wrapper {
             width: 24px;
             height: 24px;
+            color: #00b69b;
           }
           .page-content {
             max-width: 95%;
@@ -940,6 +1063,25 @@ const MemberDetails = () => {
           }
         }
 
+        @media (min-width: 767px) {
+          .edit-button {
+            top: 2px;
+            right: 2px;
+            padding: 4px;
+            min-width: 24px;
+            min-height: 24px;
+            -webkit-box-shadow: none;
+            -moz-box-shadow: none;
+            box-shadow: none;
+            z-index: 5;
+          }
+
+          .edit-button svg {
+            width: 14px !important;
+            height: 14px !important;
+          }
+        }
+
         @media (min-width: 1024px) {
           .check-icon-wrapper {
             width: 24px;
@@ -982,7 +1124,7 @@ const MemberDetails = () => {
           }
 
           .stat-number {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 12px;
             font-weight: 700;
           }
@@ -995,7 +1137,7 @@ const MemberDetails = () => {
           }
 
           .stat-name {
-            font-size: 1.8rem;
+            font-size: 1.7rem;
             margin-top: 16px;
             font-weight: 700;
             color: black;
@@ -1044,6 +1186,27 @@ const MemberDetails = () => {
           .back-button {
             padding: 0.6rem 1.2rem;
             font-size: 0.9rem;
+          }
+        }
+        .edit-button svg {
+          stroke: #000000 !important;
+          fill: none !important;
+        }
+
+        @media (max-width: 767px) {
+          .edit-button svg {
+            width: 14px !important;
+            height: 14px !important;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .edit-button {
+            padding: 8px;
+          }
+          .edit-button svg {
+            width: 24px !important;
+            height: 24px !important;
           }
         }
       `}</style>
