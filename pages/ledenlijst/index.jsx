@@ -165,7 +165,7 @@ const LedenlijstPage = () => {
   const [openFilter, setOpenFilter] = useState(null);
   const [sliderValues, setSliderValues] = useState({
     leeftijd: { min: 1, max: 60 },
-    gewicht: { min: 0, max: 200 },
+    gewicht: { min: 20, max: 120 },
   });
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [clubName, setClubName] = useState("");
@@ -285,7 +285,7 @@ const LedenlijstPage = () => {
   useEffect(() => {
     setSliderValues({
       leeftijd: { min: 1, max: 60 },
-      gewicht: { min: -20, max: 100 },
+      gewicht: { min: 20, max: 120 },
     });
   }, []);
 
@@ -328,7 +328,20 @@ const LedenlijstPage = () => {
   };
 
   // Fixed filter options
-  const klasseOptions = ["A", "B", "C", "Nieuweling", "Jeugd"];
+  const klasseOptions = [
+    "A Klasse",
+    "B Klasse",
+    "C Klasse",
+    "Nieuweling",
+    "Jeugd",
+  ];
+
+  // Helper function to format klasse for display
+  const formatKlasse = (klasse) => {
+    if (klasse === "Nieuweling" || klasse === "Jeugd") return klasse;
+    return klasse.split(" ")[0]; // Returns just "A", "B", or "C"
+  };
+
   const verzekeringOptions = [
     { value: "In Orde", label: "Gereed" },
     { value: "Verloopt over", label: "Vervalend" },
@@ -496,7 +509,6 @@ const LedenlijstPage = () => {
   };
 
   const clearFilters = () => {
-    // Reset filters
     setFilters({
       gewicht: "",
       leeftijd: "",
@@ -504,10 +516,9 @@ const LedenlijstPage = () => {
       verzekering: "",
     });
 
-    // Reset slider values to their fixed ranges
     setSliderValues({
-      leeftijd: { min: 1, max: 60 }, // Fixed range for age
-      gewicht: { min: -20, max: 100 }, // Fixed range for weight
+      leeftijd: { min: 1, max: 60 },
+      gewicht: { min: 20, max: 120 },
     });
   };
 
@@ -517,17 +528,14 @@ const LedenlijstPage = () => {
       [filterType]: newValues,
     }));
 
-    // Update filters based on slider values
     if (filterType === "leeftijd") {
-      // Only set the filter if it's not the full range
       if (newValues.min === 1 && newValues.max === 60) {
         handleFilterChange("leeftijd", "");
       } else {
         handleFilterChange("leeftijd", `${newValues.min}-${newValues.max}`);
       }
     } else if (filterType === "gewicht") {
-      // Only set the filter if it's not the full range
-      if (newValues.min === -20 && newValues.max === 100) {
+      if (newValues.min === 20 && newValues.max === 120) {
         handleFilterChange("gewicht", "");
       } else {
         handleFilterChange("gewicht", `${newValues.min}-${newValues.max}`);
@@ -779,59 +787,59 @@ const LedenlijstPage = () => {
       {!isMobile && showFilters && (
         <div className="filter-dropdowns">
           <div className="filter-grid">
-            <div className="filter-group">
-              <select
-                value={filters.gewicht}
-                onChange={(e) => handleFilterChange("gewicht", e.target.value)}
-              >
-                <option value="">Gewicht</option>
-                {getUniqueValues("gewicht").map((gewicht) => (
-                  <option key={gewicht} value={gewicht}>
-                    {gewicht}
-                  </option>
-                ))}
-              </select>
+            <div className="filter-group full-width">
+              <h4 className="filter-label">Gewicht</h4>
+              <DoubleRangeSlider
+                min={20}
+                max={120}
+                values={sliderValues.gewicht}
+                onChange={(newValues) =>
+                  handleSliderChange("gewicht", newValues)
+                }
+                unit=" kg"
+              />
+            </div>
+
+            <div className="filter-group full-width">
+              <h4 className="filter-label">Leeftijd</h4>
+              <DoubleRangeSlider
+                min={1}
+                max={60}
+                values={sliderValues.leeftijd}
+                onChange={(newValues) =>
+                  handleSliderChange("leeftijd", newValues)
+                }
+                unit="J"
+              />
             </div>
 
             <div className="filter-group">
-              <select
-                value={filters.leeftijd}
-                onChange={(e) => handleFilterChange("leeftijd", e.target.value)}
-              >
-                <option value="">Leeftijd</option>
-                {getUniqueValues("leeftijd").map((leeftijd) => (
-                  <option key={leeftijd} value={leeftijd}>
-                    {leeftijd}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-group">
+              <h4 className="filter-label">Klasse</h4>
               <select
                 value={filters.klasse}
                 onChange={(e) => handleFilterChange("klasse", e.target.value)}
               >
-                <option value="">Klasse</option>
-                {getUniqueValues("klasse").map((klasse) => (
+                <option value="">Alle klassen</option>
+                {klasseOptions.map((klasse) => (
                   <option key={klasse} value={klasse}>
-                    {klasse}
+                    {formatKlasse(klasse)}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="filter-group">
+              <h4 className="filter-label">Verzekering</h4>
               <select
                 value={filters.verzekering}
                 onChange={(e) =>
                   handleFilterChange("verzekering", e.target.value)
                 }
               >
-                <option value="">Verzekering</option>
-                {getUniqueValues("verzekering").map((status) => (
-                  <option key={status} value={status}>
-                    {status}
+                <option value="">Alle statussen</option>
+                {verzekeringOptions.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
                   </option>
                 ))}
               </select>
@@ -846,154 +854,160 @@ const LedenlijstPage = () => {
 
       {/* Mobile Filter Popup */}
       {isMobile && showMobileFilters && (
-        <div className="mobile-filter-popup">
-          <div className="mobile-filter-header">
-            <div className="mobile-filter-title">
-              <FunnelIcon className="button-icon" width={20} height={20} />
-              <span>Filters</span>
+        <>
+          <div
+            className="mobile-filter-overlay"
+            onClick={() => setShowMobileFilters(false)}
+          />
+          <div className="mobile-filter-popup">
+            <div className="mobile-filter-header">
+              <div className="mobile-filter-title">
+                <FunnelIcon className="button-icon" width={20} height={20} />
+                <span>Filters</span>
+              </div>
+              <button
+                className="close-filter-button"
+                onClick={() => setShowMobileFilters(false)}
+              >
+                <XMarkIcon width={24} height={24} />
+              </button>
             </div>
-            <button
-              className="close-filter-button"
-              onClick={() => setShowMobileFilters(false)}
-            >
-              <XMarkIcon width={24} height={24} />
-            </button>
+
+            <div className="mobile-filter-content">
+              {/* Leeftijd Filter */}
+              <div className="mobile-filter-section">
+                <button
+                  className="mobile-filter-label"
+                  onClick={() => toggleFilter("leeftijd")}
+                >
+                  <span>Leeftijd</span>
+                  {openFilter === "leeftijd" ? (
+                    <MinusIcon width={20} height={20} />
+                  ) : (
+                    <PlusIcon width={20} height={20} />
+                  )}
+                </button>
+
+                {openFilter === "leeftijd" && (
+                  <div className="mobile-filter-slider">
+                    <DoubleRangeSlider
+                      min={1}
+                      max={60}
+                      values={sliderValues.leeftijd}
+                      onChange={(newValues) =>
+                        handleSliderChange("leeftijd", newValues)
+                      }
+                      unit="J"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Gewicht Filter */}
+              <div className="mobile-filter-section">
+                <button
+                  className="mobile-filter-label"
+                  onClick={() => toggleFilter("gewicht")}
+                >
+                  <span>Gewicht</span>
+                  {openFilter === "gewicht" ? (
+                    <MinusIcon width={20} height={20} />
+                  ) : (
+                    <PlusIcon width={20} height={20} />
+                  )}
+                </button>
+
+                {openFilter === "gewicht" && (
+                  <div className="mobile-filter-slider">
+                    <DoubleRangeSlider
+                      min={20}
+                      max={120}
+                      values={sliderValues.gewicht}
+                      onChange={(newValues) =>
+                        handleSliderChange("gewicht", newValues)
+                      }
+                      unit=" kg"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Klasse Filter */}
+              <div className="mobile-filter-section">
+                <button
+                  className="mobile-filter-label"
+                  onClick={() => toggleFilter("klasse")}
+                >
+                  <span>Klasse</span>
+                  {openFilter === "klasse" ? (
+                    <MinusIcon width={20} height={20} />
+                  ) : (
+                    <PlusIcon width={20} height={20} />
+                  )}
+                </button>
+
+                {openFilter === "klasse" && (
+                  <div className="mobile-filter-options">
+                    {klasseOptions.map((klasse) => (
+                      <button
+                        key={klasse}
+                        className={`filter-option ${
+                          filters.klasse === klasse ? "active" : ""
+                        }`}
+                        onClick={() => handleFilterChange("klasse", klasse)}
+                      >
+                        {formatKlasse(klasse)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Verzekering Filter */}
+              <div className="mobile-filter-section">
+                <button
+                  className="mobile-filter-label"
+                  onClick={() => toggleFilter("verzekering")}
+                >
+                  <span>Verzekering</span>
+                  {openFilter === "verzekering" ? (
+                    <MinusIcon width={20} height={20} />
+                  ) : (
+                    <PlusIcon width={20} height={20} />
+                  )}
+                </button>
+
+                {openFilter === "verzekering" && (
+                  <div className="mobile-filter-options">
+                    {verzekeringOptions.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        className={`filter-option ${
+                          filters.verzekering === value ? "active" : ""
+                        }`}
+                        onClick={() => handleFilterChange("verzekering", value)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mobile-filter-footer">
+              <button onClick={clearFilters} className="clear-filters">
+                Filters wissen
+              </button>
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                className="apply-filters"
+              >
+                Toepassen
+              </button>
+            </div>
           </div>
-
-          <div className="mobile-filter-content">
-            {/* Leeftijd Filter */}
-            <div className="mobile-filter-section">
-              <button
-                className="mobile-filter-label"
-                onClick={() => toggleFilter("leeftijd")}
-              >
-                <span>Leeftijd</span>
-                {openFilter === "leeftijd" ? (
-                  <MinusIcon width={20} height={20} />
-                ) : (
-                  <PlusIcon width={20} height={20} />
-                )}
-              </button>
-
-              {openFilter === "leeftijd" && (
-                <div className="mobile-filter-slider">
-                  <DoubleRangeSlider
-                    min={1}
-                    max={60}
-                    values={sliderValues.leeftijd}
-                    onChange={(newValues) =>
-                      handleSliderChange("leeftijd", newValues)
-                    }
-                    unit="J"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Gewicht Filter */}
-            <div className="mobile-filter-section">
-              <button
-                className="mobile-filter-label"
-                onClick={() => toggleFilter("gewicht")}
-              >
-                <span>Gewicht</span>
-                {openFilter === "gewicht" ? (
-                  <MinusIcon width={20} height={20} />
-                ) : (
-                  <PlusIcon width={20} height={20} />
-                )}
-              </button>
-
-              {openFilter === "gewicht" && (
-                <div className="mobile-filter-slider">
-                  <DoubleRangeSlider
-                    min={-20}
-                    max={100}
-                    values={sliderValues.gewicht}
-                    onChange={(newValues) =>
-                      handleSliderChange("gewicht", newValues)
-                    }
-                    unit=" kg"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Klasse Filter */}
-            <div className="mobile-filter-section">
-              <button
-                className="mobile-filter-label"
-                onClick={() => toggleFilter("klasse")}
-              >
-                <span>Klasse</span>
-                {openFilter === "klasse" ? (
-                  <MinusIcon width={20} height={20} />
-                ) : (
-                  <PlusIcon width={20} height={20} />
-                )}
-              </button>
-
-              {openFilter === "klasse" && (
-                <div className="mobile-filter-options">
-                  {klasseOptions.map((klasse) => (
-                    <button
-                      key={klasse}
-                      className={`filter-option ${
-                        filters.klasse === klasse ? "active" : ""
-                      }`}
-                      onClick={() => handleFilterChange("klasse", klasse)}
-                    >
-                      {klasse}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Verzekering Filter */}
-            <div className="mobile-filter-section">
-              <button
-                className="mobile-filter-label"
-                onClick={() => toggleFilter("verzekering")}
-              >
-                <span>Verzekering</span>
-                {openFilter === "verzekering" ? (
-                  <MinusIcon width={20} height={20} />
-                ) : (
-                  <PlusIcon width={20} height={20} />
-                )}
-              </button>
-
-              {openFilter === "verzekering" && (
-                <div className="mobile-filter-options">
-                  {verzekeringOptions.map(({ value, label }) => (
-                    <button
-                      key={value}
-                      className={`filter-option ${
-                        filters.verzekering === value ? "active" : ""
-                      }`}
-                      onClick={() => handleFilterChange("verzekering", value)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mobile-filter-footer">
-            <button onClick={clearFilters} className="clear-filters">
-              Filters wissen
-            </button>
-            <button
-              onClick={() => setShowMobileFilters(false)}
-              className="apply-filters"
-            >
-              Toepassen
-            </button>
-          </div>
-        </div>
+        </>
       )}
 
       <input
@@ -1108,7 +1122,9 @@ const LedenlijstPage = () => {
                   <td className="weight-column">-{lid.gewichtscategorie}</td>
                 )}
                 <td className="age-column">{lid.leeftijd}</td>
-                {!isMobile && <td className="class-column">{lid.klasse}</td>}
+                {!isMobile && (
+                  <td className="class-column">{formatKlasse(lid.klasse)}</td>
+                )}
                 <td className="insurance-column">
                   <span
                     className={`insurance-badge insurance-${lid.verzekering.type}`}
@@ -1207,6 +1223,289 @@ const LedenlijstPage = () => {
 
         .leden-tabel.select-mode tr:hover {
           background-color: rgba(52, 131, 254, 0.05);
+        }
+
+        /* Add all the filter styles from cluboverzicht */
+        .filter-dropdowns {
+          margin-bottom: 1.5rem;
+        }
+
+        .filter-grid {
+          display: flex;
+          gap: 1rem;
+          align-items: flex-end;
+        }
+
+        .filter-group {
+          flex: 1;
+        }
+
+        .filter-group.full-width {
+          grid-column: span 2;
+        }
+
+        .filter-label {
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+          color: #0b48ab;
+          font-size: 0.95rem;
+        }
+
+        /* Mobile Filter Styles */
+        .mobile-filter-popup {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: white;
+          border-radius: 20px 20px 0 0;
+          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+          z-index: 1000;
+          max-height: 90vh;
+          display: flex;
+          flex-direction: column;
+          animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+
+        .mobile-filter-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 999;
+        }
+
+        .mobile-filter-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem;
+          border-bottom: 1px solid #eee;
+        }
+
+        .mobile-filter-title {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-weight: 600;
+          font-size: 1.1rem;
+          color: #0b48ab;
+        }
+
+        .mobile-filter-content {
+          flex: 1;
+          overflow-y: auto;
+          padding: 1rem;
+        }
+
+        .mobile-filter-section {
+          border-bottom: 1px solid #eee;
+        }
+
+        .mobile-filter-label {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem 0;
+          background: none;
+          border: none;
+          font-size: 1rem;
+          font-weight: 500;
+          color: #0b48ab;
+          cursor: pointer;
+        }
+
+        .mobile-filter-slider {
+          padding: 10px 0;
+          background: white;
+          border-radius: 8px;
+          display: flex;
+          justify-content: center;
+        }
+
+        .mobile-filter-options {
+          padding: 0.5rem;
+          display: flex;
+          gap: 0.5rem;
+          background-color: #f0f6ff;
+          border-radius: 8px;
+        }
+
+        .filter-option {
+          flex: 1;
+          padding: 0.75rem 1rem;
+          border: none;
+          border-radius: 6px;
+          background-color: rgba(52, 131, 254, 0.3);
+          text-align: center;
+          font-size: 0.95rem;
+          color: var(--text-color);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .filter-option.active {
+          background-color: #3483fe;
+          color: white;
+        }
+
+        .mobile-filter-footer {
+          padding: 1rem;
+          border-top: 1px solid #eee;
+          display: flex;
+          gap: 1rem;
+        }
+
+        .mobile-filter-footer button {
+          flex: 1;
+          padding: 0.75rem;
+          border-radius: 6px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .mobile-filter-footer .clear-filters {
+          background: none;
+          border: 1px solid #ddd;
+          color: var(--text-color);
+        }
+
+        .mobile-filter-footer .apply-filters {
+          background-color: #3483fe;
+          border: none;
+          color: white;
+        }
+
+        .mobile-filter-footer .clear-filters:hover {
+          background-color: #f5f5f5;
+        }
+
+        .mobile-filter-footer .apply-filters:hover {
+          background-color: #0b48ab;
+        }
+
+        /* Double Range Slider Styles */
+        .double-range-container {
+          display: flex;
+          justify-content: center;
+          width: 95%;
+        }
+
+        .double-range-slider {
+          position: relative;
+          height: 40px;
+          width: calc(100% - 20px);
+          margin: 20px 0;
+          padding: 0;
+        }
+
+        .slider-background {
+          position: absolute;
+          height: 4px;
+          background-color: #d6e6ff;
+          border-radius: 2px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 100%;
+          z-index: 0;
+        }
+
+        .range-track {
+          position: absolute;
+          height: 4px;
+          background-color: rgba(52, 131, 254, 0.5);
+          border-radius: 2px;
+          top: 50%;
+          transform: translateY(-50%);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .double-range-slider input[type="range"] {
+          position: absolute;
+          width: 100%;
+          height: 4px;
+          background: none;
+          pointer-events: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 2;
+          margin: 0;
+          padding: 0;
+        }
+
+        .double-range-slider input[type="range"]::-webkit-slider-thumb {
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          border: 2px solid #3483fe;
+          background-color: white;
+          pointer-events: auto;
+          -webkit-appearance: none;
+          cursor: pointer;
+          z-index: 3;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .double-range-slider input[type="range"]::-moz-range-thumb {
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          border: 2px solid #3483fe;
+          background-color: white;
+          pointer-events: auto;
+          -moz-appearance: none;
+          cursor: pointer;
+          z-index: 3;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .min-value-bubble,
+        .max-value-bubble {
+          position: absolute;
+          padding: 4px 8px;
+          background: white;
+          border: 1px solid #d6e6ff;
+          border-radius: 12px;
+          color: #0b48ab;
+          font-size: 12px;
+          font-weight: 500;
+          transform: translateX(-50%);
+          top: -28px;
+          pointer-events: none;
+          transition: left 0.1s ease-out;
+          z-index: 4;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          white-space: nowrap;
+        }
+
+        .min-value-bubble::after,
+        .max-value-bubble::after {
+          content: "";
+          position: absolute;
+          bottom: -4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          border-top: 4px solid #d6e6ff;
         }
       `}</style>
     </div>
