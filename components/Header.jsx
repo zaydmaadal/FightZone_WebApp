@@ -98,7 +98,7 @@ export default function Header() {
             Instellingen
           </Link>
           <button onClick={logout} className="logout-button">
-            Uitloggen
+            Log uit
           </button>
         </nav>
       </div>
@@ -187,22 +187,7 @@ export default function Header() {
               <Cog6ToothIcon className="sidebar-icon" width={24} height={24} />
               <span className="sidebar-title">Instellingen</span>
             </Link>
-            <Link
-              href="/profile"
-              className={`sidebar-nav-link${
-                pathname === "/profile" ? " active" : ""
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <UserCircleIcon className="sidebar-icon" width={24} height={24} />
-              <span className="sidebar-title">Profiel</span>
-            </Link>
             <button onClick={logout} className="sidebar-logout">
-              <ArrowRightOnRectangleIcon
-                className="sidebar-icon"
-                width={24}
-                height={24}
-              />
               <span>Log uit</span>
             </button>
           </nav>
@@ -520,7 +505,7 @@ export default function Header() {
           color: #6b7a99;
           text-align: left;
           border-radius: 12px;
-          font-size: 1.15rem;
+          font-size: 1em;
           font-weight: 500;
           cursor: pointer;
         }
