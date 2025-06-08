@@ -561,7 +561,7 @@ const ClubMembersPage = () => {
                     {trainer.voornaam} {trainer.achternaam}
                   </p>
                   <p className="trainer-birthdate">
-                    Leeftijd: {calculateAge(trainer.geboortedatum)}
+                    {calculateAge(trainer.geboortedatum)}
                   </p>
                 </div>
               </div>
@@ -589,48 +589,6 @@ const ClubMembersPage = () => {
           </button>
         </div>
         <div className="right-buttons">
-          <div className="export-container">
-            <button
-              className="export-button"
-              onClick={() => setShowExportDropdown(!showExportDropdown)}
-            >
-              <ArrowDownTrayIcon
-                className="button-icon"
-                width={20}
-                height={20}
-              />
-              Exporteren
-              <ChevronDownIcon
-                className={`dropdown-icon ${
-                  showExportDropdown ? "rotate" : ""
-                }`}
-                width={16}
-                height={16}
-              />
-            </button>
-            {showExportDropdown && (
-              <div className="export-dropdown">
-                <button
-                  className="export-option"
-                  onClick={() => {
-                    exportToExcel();
-                    setShowExportDropdown(false);
-                  }}
-                >
-                  Exporteer volledige lijst
-                </button>
-                <button
-                  className="export-option"
-                  onClick={() => {
-                    setIsSelectMode(true);
-                    setShowExportDropdown(false);
-                  }}
-                >
-                  Selecteer vechters om te exporteren
-                </button>
-              </div>
-            )}
-          </div>
           <Link
             href={`/clubs/${id}/leden/add-member`}
             className="add-member-button"
@@ -910,6 +868,42 @@ const ClubMembersPage = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
+      <div className="export-container">
+        <button
+          className="export-button"
+          onClick={() => setShowExportDropdown(!showExportDropdown)}
+        >
+          <ArrowDownTrayIcon className="button-icon" width={20} height={20} />
+          Exporteren
+          <ChevronDownIcon
+            className={`dropdown-icon ${showExportDropdown ? "rotate" : ""}`}
+            width={16}
+            height={16}
+          />
+        </button>
+        {showExportDropdown && (
+          <div className="export-dropdown">
+            <button
+              className="export-option"
+              onClick={() => {
+                exportToExcel();
+                setShowExportDropdown(false);
+              }}
+            >
+              Exporteer volledige lijst
+            </button>
+            <button
+              className="export-option"
+              onClick={() => {
+                setIsSelectMode(true);
+                setShowExportDropdown(false);
+              }}
+            >
+              Selecteer vechters om te exporteren
+            </button>
+          </div>
+        )}
+      </div>
       <div className="table-responsive">
         <table className={`leden-tabel ${isSelectMode ? "select-mode" : ""}`}>
           <thead>
@@ -1100,9 +1094,9 @@ const ClubMembersPage = () => {
           align-items: center;
           background-color: #f9f9f9;
           border-radius: 10px;
-          padding: 15px;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-          width: 300px;
+          padding: 20px;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+          width: 250px;
         }
 
         .trainer-profile-img {
@@ -1118,15 +1112,15 @@ const ClubMembersPage = () => {
         }
 
         .trainer-name {
-          font-size: 1.2em;
+          font-size: 1.3em;
           font-weight: bold;
           margin-bottom: 5px;
           color: #333;
         }
 
         .trainer-birthdate {
-          font-size: 0.9em;
-          color: #666;
+          font-size: 1em;
+          color: #333;
         }
 
         .button-group {
