@@ -2,18 +2,23 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/SettingsPage.module.css";
 import { useAuth } from "../../src/services/auth";
-import { fetchCurrentUser, updateCurrentUser } from "../../src/services/api";
+import { fetchCurrentUser, updateCurrentUser, uploadProfilePicture, fetchClubById } from "../../src/services/api";
 
 export default function Settings() {
   const { user, setUser } = useAuth();
   const [activeTab, setActiveTab] = useState("account");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [clubName, setClubName] = useState(""); // Nieuwe state voor clubnaam
   const [form, setForm] = useState({
-    username: "",
+    firstName: "",
+    lastName: "",
     email: "",
-    bio: "",
+    club: "",
     newPassword: "",
     confirmPassword: "",
-    // voeg hier eventueel notificatie-settings toe
+    emailNotifications: false,
+    pushNotifications: false,
   });
 
   // Bij mount de form vullen vanuit de user-context
@@ -21,10 +26,28 @@ export default function Settings() {
     if (user) {
       setForm((f) => ({
         ...f,
-        username: user.gebruikersnaam || "",
+        firstName: user.voornaam || "",
+        lastName: user.achternaam || "",
         email: user.email || "",
-        bio: user.bio || "",
+        club: user.club || "",
+        emailNotifications: user.emailNotifications || false,
+        pushNotifications: user.pushNotifications || false,
       }));
+      if (user.profilePicture) {
+        setImagePreview(user.profilePicture);
+      }
+      if (user.club) {
+        const getClubName = async () => {
+          try {
+            const clubData = await fetchClubById(user.club);
+            setClubName(clubData.naam || "");
+          } catch (error) {
+            console.error("Error fetching club name:", error);
+            setClubName("Unknown Club"); // Set a default in case of error
+          }
+        };
+        getClubName();
+      }
     }
   }, [user]);
 
@@ -37,26 +60,55 @@ export default function Settings() {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setSelectedFile(null);
+      setImagePreview(user.profilePicture || null);
+    }
+  };
+
   // Opslaan (PATCH + context refresh)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // verstuur enkel de relevante velden per tab
       const payload = {};
-      if (activeTab === "account") {
-        payload.gebruikersnaam = form.username;
-        payload.email = form.email;
-        payload.bio = form.bio;
-      } else if (activeTab === "security") {
+      if (activeTab === "security") {
         payload.newPassword = form.newPassword;
         payload.confirmPassword = form.confirmPassword;
-      } else {
-        // notifications: voeg hier payload samen
+      } else if (activeTab === "notifications") {
+        payload.emailNotifications = form.emailNotifications;
+        payload.pushNotifications = form.pushNotifications;
+      } else if (activeTab === "account") {
+        payload.email = form.email;
       }
-      await updateCurrentUser(payload);
-      const refreshed = await fetchCurrentUser();
-      setUser(refreshed);
-      alert("Bijgewerkt!");
+
+      let userUpdated = false;
+
+      if (Object.keys(payload).length > 0) {
+        await updateCurrentUser(payload);
+        userUpdated = true;
+      }
+
+      if (selectedFile) {
+        await uploadProfilePicture(selectedFile);
+        userUpdated = true;
+      }
+
+      if (userUpdated) {
+        const refreshed = await fetchCurrentUser();
+        setUser(refreshed);
+        alert("Bijgewerkt!");
+      } else {
+        alert("No changes to update or account information cannot be updated from this page.");
+      }
     } catch (err) {
       console.error(err);
       alert("Opslaan mislukt");
@@ -68,13 +120,14 @@ export default function Settings() {
     if (!user) return;
     setForm((f) => ({
       ...f,
-      username: user.gebruikersnaam || "",
       email: user.email || "",
-      bio: user.bio || "",
       newPassword: "",
       confirmPassword: "",
-      // reset notifications-velden indien nodig
+      emailNotifications: user.emailNotifications || false,
+      pushNotifications: user.pushNotifications || false,
     }));
+    setImagePreview(user.profilePicture || null);
+    setSelectedFile(null);
   };
 
   return (
@@ -109,35 +162,90 @@ export default function Settings() {
         <div className={styles.innerContent}>
           {/* alleen in Account Setting */}
           {activeTab === "account" && (
-            <form className={styles.formGrid}>
-              <div className={styles.item}>
-                <label>Username</label>
-                <input
-                  name="username"
-                  type="text"
-                  value={form.username}
-                  onChange={handleChange}
-                />
+            <>
+              <div className={styles.profilePictureSection}>
+                <label>Your Profile Picture</label>
+                <div
+                  className={styles.profilePictureUpload}
+                  onClick={() => document.getElementById("profilePictureInput").click()}
+                >
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Profile Preview"
+                      className={styles.profileImagePreview}
+                    />
+                  ) : (
+                    <>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-upload"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" x2="12" y1="3" y2="15" />
+                      </svg>
+                      <span>Upload your photo</span>
+                    </>
+                  )}
+                  <input
+                    id="profilePictureInput"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: "none" }}
+                  />
+                </div>
               </div>
-              <div className={styles.item}>
-                <label>Email</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className={styles.itemFull}>
-                <label>Bio</label>
-                <textarea
-                  name="bio"
-                  rows={4}
-                  value={form.bio}
-                  onChange={handleChange}
-                />
-              </div>
-            </form>
+              <form className={styles.formGrid}>
+                <div className={styles.item}>
+                  <label>First Name</label>
+                  <input
+                    name="firstName"
+                    type="text"
+                    value={form.firstName}
+                    className={styles.disabledInput}
+                  />
+                </div>
+                <div className={styles.item}>
+                  <label>Last Name</label>
+                  <input
+                    name="lastName"
+                    type="text"
+                    value={form.lastName}
+                    className={styles.disabledInput}
+                  />
+                </div>
+                <div className={styles.item}>
+                  <label>Email</label>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                  />
+                </div>
+                {user && (user.role === "Vechter" || user.role === "Trainer") && (
+                  <div className={styles.item}>
+                    <label>Club</label>
+                    <input
+                      name="club"
+                      type="text"
+                      value={clubName}
+                      className={styles.disabledInput}
+                    />
+                  </div>
+                )}
+              </form>
+            </>
           )}
 
           {/* alleen in Login & Security */}
