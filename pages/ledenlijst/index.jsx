@@ -184,7 +184,8 @@ const LedenlijstPage = () => {
   // Add role-based redirection
   useEffect(() => {
     if (!loading && user) {
-      if (user.role === "VKBMO") {
+      console.log(user.role);
+      if (user.role === "VKBMO-lid") {
         router.push("/clubs");
         return;
       } else if (user.role === "Vechter") {
@@ -770,7 +771,7 @@ const LedenlijstPage = () => {
   };
 
   return (
-    <div className="leden-container">
+    <div className="leden-container" style={{ overflowX: "hidden" }}>
       <div className="header-section">
         <div>
           <h1 className="leden-title">Ledenlijst</h1>
@@ -1165,7 +1166,21 @@ const LedenlijstPage = () => {
       </div>
 
       <style jsx>{`
+        .leden-container {
+          padding: 1rem;
+          overflow-x: hidden;
+        }
+
+        .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          -ms-overflow-style: -ms-autohiding-scrollbar;
+        }
+
         .selection-mode-bar {
+          width: 100%;
+          box-sizing: border-box;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -1236,6 +1251,70 @@ const LedenlijstPage = () => {
 
         .leden-tabel.select-mode tr:hover {
           background-color: rgba(52, 131, 254, 0.05);
+        }
+
+        @media (max-width: 480px) {
+          .checkbox-column {
+            display: none;
+          }
+
+          .leden-tabel.select-mode th:first-child,
+          .leden-tabel.select-mode td:first-child {
+            display: none;
+          }
+
+          .selection-mode-bar {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+            border-radius: 0;
+            margin-left: -1rem;
+            width: calc(100% + 2rem);
+            padding: 0.75rem 1rem;
+          }
+
+          .selection-actions {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .selection-actions button {
+            flex: 1;
+          }
+
+          .table-responsive {
+            margin-left: -1rem;
+            width: calc(100% + 2rem);
+          }
+
+          .leden-tabel {
+            width: 100vw;
+            margin-left: -1rem;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+          }
+
+          .name-column {
+            width: 40%;
+          }
+
+          .age-column {
+            width: 20%;
+          }
+
+          .insurance-column {
+            width: 35%;
+          }
+
+          .action-column {
+            width: 5%;
+          }
+
+          .insurance-badge {
+            padding: 4px 8px;
+            font-size: 11px;
+          }
         }
 
         /* Add all the filter styles from cluboverzicht */
