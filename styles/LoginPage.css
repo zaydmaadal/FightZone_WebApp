@@ -146,6 +146,10 @@
   background: #ffffff;
 }
 
+.login-form .form-group input {
+  padding: 14px 16px 14px 48px;
+}
+
 .form-group input:focus {
   border-color: #3483fe;
   outline: none;

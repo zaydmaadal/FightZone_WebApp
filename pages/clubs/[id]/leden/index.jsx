@@ -164,7 +164,7 @@ const ClubMembersPage = () => {
   const [openFilter, setOpenFilter] = useState(null);
   const [sliderValues, setSliderValues] = useState({
     leeftijd: { min: 1, max: 60 },
-    gewicht: { min: -20, max: 100 },
+    gewicht: { min: 20, max: 120 },
   });
   const [selectedFighters, setSelectedFighters] = useState([]);
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -179,12 +179,25 @@ const ClubMembersPage = () => {
   });
 
   // Fixed filter options
-  const klasseOptions = ["A", "B", "C", "Nieuweling", "Jeugd"];
+  const klasseOptions = [
+    "A Klasse",
+    "B Klasse",
+    "C Klasse",
+    "Nieuweling",
+    "Jeugd",
+  ];
+
   const verzekeringOptions = [
     { value: "In Orde", label: "Gereed" },
     { value: "Verloopt over", label: "Vervalend" },
     { value: "Niet in orde", label: "Verlopen" },
   ];
+
+  // Helper function to format klasse for display
+  const formatKlasse = (klasse) => {
+    if (klasse === "Nieuweling" || klasse === "Jeugd") return klasse;
+    return klasse.split(" ")[0]; // Returns just "A", "B", or "C"
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -219,7 +232,7 @@ const ClubMembersPage = () => {
     // Initialize slider ranges with fixed values
     setSliderValues({
       leeftijd: { min: 1, max: 60 },
-      gewicht: { min: -20, max: 100 },
+      gewicht: { min: 20, max: 120 },
     });
   }, []);
 
@@ -240,7 +253,7 @@ const ClubMembersPage = () => {
 
     setSliderValues({
       leeftijd: { min: 1, max: 60 },
-      gewicht: { min: -20, max: 100 },
+      gewicht: { min: 20, max: 120 },
     });
   };
 
@@ -257,7 +270,7 @@ const ClubMembersPage = () => {
         handleFilterChange("leeftijd", `${newValues.min}-${newValues.max}`);
       }
     } else if (filterType === "gewicht") {
-      if (newValues.min === -20 && newValues.max === 100) {
+      if (newValues.min === 20 && newValues.max === 120) {
         handleFilterChange("gewicht", "");
       } else {
         handleFilterChange("gewicht", `${newValues.min}-${newValues.max}`);
@@ -269,7 +282,7 @@ const ClubMembersPage = () => {
     setOpenFilter(openFilter === filterName ? null : filterName);
   };
 
-  // Update filteredFighters to include all filters
+  // Update filteredFighters to match ledenlijst filtering logic
   const filteredFighters = users.filter((user) => {
     if (user.club !== id || user.role.toLowerCase() !== "vechter") return false;
 
@@ -524,21 +537,11 @@ const ClubMembersPage = () => {
         <div className="title-section">
           <h1 className="leden-title">{club.naam}</h1>
           <Link href="/clubs" className="back-button">
-            <svg
+            <ArrowLeftCircleIcon
               className="arrow-left-circle"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              width="24"
-              height="24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
-              />
-            </svg>
+              width={24}
+              height={24}
+            />
             Terug
           </Link>
         </div>
@@ -573,116 +576,81 @@ const ClubMembersPage = () => {
       </div>
 
       <div className="button-group">
-        <div className="left-buttons">
-          <button
-            className={`filter-button ${showFilters ? "active" : ""}`}
-            onClick={() => {
-              if (isMobile) {
-                setShowMobileFilters(true);
-              } else {
-                setShowFilters(!showFilters);
-              }
-            }}
-          >
-            <FunnelIcon className="button-icon" width={20} height={20} />
-            Filter
-          </button>
-        </div>
-        <div className="right-buttons">
-          <Link
-            href={`/clubs/${id}/leden/add-member`}
-            className="add-member-button"
-          >
-            + Voeg lid toe
-          </Link>
-        </div>
+        <button
+          className={`filter-button ${showFilters ? "active" : ""}`}
+          onClick={() => {
+            if (isMobile) {
+              setShowMobileFilters(true);
+            } else {
+              setShowFilters(!showFilters);
+            }
+          }}
+        >
+          <FunnelIcon className="button-icon" width={20} height={20} />
+          Filter
+        </button>
+        <Link
+          href={`/clubs/${id}/leden/add-member`}
+          className="add-member-button"
+        >
+          + Voeg lid toe
+        </Link>
       </div>
-
-      {/* Add selection mode indicator */}
-      {isSelectMode && (
-        <div className="selection-mode-bar">
-          <div className="selection-info">
-            {selectedFighters.length} vechter(s) geselecteerd
-          </div>
-          <div className="selection-actions">
-            <button
-              className="cancel-selection"
-              onClick={() => {
-                setIsSelectMode(false);
-                setSelectedFighters([]);
-              }}
-            >
-              Annuleren
-            </button>
-            <button
-              className="export-selected"
-              onClick={handleSelectiveExport}
-              disabled={selectedFighters.length === 0}
-            >
-              Exporteer geselecteerde
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Desktop Filters */}
       {!isMobile && showFilters && (
         <div className="filter-dropdowns">
           <div className="filter-grid">
-            <div className="filter-group">
-              <select
-                value={filters.gewicht}
-                onChange={(e) => handleFilterChange("gewicht", e.target.value)}
-              >
-                <option value="">Gewicht</option>
-                {Array.from(
-                  new Set(users.map((u) => u.vechterInfo?.gewicht))
-                ).map((gewicht) => (
-                  <option key={gewicht} value={gewicht}>
-                    {gewicht} kg
-                  </option>
-                ))}
-              </select>
+            <div className="filter-group full-width">
+              <h4 className="filter-label">Gewicht</h4>
+              <DoubleRangeSlider
+                min={20}
+                max={120}
+                values={sliderValues.gewicht}
+                onChange={(newValues) =>
+                  handleSliderChange("gewicht", newValues)
+                }
+                unit=" kg"
+              />
+            </div>
+
+            <div className="filter-group full-width">
+              <h4 className="filter-label">Leeftijd</h4>
+              <DoubleRangeSlider
+                min={1}
+                max={60}
+                values={sliderValues.leeftijd}
+                onChange={(newValues) =>
+                  handleSliderChange("leeftijd", newValues)
+                }
+                unit="J"
+              />
             </div>
 
             <div className="filter-group">
-              <select
-                value={filters.leeftijd}
-                onChange={(e) => handleFilterChange("leeftijd", e.target.value)}
-              >
-                <option value="">Leeftijd</option>
-                {Array.from(
-                  new Set(users.map((u) => calculateAge(u.geboortedatum)))
-                ).map((leeftijd) => (
-                  <option key={leeftijd} value={leeftijd}>
-                    {leeftijd}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-group">
+              <h4 className="filter-label">Klasse</h4>
               <select
                 value={filters.klasse}
                 onChange={(e) => handleFilterChange("klasse", e.target.value)}
               >
-                <option value="">Klasse</option>
+                <option value="">Alle klassen</option>
                 {klasseOptions.map((klasse) => (
                   <option key={klasse} value={klasse}>
-                    {klasse}
+                    {formatKlasse(klasse)}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="filter-group">
+              <h4 className="filter-label">Verzekering</h4>
               <select
                 value={filters.verzekering}
                 onChange={(e) =>
                   handleFilterChange("verzekering", e.target.value)
                 }
               >
-                <option value="">Verzekering</option>
+                <option value="">Alle statussen</option>
                 {verzekeringOptions.map(({ value, label }) => (
                   <option key={value} value={value}>
                     {label}
@@ -766,8 +734,8 @@ const ClubMembersPage = () => {
                 {openFilter === "gewicht" && (
                   <div className="mobile-filter-slider">
                     <DoubleRangeSlider
-                      min={-20}
-                      max={100}
+                      min={20}
+                      max={120}
                       values={sliderValues.gewicht}
                       onChange={(newValues) =>
                         handleSliderChange("gewicht", newValues)
@@ -802,7 +770,7 @@ const ClubMembersPage = () => {
                         }`}
                         onClick={() => handleFilterChange("klasse", klasse)}
                       >
-                        {klasse}
+                        {formatKlasse(klasse)}
                       </button>
                     ))}
                   </div>
@@ -904,6 +872,33 @@ const ClubMembersPage = () => {
           </div>
         )}
       </div>
+
+      {/* Add selection mode indicator */}
+      {isSelectMode && (
+        <div className="selection-mode-bar">
+          <div className="selection-info">
+            {selectedFighters.length} vechter(s) geselecteerd
+          </div>
+          <div className="selection-actions">
+            <button
+              className="cancel-selection"
+              onClick={() => {
+                setIsSelectMode(false);
+                setSelectedFighters([]);
+              }}
+            >
+              Annuleren
+            </button>
+            <button
+              className="export-selected"
+              onClick={handleSelectiveExport}
+              disabled={selectedFighters.length === 0}
+            >
+              Exporteer geselecteerde
+            </button>
+          </div>
+        </div>
+      )}
       <div className="table-responsive">
         <table className={`leden-tabel ${isSelectMode ? "select-mode" : ""}`}>
           <thead>
@@ -953,7 +948,7 @@ const ClubMembersPage = () => {
                   </td>
                   {!isMobile && (
                     <td className="class-column">
-                      {user.vechterInfo?.klasse || "Onbekend"}
+                      {formatKlasse(user.vechterInfo?.klasse || "Onbekend")}
                     </td>
                   )}
                   <td className="insurance-column">
@@ -1014,7 +1009,6 @@ const ClubMembersPage = () => {
         .header-section {
           display: flex;
           flex-direction: column;
-          align-items: flex-start;
           gap: 1rem;
           margin-bottom: 20px;
         }
@@ -1655,7 +1649,6 @@ const ClubMembersPage = () => {
 
         /* Double Range Slider Styles */
         .double-range-container {
-          margin: 15px 0;
           display: flex;
           justify-content: center;
           width: 95%;
@@ -1765,29 +1758,23 @@ const ClubMembersPage = () => {
           border-top: 4px solid #d6e6ff;
         }
 
-        @media (max-width: 768px) {
-          .filter-grid {
-            flex-direction: column;
-            gap: 0.75rem;
-          }
+        /* Filter Grid Styles */
+        .filter-grid {
+          display: flex;
+          flex-direction: row;
+          gap: 1.5rem;
+          align-items: start;
+        }
 
-          .filter-group {
-            width: 100%;
-          }
+        .filter-group.full-width {
+          grid-column: span 2;
+        }
 
-          .clear-filters {
-            width: 100%;
-            text-align: center;
-          }
-
-          .left-buttons {
-            flex-direction: column;
-            width: 100%;
-          }
-
-          .left-buttons .filter-button {
-            width: 100%;
-          }
+        .filter-label {
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+          color: #0b48ab;
+          font-size: 0.95rem;
         }
 
         .right-buttons {
@@ -1964,7 +1951,6 @@ const ClubMembersPage = () => {
           }
 
           .export-button {
-            width: 100%;
             justify-content: center;
           }
 
