@@ -68,6 +68,22 @@ export const createEvent = async (eventData) => {
   }
 };
 
+// Verwijder een event
+export const deleteEvent = async (eventId) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await API.delete(`/events/${eventId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Fout bij het verwijderen van een event:", error);
+    throw error;
+  }
+};
+
 // Synchroniseer VKBMO events
 export const syncVkbmoEvents = async () => {
   try {

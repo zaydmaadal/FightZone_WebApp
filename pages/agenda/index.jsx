@@ -8,7 +8,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import nlLocale from "@fullcalendar/core/locales/nl";
-import { fetchEvents, createEvent } from "../../src/services/api";
+import { fetchEvents, createEvent, deleteEvent } from "../../src/services/api";
 
 export default function Agenda() {
   const { user, loading } = useAuth();
@@ -32,6 +32,10 @@ export default function Agenda() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
+    }
+    // Zet filter op vkbmo voor VKBMO-leden
+    if (user && (user.role === "VKBMO-lid" || user.role === "vkbmo")) {
+      setEventTypeFilter("vkbmo");
     }
   }, [user, loading, router]);
 
@@ -115,13 +119,23 @@ export default function Agenda() {
     e.preventDefault();
     try {
       let eventToCreate = { ...newEvent };
-      if (user.role === 'trainer') {
-        eventToCreate.club = user.club; // of user.clubId, afhankelijk van je model
+      
+      // Convert local times to ISO strings with timezone offset
+      const startDate = new Date(eventToCreate.start);
+      const endDate = new Date(eventToCreate.end);
+      
+      eventToCreate.start = startDate.toISOString();
+      eventToCreate.end = endDate.toISOString();
+
+      if (user.role === 'Trainer') {
+        eventToCreate.club = user.club;
         eventToCreate.visibleFor = 'club';
-      } else if (user.role === 'vkbmo') {
+        eventToCreate.trainer = user._id;
+      } else if (user.role === 'VKBMO-lid') {
         eventToCreate.visibleFor = 'all';
         eventToCreate.club = null;
       }
+      
       await createEvent(eventToCreate);
       setShowAddEvent(false);
       setNewEvent({
@@ -140,10 +154,13 @@ export default function Agenda() {
 
   const handleDateSelect = (selectInfo) => {
     setSelectedDate(selectInfo);
+    const startDate = new Date(selectInfo.startStr);
+    const endDate = new Date(selectInfo.endStr);
+    
     setNewEvent({
       ...newEvent,
-      start: selectInfo.startStr,
-      end: selectInfo.endStr,
+      start: startDate.toISOString().slice(0, 16), // Format: YYYY-MM-DDTHH:mm
+      end: endDate.toISOString().slice(0, 16),     // Format: YYYY-MM-DDTHH:mm
     });
     setShowAddEvent(true);
   };
@@ -216,8 +233,8 @@ export default function Agenda() {
   // Filter events op zichtbaarheid en type
   const filteredEvents = events
     .filter(event => {
-      // VKBMO ziet alles
-      if (user?.role === 'vkbmo') return true;
+      // VKBMO ziet alleen vkbmo events
+      if (user?.role === "VKBMO-lid" || user?.role === "vkbmo") return event.type === "vkbmo";
       // Events zonder visibleFor/club (oude events) zijn zichtbaar voor iedereen
       if (!event.visibleFor && !event.club) return true;
       // Events die voor iedereen zichtbaar zijn
@@ -252,6 +269,7 @@ export default function Agenda() {
             value={eventTypeFilter}
             onChange={e => setEventTypeFilter(e.target.value)}
             style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1.5px solid #e5e7eb', fontSize: '1rem', minWidth: '120px' }}
+            disabled={user?.role === "VKBMO-lid" || user?.role === "vkbmo"}
           >
             <option value="all">Alle types</option>
             <option value="training">Training</option>
@@ -456,33 +474,54 @@ export default function Agenda() {
                   value={newEvent.start ? newEvent.start.slice(0, 10) : ""}
                   onChange={e => {
                     const date = e.target.value;
-                    const time = newEvent.start ? newEvent.start.slice(11, 16) : "12:00";
+                    const startTime = newEvent.start ? newEvent.start.slice(11, 16) : "12:00";
+                    const endTime = newEvent.end ? newEvent.end.slice(11, 16) : "13:00";
                     setNewEvent({
                       ...newEvent,
-                      start: date && time ? `${date}T${time}` : "",
-                      end: date && time ? `${date}T${time}` : ""
+                      start: date && startTime ? `${date}T${startTime}` : "",
+                      end: date && endTime ? `${date}T${endTime}` : ""
                     });
                   }}
                   required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="startTime">Tijd</label>
-                <input
-                  type="time"
-                  id="startTime"
-                  value={newEvent.start ? newEvent.start.slice(11, 16) : ""}
-                  onChange={e => {
-                    const time = e.target.value;
-                    const date = newEvent.start ? newEvent.start.slice(0, 10) : "";
-                    setNewEvent({
-                      ...newEvent,
-                      start: date && time ? `${date}T${time}` : "",
-                      end: date && time ? `${date}T${time}` : ""
-                    });
-                  }}
-                  required
-                />
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="startTime">Start tijd</label>
+                  <input
+                    type="time"
+                    id="startTime"
+                    value={newEvent.start ? newEvent.start.slice(11, 16) : ""}
+                    onChange={e => {
+                      const time = e.target.value;
+                      const date = newEvent.start ? newEvent.start.slice(0, 10) : "";
+                      setNewEvent({
+                        ...newEvent,
+                        start: date && time ? `${date}T${time}` : ""
+                      });
+                    }}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="endTime">Eind tijd</label>
+                  <input
+                    type="time"
+                    id="endTime"
+                    value={newEvent.end ? newEvent.end.slice(11, 16) : ""}
+                    onChange={e => {
+                      const time = e.target.value;
+                      const date = newEvent.end ? newEvent.end.slice(0, 10) : "";
+                      setNewEvent({
+                        ...newEvent,
+                        end: date && time ? `${date}T${time}` : ""
+                      });
+                    }}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-actions">
@@ -639,6 +678,7 @@ export default function Agenda() {
           font-size: 1rem;
           transition: border-color 0.2s;
           background: #fafafa;
+          color: #333;
         }
 
         .form-group input:focus,
@@ -907,6 +947,24 @@ export default function Agenda() {
         }
         .btn-back-to-month:hover {
           background: #e0e7ef;
+        }
+
+        .form-row {
+          display: flex;
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .form-row .form-group {
+          flex: 1;
+          margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+          .form-row {
+            flex-direction: column;
+            gap: 0.5rem;
+          }
         }
       `}</style>
     </div>
