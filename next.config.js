@@ -5,21 +5,12 @@ const nextConfig = {
   pageExtensions: ["js", "jsx", "ts", "tsx"],
   // Ensure pages are treated as dynamic for Vercel
   output: "standalone",
-  // Disable automatic static optimization for dynamic routes
-  typescript: {
-    // This ensures pages are treated as dynamic
-    ignoreBuildErrors: true,
-  },
   // Configure build output
   distDir: ".next",
   // Ensure proper asset handling
   images: {
     domains: ["fightzone-api.onrender.com"],
     unoptimized: true,
-  },
-  // Add error handling and performance optimizations
-  onError: (err) => {
-    console.error("Next.js build error:", err);
   },
   // Enable error overlay in development
   webpack: (config, { dev, isServer }) => {
