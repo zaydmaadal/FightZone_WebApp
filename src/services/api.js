@@ -290,4 +290,25 @@ export const setMatchResult = async (matchId, winnerId) => {
   }
 };
 
+// Update current user
+export const updateCurrentUser = async (userData) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No token found");
+    }
+
+    const response = await API.patch("/users/me", userData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
+
 export default API;
